@@ -1,0 +1,97 @@
+/* Importar CSS do SweetAlert2 - deve estar antes do Tailwind */
+@import 'sweetalert2/dist/sweetalert2.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Garantir que os botões do SweetAlert sejam sempre visíveis e funcionais */
+.swal2-actions {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 1.5em !important;
+    margin-bottom: 0 !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 0.5em !important;
+}
+
+.swal2-confirm,
+.swal2-cancel {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0.3125em !important;
+    padding: 0.625em 1.5em !important;
+    font-weight: 500 !important;
+    border-radius: 0.25em !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    min-width: 100px !important;
+    height: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    color: white !important;
+}
+
+.swal2-confirm {
+    background-color: var(--swal2-confirm-button-background-color, #3085d6) !important;
+}
+
+.swal2-cancel {
+    background-color: var(--swal2-cancel-button-background-color, #6c757d) !important;
+}
+
+.swal2-confirm:hover,
+.swal2-cancel:hover {
+    opacity: 0.9 !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15) !important;
+}
+
+.swal2-confirm:focus,
+.swal2-cancel:focus {
+    outline: 2px solid currentColor !important;
+    outline-offset: 2px !important;
+}
+
+.swal2-footer {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.swal2-popup {
+    padding-bottom: 1.5em !important;
+    overflow: visible !important;
+}
+
+.swal2-container {
+    z-index: 9999 !important;
+}
+
+/* Garantir que o texto dos botões seja visível */
+.swal2-confirm,
+.swal2-cancel {
+    color: white !important;
+}
+
+.swal2-confirm .swal2-confirm-button-text,
+.swal2-cancel .swal2-cancel-button-text {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: white !important;
+}
+
+/* Sobrescrever qualquer reset do Tailwind que possa afetar as cores */
+.swal2-popup button.swal2-confirm {
+    background-color: var(--swal2-confirm-button-background-color, #3085d6) !important;
+}
+
+.swal2-popup button.swal2-cancel {
+    background-color: var(--swal2-cancel-button-background-color, #6c757d) !important;
+}
