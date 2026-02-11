@@ -20,6 +20,41 @@ Route::post('/inscricao', [InscriptionController::class, 'store'])->name('inscri
 Route::get('/inscricao/{token}', [InscriptionController::class, 'status'])->name('inscricao.status');
 Route::post('/inscricao/{token}/comprovante', [InscriptionController::class, 'uploadPaymentProof'])->name('inscricao.upload-comprovante');
 
+// Preview de Emails (apenas em ambiente local)
+if (app()->environment('local')) {
+    Route::get('/email-preview/{template}', function (string $template) {
+        $allowed = ['inscription-received', 'inscription-approved', 'inscription-waitlisted', 'inscription-confirmed'];
+        if (! in_array($template, $allowed)) {
+            abort(404, 'Template não encontrado. Disponíveis: '.implode(', ', $allowed));
+        }
+
+        $event = \App\Models\Event::first();
+        if (! $event) {
+            return 'Nenhum evento cadastrado. Crie um evento primeiro.';
+        }
+
+        $inscription = $event->inscriptions()->first();
+        if (! $inscription) {
+            // Cria dados fictícios para preview
+            $inscription = new \App\Models\Inscription([
+                'full_name' => 'Maria da Silva',
+                'email' => 'maria@example.com',
+                'whatsapp' => '(27) 99999-0000',
+                'token' => 'preview-token',
+            ]);
+            $inscription->setRelation('event', $event);
+        }
+
+        $statusUrl = route('inscricao.status', $inscription->token ?? 'preview-token');
+
+        return view("emails.{$template}", [
+            'inscription' => $inscription,
+            'event' => $event,
+            'statusUrl' => $statusUrl,
+        ]);
+    })->name('email.preview');
+}
+
 // Área Administrativa
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');

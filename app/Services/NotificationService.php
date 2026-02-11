@@ -14,7 +14,7 @@ class NotificationService
         private readonly WhatsAppService $whatsAppService
     ) {}
 
-    public function sendEmail(string $to, string $subject, string $message, ?User $user = null, ?string $channel = null, array $metadata = []): bool
+    public function sendEmail(string $to, string $subject, string $message, ?User $user = null, ?string $channel = null, array $metadata = [], ?string $view = null, array $viewData = []): bool
     {
         try {
             $mailer = config('mail.default');
@@ -28,9 +28,15 @@ class NotificationService
                 return true;
             }
 
-            Mail::mailer($mailer)->raw($message, function ($mail) use ($to, $subject) {
-                $mail->to($to)->subject($subject);
-            });
+            if ($view) {
+                Mail::mailer($mailer)->send($view, $viewData, function ($mail) use ($to, $subject) {
+                    $mail->to($to)->subject($subject);
+                });
+            } else {
+                Mail::mailer($mailer)->raw($message, function ($mail) use ($to, $subject) {
+                    $mail->to($to)->subject($subject);
+                });
+            }
 
             $this->logNotification('email', $channel ?? 'general', $to, $subject, $message, $user, $metadata, 'sent');
 
@@ -92,12 +98,7 @@ class NotificationService
 
         // Email
         $subject = 'Inscrição recebida - De Casa em Casa';
-        $message = "Olá {$inscription->full_name},\n\n";
-        $message .= "Recebemos sua história! Estamos em fase de curadoria. Como os lugares são limitados e em lares, fazemos essa leitura com carinho. Aguarde nosso retorno.\n\n";
-        $message .= "Encontro: {$event->city} - {$event->date->format('d/m/Y')}\n\n";
-        $message .= "Acompanhe o status da sua inscrição:\n";
-        $message .= $statusUrl."\n\n";
-        $message .= 'Equipe De Casa em Casa';
+        $message = "Inscrição recebida para {$inscription->full_name} - {$event->city}";
 
         $this->sendEmail(
             $inscription->email,
@@ -105,7 +106,9 @@ class NotificationService
             $message,
             null,
             'inscription_received',
-            ['inscription_id' => $inscription->id]
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-received',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
         );
 
         // WhatsApp
@@ -132,12 +135,7 @@ class NotificationService
 
         // Email
         $subject = 'Sua participação foi aprovada! - De Casa em Casa';
-        $message = "Olá {$inscription->full_name},\n\n";
-        $message .= "Tudo pronto! Sua participação foi aprovada. Para garantir sua cadeira na sala, conclua sua contribuição no link abaixo.\n\n";
-        $message .= "Encontro: {$event->city} - {$event->date->format('d/m/Y')}\n\n";
-        $message .= "Acesse o link para enviar o comprovante de pagamento:\n";
-        $message .= $statusUrl."\n\n";
-        $message .= "Equipe De Casa em Casa";
+        $message = "Participação aprovada para {$inscription->full_name} - {$event->city}";
 
         $this->sendEmail(
             $inscription->email,
@@ -145,7 +143,9 @@ class NotificationService
             $message,
             null,
             'inscription_approved',
-            ['inscription_id' => $inscription->id]
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-approved',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
         );
 
         // WhatsApp
@@ -171,12 +171,7 @@ class NotificationService
 
         // Email
         $subject = 'Fila de Espera - De Casa em Casa';
-        $message = "Olá {$inscription->full_name},\n\n";
-        $message .= "Recebemos sua história e ficamos muito felizes! No momento, as cadeiras para este encontro já foram preenchidas. Vamos manter seu contato em nossa \"Fila de Espera\"; caso haja alguma desistência ou uma nova data por perto, avisaremos você.\n\n";
-        $message .= "Encontro: {$event->city} - {$event->date->format('d/m/Y')}\n\n";
-        $message .= "Acompanhe o status:\n";
-        $message .= $statusUrl."\n\n";
-        $message .= 'Equipe De Casa em Casa';
+        $message = "Fila de espera para {$inscription->full_name} - {$event->city}";
 
         $this->sendEmail(
             $inscription->email,
@@ -184,7 +179,9 @@ class NotificationService
             $message,
             null,
             'inscription_waitlisted',
-            ['inscription_id' => $inscription->id]
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-waitlisted',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
         );
 
         // WhatsApp
@@ -212,20 +209,7 @@ class NotificationService
 
         // Email
         $subject = 'Confirmado! Prepare o coração - De Casa em Casa';
-        $message = "Olá {$inscription->full_name},\n\n";
-        $message .= "Que alegria ter você conosco!\n\n";
-
-        if ($event->full_address) {
-            $message .= "Endereço: {$event->full_address}\n";
-        }
-        if ($event->arrival_time) {
-            $message .= "Horário: {$event->arrival_time}\n";
-        }
-        $message .= "Data: {$event->date->format('d/m/Y')}\n\n";
-        $message .= "Prepare o coração!\n\n";
-        $message .= "Acompanhe tudo no link:\n";
-        $message .= $statusUrl."\n\n";
-        $message .= 'Equipe De Casa em Casa';
+        $message = "Confirmação para {$inscription->full_name} - {$event->city}";
 
         $this->sendEmail(
             $inscription->email,
@@ -233,7 +217,9 @@ class NotificationService
             $message,
             null,
             'inscription_confirmed',
-            ['inscription_id' => $inscription->id]
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-confirmed',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
         );
 
         // WhatsApp
