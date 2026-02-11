@@ -55,14 +55,6 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="sm:w-44">
-                    <select name="city" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                        <option value="">Todas as cidades</option>
-                        @foreach($cities as $city)
-                            <option value="{{ $city }}" {{ request('city') === $city ? 'selected' : '' }}>{{ $city }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <div class="sm:w-40">
                     <select name="status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         <option value="">Todos os status</option>
@@ -77,7 +69,7 @@
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                     Filtrar
                 </button>
-                @if(request()->hasAny(['search', 'city', 'status', 'event_id']))
+                @if(request()->hasAny(['search', 'status', 'event_id']))
                     <a href="{{ route('admin.inscricoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
                         Limpar
                     </a>

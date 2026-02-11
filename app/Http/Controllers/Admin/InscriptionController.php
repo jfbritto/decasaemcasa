@@ -36,16 +36,9 @@ class InscriptionController extends Controller
             $query->orderBy('created_at', 'desc');
         }
 
-        // Filtro por encontro (primário)
+        // Filtro por encontro
         if ($request->filled('event_id')) {
             $query->where('event_id', $request->event_id);
-        }
-
-        // Filtro por cidade (secundário)
-        if ($request->filled('city')) {
-            $query->whereHas('event', function ($q) use ($request) {
-                $q->where('city', $request->city);
-            });
         }
 
         // Filtro por status
@@ -80,27 +73,17 @@ class InscriptionController extends Controller
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
         ];
 
-        // Encontros para o filtro (primário)
+        // Encontros para o filtro
         $events = Event::orderBy('date', 'desc')->get()->map(fn ($e) => [
             'id' => $e->id,
             'label' => ($e->city ?? $e->title).' - '.$meses[$e->date->month - 1].'/'.$e->date->year,
         ]);
 
-        // Cidades para o filtro (secundário)
-        $cities = Event::whereNotNull('city')
-            ->where('city', '!=', '')
-            ->distinct()
-            ->pluck('city')
-            ->sort();
-
-        // Contadores sensíveis aos filtros aplicados
+        // Contadores sensíveis ao filtro de encontro
         $countsQuery = Inscription::query();
 
         if ($request->filled('event_id')) {
             $countsQuery->where('event_id', $request->event_id);
-        }
-        if ($request->filled('city')) {
-            $countsQuery->whereHas('event', fn ($q) => $q->where('city', $request->city));
         }
 
         $counts = [
@@ -113,7 +96,7 @@ class InscriptionController extends Controller
             'cancelado' => (clone $countsQuery)->where('status', 'cancelado')->count(),
         ];
 
-        return view('admin.inscriptions.index', compact('inscriptions', 'events', 'cities', 'counts'));
+        return view('admin.inscriptions.index', compact('inscriptions', 'events', 'counts'));
     }
 
     /**
@@ -328,9 +311,6 @@ class InscriptionController extends Controller
 
         if ($request->filled('event_id')) {
             $query->where('event_id', $request->event_id);
-        }
-        if ($request->filled('city')) {
-            $query->whereHas('event', fn ($q) => $q->where('city', $request->city));
         }
         if ($request->filled('status')) {
             $query->where('status', $request->status);
