@@ -41,11 +41,11 @@
                 </div>
                 <div class="divide-y">
                     @forelse($recent_inscriptions as $inscription)
-                        <div class="px-6 py-3 flex items-center justify-between">
+                        <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
                             <div>
-                                <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="font-medium text-gray-900 hover:text-indigo-600">
+                                <span class="font-medium text-gray-900 group-hover:text-gray-700">
                                     {{ $inscription->full_name }}
-                                </a>
+                                </span>
                                 <p class="text-xs text-gray-500">
                                     {{ $inscription->event->city ?? $inscription->event->title }} - {{ $inscription->created_at->diffForHumans() }}
                                 </p>
@@ -58,7 +58,7 @@
                                 @endif">
                                 {{ $inscription->status_label }}
                             </span>
-                        </div>
+                        </a>
                     @empty
                         <div class="px-6 py-8 text-center text-gray-500">Nenhuma inscrição ainda.</div>
                     @endforelse
@@ -73,7 +73,7 @@
                 <div class="divide-y">
                     @forelse($inscriptions_by_city as $item)
                         <a href="{{ route('admin.events.show', $item->event_id) }}" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                            <span class="font-medium text-indigo-600 group-hover:text-indigo-800">{{ $item->city }}</span>
+                            <span class="font-medium text-gray-900 group-hover:text-gray-700">{{ $item->city }}</span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
                                 {{ $item->count }}
                             </span>
