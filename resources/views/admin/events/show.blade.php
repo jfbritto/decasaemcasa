@@ -25,7 +25,7 @@
             <div class="rounded-lg overflow-hidden shadow-md mb-6">
                 <img src="{{ asset('storage/' . $event->image) }}"
                      alt="{{ $event->title }}"
-                     class="w-full h-56 object-cover">
+                     class="w-full h-48 sm:h-56 object-cover">
             </div>
         @endif
 

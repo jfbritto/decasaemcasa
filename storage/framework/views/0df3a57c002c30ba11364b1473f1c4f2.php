@@ -53,16 +53,11 @@
                                 <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50"
                                        :class="formData.event_id == '<?php echo e($event->id); ?>' ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' : 'border-gray-200'">
                                     
-                                    <?php if($event->image): ?>
-                                        <img src="<?php echo e(asset('storage/' . $event->image)); ?>" alt="<?php echo e($event->title); ?>"
-                                             class="w-20 h-20 object-cover rounded-lg flex-shrink-0">
-                                    <?php else: ?>
-                                        <div class="w-20 h-20 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <svg class="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                            </svg>
-                                        </div>
-                                    <?php endif; ?>
+                                    <div class="w-14 h-14 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-7 h-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                        </svg>
+                                    </div>
                                     <input type="radio" name="event_id" value="<?php echo e($event->id); ?>"
                                            x-model="formData.event_id"
                                            class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 ml-4 flex-shrink-0">

@@ -19,7 +19,7 @@
             <div class="rounded-2xl overflow-hidden shadow-lg mb-6">
                 <img src="{{ asset('storage/' . $inscription->event->image) }}"
                      alt="{{ $inscription->event->title }}"
-                     class="w-full h-48 sm:h-64 object-cover">
+                     class="w-full h-48 sm:h-56 object-cover">
             </div>
         @endif
 

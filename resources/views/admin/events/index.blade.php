@@ -29,16 +29,11 @@
                     @foreach($events as $event)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($event->image)
-                                    <img src="{{ asset('storage/' . $event->image) }}" alt="{{ $event->title }}"
-                                         class="w-10 h-10 object-cover rounded-lg">
-                                @else
-                                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                        </svg>
-                                    </div>
-                                @endif
+                                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                    </svg>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-gray-900">{{ $event->city ?? $event->title }}</div>
