@@ -1,206 +1,207 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Detalhes da Inscrição - Painel Admin'); ?>
 
-@section('title', 'Detalhes da Inscrição - Painel Admin')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {{-- Header --}}
+        
         <div class="flex items-center justify-between mb-6">
             <div>
-                <a href="{{ route('admin.inscricoes.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center mb-2">
+                <a href="<?php echo e(route('admin.inscricoes.index')); ?>" class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center mb-2">
                     <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     Voltar para lista
                 </a>
-                <h1 class="text-2xl font-bold text-gray-900">{{ $inscription->full_name }}</h1>
+                <h1 class="text-2xl font-bold text-gray-900"><?php echo e($inscription->full_name); ?></h1>
             </div>
             <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold
-                @if($inscription->isPending()) bg-yellow-100 text-yellow-800
-                @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
-                @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
-                @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
-                @endif">
-                {{ $inscription->status_label }}
+                <?php if($inscription->isPending()): ?> bg-yellow-100 text-yellow-800
+                <?php elseif($inscription->isApproved()): ?> bg-blue-100 text-blue-800
+                <?php elseif($inscription->isConfirmed()): ?> bg-green-100 text-green-800
+                <?php elseif($inscription->isWaitlisted()): ?> bg-orange-100 text-orange-800
+                <?php endif; ?>">
+                <?php echo e($inscription->status_label); ?>
+
             </span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {{-- Dados do Participante --}}
+            
             <div class="lg:col-span-2 space-y-6">
 
-                {{-- Informações Pessoais --}}
+                
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Dados do Participante</h2>
                     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nome Completo</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->full_name }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->full_name); ?></dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">CPF</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->formatted_cpf }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->formatted_cpf); ?></dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Data de Nascimento</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->birth_date->format('d/m/Y') }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->birth_date->format('d/m/Y')); ?></dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Bairro / Cidade</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->city_neighborhood }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->city_neighborhood); ?></dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">WhatsApp</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->whatsapp }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->whatsapp); ?></dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">E-mail</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->email }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->email); ?></dd>
                         </div>
-                        @if($inscription->instagram)
+                        <?php if($inscription->instagram): ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Instagram</dt>
                             <dd class="text-sm mt-1">
-                                @php
+                                <?php
                                     $handle = ltrim(str_replace(['https://instagram.com/', 'https://www.instagram.com/', 'http://instagram.com/', 'http://www.instagram.com/'], '', $inscription->instagram), '@/ ');
                                     $handle = rtrim($handle, '/');
-                                @endphp
-                                <a href="https://www.instagram.com/{{ $handle }}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
+                                ?>
+                                <a href="https://www.instagram.com/<?php echo e($handle); ?>" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-1">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                                    {{ '@' . $handle }}
+                                    <?php echo e('@' . $handle); ?>
+
                                 </a>
                             </dd>
                         </div>
-                        @endif
+                        <?php endif; ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Inscrito em</dt>
-                            <dd class="text-sm text-gray-900 mt-1">{{ $inscription->created_at->format('d/m/Y H:i') }}</dd>
+                            <dd class="text-sm text-gray-900 mt-1"><?php echo e($inscription->created_at->format('d/m/Y H:i')); ?></dd>
                         </div>
                     </dl>
                 </div>
 
-                {{-- Motivação / História --}}
+                
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">História / Motivação</h2>
                     <div class="bg-amber-50 rounded-xl p-5 border-l-4 border-amber-400">
-                        <p class="text-gray-700 leading-relaxed italic whitespace-pre-line">"{{ $inscription->motivation }}"</p>
+                        <p class="text-gray-700 leading-relaxed italic whitespace-pre-line">"<?php echo e($inscription->motivation); ?>"</p>
                     </div>
                 </div>
 
-                {{-- Comprovante de Pagamento --}}
-                @if($inscription->payment_proof)
+                
+                <?php if($inscription->payment_proof): ?>
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Comprovante de Pagamento</h2>
                     <div class="border rounded-xl overflow-hidden">
-                        @php
+                        <?php
                             $extension = pathinfo($inscription->payment_proof, PATHINFO_EXTENSION);
-                        @endphp
-                        @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png']))
-                            <img src="{{ Storage::url($inscription->payment_proof) }}" alt="Comprovante" class="w-full max-h-96 object-contain bg-gray-100">
-                        @elseif(strtolower($extension) === 'pdf')
+                        ?>
+                        <?php if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png'])): ?>
+                            <img src="<?php echo e(Storage::url($inscription->payment_proof)); ?>" alt="Comprovante" class="w-full max-h-96 object-contain bg-gray-100">
+                        <?php elseif(strtolower($extension) === 'pdf'): ?>
                             <div class="p-4 bg-gray-50 text-center">
                                 <svg class="mx-auto h-12 w-12 text-red-500 mb-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
                                 </svg>
-                                <a href="{{ Storage::url($inscription->payment_proof) }}" target="_blank"
+                                <a href="<?php echo e(Storage::url($inscription->payment_proof)); ?>" target="_blank"
                                    class="text-indigo-600 hover:text-indigo-800 font-medium">
                                     Visualizar PDF do Comprovante
                                 </a>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
-                @endif
+                <?php endif; ?>
             </div>
 
-            {{-- Sidebar: Evento + Ações --}}
+            
             <div class="space-y-6">
 
-                {{-- Evento --}}
+                
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Encontro</h2>
                     <div class="space-y-2">
-                        <p class="font-medium text-gray-900">{{ $inscription->event->city ?? $inscription->event->title }}</p>
-                        <p class="text-sm text-gray-600">{{ $inscription->event->date->format('d/m/Y') }}</p>
-                        @if($inscription->event->title && $inscription->event->city && $inscription->event->title !== $inscription->event->city)
-                            <p class="text-sm text-gray-500">{{ $inscription->event->title }}</p>
-                        @endif
-                        @if($inscription->event->capacity > 0)
+                        <p class="font-medium text-gray-900"><?php echo e($inscription->event->city ?? $inscription->event->title); ?></p>
+                        <p class="text-sm text-gray-600"><?php echo e($inscription->event->date->format('d/m/Y')); ?></p>
+                        <?php if($inscription->event->title && $inscription->event->city && $inscription->event->title !== $inscription->event->city): ?>
+                            <p class="text-sm text-gray-500"><?php echo e($inscription->event->title); ?></p>
+                        <?php endif; ?>
+                        <?php if($inscription->event->capacity > 0): ?>
                             <p class="text-sm text-gray-500">
-                                Capacidade: {{ $inscription->event->confirmed_count }}/{{ $inscription->event->capacity }}
+                                Capacidade: <?php echo e($inscription->event->confirmed_count); ?>/<?php echo e($inscription->event->capacity); ?>
+
                             </p>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
 
-                {{-- Ações --}}
+                
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Ações</h2>
                     <div class="space-y-3">
-                        @if($inscription->isPending())
-                            <form method="POST" action="{{ route('admin.inscricoes.aprovar', $inscription) }}">
-                                @csrf
+                        <?php if($inscription->isPending()): ?>
+                            <form method="POST" action="<?php echo e(route('admin.inscricoes.aprovar', $inscription)); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit" class="w-full py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors">
                                     Aprovar Inscrição
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('admin.inscricoes.fila-espera', $inscription) }}">
-                                @csrf
+                            <form method="POST" action="<?php echo e(route('admin.inscricoes.fila-espera', $inscription)); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit" class="w-full py-2.5 bg-orange-500 text-white font-medium rounded-xl hover:bg-orange-600 transition-colors">
                                     Mover para Fila de Espera
                                 </button>
                             </form>
-                        @elseif($inscription->isApproved())
-                            @if($inscription->payment_proof)
-                                <form method="POST" action="{{ route('admin.inscricoes.confirmar', $inscription) }}">
-                                    @csrf
+                        <?php elseif($inscription->isApproved()): ?>
+                            <?php if($inscription->payment_proof): ?>
+                                <form method="POST" action="<?php echo e(route('admin.inscricoes.confirmar', $inscription)); ?>">
+                                    <?php echo csrf_field(); ?>
                                     <button type="submit" class="w-full py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors">
                                         Confirmar Pagamento
                                     </button>
                                 </form>
-                            @else
+                            <?php else: ?>
                                 <div class="text-center py-3 bg-yellow-50 rounded-xl border border-yellow-200">
                                     <p class="text-sm text-yellow-700">Aguardando envio do comprovante pelo participante.</p>
                                 </div>
-                            @endif
-                        @elseif($inscription->isWaitlisted())
-                            <form method="POST" action="{{ route('admin.inscricoes.aprovar', $inscription) }}">
-                                @csrf
+                            <?php endif; ?>
+                        <?php elseif($inscription->isWaitlisted()): ?>
+                            <form method="POST" action="<?php echo e(route('admin.inscricoes.aprovar', $inscription)); ?>">
+                                <?php echo csrf_field(); ?>
                                 <button type="submit" class="w-full py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors">
                                     Aprovar da Fila de Espera
                                 </button>
                             </form>
-                        @elseif($inscription->isConfirmed())
+                        <?php elseif($inscription->isConfirmed()): ?>
                             <div class="text-center py-3 bg-green-50 rounded-xl border border-green-200">
                                 <p class="text-sm text-green-700 font-medium">Participação confirmada!</p>
-                                @if($inscription->confirmed_at)
-                                    <p class="text-xs text-green-600 mt-1">Confirmado em {{ $inscription->confirmed_at->format('d/m/Y H:i') }}</p>
-                                @endif
+                                <?php if($inscription->confirmed_at): ?>
+                                    <p class="text-xs text-green-600 mt-1">Confirmado em <?php echo e($inscription->confirmed_at->format('d/m/Y H:i')); ?></p>
+                                <?php endif; ?>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
 
-                {{-- Notas do Admin --}}
+                
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Notas Internas</h2>
-                    <form method="POST" action="{{ route('admin.inscricoes.update-notes', $inscription) }}">
-                        @csrf
-                        @method('PATCH')
+                    <form method="POST" action="<?php echo e(route('admin.inscricoes.update-notes', $inscription)); ?>">
+                        <?php echo csrf_field(); ?>
+                        <?php echo method_field('PATCH'); ?>
                         <textarea name="admin_notes" rows="4"
                                   class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
-                                  placeholder="Adicione notas internas sobre esta inscrição...">{{ $inscription->admin_notes }}</textarea>
+                                  placeholder="Adicione notas internas sobre esta inscrição..."><?php echo e($inscription->admin_notes); ?></textarea>
                         <button type="submit" class="mt-2 w-full py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors">
                             Salvar Notas
                         </button>
                     </form>
                 </div>
 
-                {{-- Link da inscrição --}}
+                
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-sm font-semibold text-gray-900 mb-2">Link de Status</h2>
-                    <input type="text" value="{{ route('inscricao.status', $inscription->token) }}" readonly
+                    <input type="text" value="<?php echo e(route('inscricao.status', $inscription->token)); ?>" readonly
                            class="w-full text-xs text-gray-600 bg-gray-50 border-gray-200 rounded-lg" onclick="this.select()">
                 </div>
             </div>
@@ -208,4 +209,6 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /var/www/resources/views/admin/inscriptions/show.blade.php ENDPATH**/ ?>
