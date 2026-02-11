@@ -12,11 +12,17 @@ class EventController extends Controller
 {
     public function index()
     {
-        $events = Event::withCount(['inscriptions'])
+        $upcoming = Event::withCount(['inscriptions'])
+            ->where('date', '>=', now())
             ->orderBy('date', 'asc')
-            ->paginate(15);
+            ->get();
 
-        return view('admin.events.index', compact('events'));
+        $past = Event::withCount(['inscriptions'])
+            ->where('date', '<', now())
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('admin.events.index', compact('upcoming', 'past'));
     }
 
     public function create()
