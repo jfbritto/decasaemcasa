@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6">
-    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl mx-auto">
 
         <h1 class="text-2xl font-bold text-gray-900 mb-6">Meu Perfil</h1>
 

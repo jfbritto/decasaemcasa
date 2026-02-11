@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="py-6">
-    <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl mx-auto">
 
         <div class="mb-6">
             <a href="{{ route('admin.usuarios.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center mb-2">
