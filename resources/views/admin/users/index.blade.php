@@ -44,7 +44,7 @@
                             <td class="px-6 py-4 text-center">
                                 @if($user->id === auth()->id() && $users->count() > 1)
                                     <form method="POST" action="{{ route('admin.usuarios.destroy', $user) }}"
-                                          x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja remover SUA PRÓPRIA conta? Você será deslogado e não poderá mais acessar o painel.')) $el.submit()">
+                                          x-data x-on:submit.prevent="Swal.fire({ title: 'Remover sua conta?', text: 'Você será deslogado e não poderá mais acessar o painel. Esta ação é irreversível.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, remover', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">

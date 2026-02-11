@@ -171,9 +171,9 @@
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}"
-                                  x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja rejeitar esta inscrição? O participante será notificado.')) $el.submit()">
+                                  x-data x-on:submit.prevent="Swal.fire({ title: 'Rejeitar inscrição?', text: 'O participante será notificado sobre a rejeição.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                                 @csrf
-                                <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors">
+                                <button type="submit" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors">
                                     Rejeitar Inscrição
                                 </button>
                             </form>
@@ -204,9 +204,9 @@
                                 </button>
                             </form>
                             <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}"
-                                  x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja rejeitar esta inscrição? O participante será notificado.')) $el.submit()">
+                                  x-data x-on:submit.prevent="Swal.fire({ title: 'Rejeitar inscrição?', text: 'O participante será notificado sobre a rejeição.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                                 @csrf
-                                <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors">
+                                <button type="submit" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors">
                                     Rejeitar Inscrição
                                 </button>
                             </form>

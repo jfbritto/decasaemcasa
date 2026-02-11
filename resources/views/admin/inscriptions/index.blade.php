@@ -97,7 +97,7 @@
                 <span class="text-sm text-indigo-700 font-medium" x-text="selectedIds.length + ' inscrição(ões) selecionada(s)'"></span>
                 <div class="flex items-center gap-2">
                     <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline"
-                          x-on:submit.prevent="if(confirm('Confirma a ação em lote?')) { $el.submit() }">
+                          x-on:submit.prevent="Swal.fire({ title: 'Aprovar inscrições?', text: 'As inscrições selecionadas serão aprovadas e os participantes notificados.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, aprovar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                         @csrf
                         <input type="hidden" name="action" value="aprovar">
                         <template x-for="id in selectedIds" :key="id">
@@ -108,7 +108,7 @@
                         </button>
                     </form>
                     <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline"
-                          x-on:submit.prevent="if(confirm('Confirma a ação em lote?')) { $el.submit() }">
+                          x-on:submit.prevent="Swal.fire({ title: 'Mover para fila de espera?', text: 'As inscrições selecionadas serão movidas para a fila de espera.', icon: 'question', showCancelButton: true, confirmButtonColor: '#f59e0b', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, mover', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                         @csrf
                         <input type="hidden" name="action" value="fila_espera">
                         <template x-for="id in selectedIds" :key="id">
@@ -119,13 +119,13 @@
                         </button>
                     </form>
                     <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline"
-                          x-on:submit.prevent="if(confirm('Tem certeza que deseja rejeitar as inscrições selecionadas? Os participantes serão notificados.')) { $el.submit() }">
+                          x-on:submit.prevent="Swal.fire({ title: 'Rejeitar inscrições?', text: 'As inscrições selecionadas serão rejeitadas e os participantes serão notificados.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                         @csrf
                         <input type="hidden" name="action" value="rejeitar">
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="submit" class="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700">
+                        <button type="submit" style="background-color:#dc2626;color:#fff;" class="px-3 py-1.5 text-xs font-medium rounded-lg hover:opacity-80">
                             Rejeitar Selecionados
                         </button>
                     </form>

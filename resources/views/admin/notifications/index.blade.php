@@ -128,7 +128,7 @@
                                         <div class="flex items-center justify-center gap-2">
                                             @if($notification->status === 'failed' || $notification->status === 'skipped')
                                                 <form method="POST" action="{{ route('admin.notificacoes.resend', $notification) }}" class="inline"
-                                                      x-on:submit.prevent="if(confirm('Reenviar esta notificação?')) $el.submit()">
+                                                      x-on:submit.prevent="Swal.fire({ title: 'Reenviar notificação?', text: 'A notificação será reenviada ao destinatário.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, reenviar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
                                                     @csrf
                                                     <button type="submit" class="px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700" title="Reenviar">
                                                         Reenviar
