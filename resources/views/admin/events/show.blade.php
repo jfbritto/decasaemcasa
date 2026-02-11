@@ -5,16 +5,16 @@
 @section('content')
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
     <div class="px-4 sm:px-0">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">{{ $event->city ?? $event->title }}</h1>
-            <div class="flex gap-2">
-                <a target="_blank" href="{{ route('admin.events.participantes-pdf', $event) }}" style="background-color:#dc2626;color:#fff;" class="px-4 py-2 rounded-md hover:opacity-80">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ $event->city ?? $event->title }}</h1>
+            <div class="flex flex-wrap gap-2">
+                <a target="_blank" href="{{ route('admin.events.participantes-pdf', $event) }}" style="background-color:#dc2626;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
                     Lista de Presença
                 </a>
-                <a href="{{ route('admin.events.edit', $event) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                <a href="{{ route('admin.events.edit', $event) }}" class="bg-indigo-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-indigo-700 text-center">
                     Editar
                 </a>
-                <a href="{{ route('admin.events.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                <a href="{{ route('admin.events.index') }}" class="bg-gray-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-gray-700 text-center">
                     Voltar
                 </a>
             </div>
@@ -30,9 +30,9 @@
         @endif
 
         {{-- Detalhes do Encontro --}}
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold">Informações do Encontro</h2>
+                <h2 class="text-lg sm:text-xl font-semibold">Informações do Encontro</h2>
                 <span class="px-3 py-1 rounded-full text-xs font-semibold
                     @if($event->status === 'published') bg-green-100 text-green-800
                     @elseif($event->status === 'draft') bg-gray-100 text-gray-800
@@ -84,39 +84,40 @@
         </div>
 
         {{-- Estatísticas de Inscrições --}}
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-indigo-500">
-                <p class="text-2xl font-bold text-indigo-600">{{ $inscriptionStats['total'] }}</p>
-                <p class="text-xs text-gray-500 mt-1">Total Inscritos</p>
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 text-center border-t-4 border-indigo-500">
+                <p class="text-xl sm:text-2xl font-bold text-indigo-600">{{ $inscriptionStats['total'] }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Total</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-yellow-400">
-                <p class="text-2xl font-bold text-yellow-700">{{ $inscriptionStats['pendente'] }}</p>
-                <p class="text-xs text-gray-500 mt-1">Pendentes</p>
+            <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 text-center border-t-4 border-yellow-400">
+                <p class="text-xl sm:text-2xl font-bold text-yellow-700">{{ $inscriptionStats['pendente'] }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Pendentes</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-blue-400">
-                <p class="text-2xl font-bold text-blue-700">{{ $inscriptionStats['aprovado'] }}</p>
-                <p class="text-xs text-gray-500 mt-1">Aprovados</p>
+            <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 text-center border-t-4 border-blue-400">
+                <p class="text-xl sm:text-2xl font-bold text-blue-700">{{ $inscriptionStats['aprovado'] }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Aprovados</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-green-400">
-                <p class="text-2xl font-bold text-green-700">{{ $inscriptionStats['confirmado'] }}</p>
-                <p class="text-xs text-gray-500 mt-1">Confirmados</p>
+            <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 text-center border-t-4 border-green-400">
+                <p class="text-xl sm:text-2xl font-bold text-green-700">{{ $inscriptionStats['confirmado'] }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Confirmados</p>
             </div>
-            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-orange-400">
-                <p class="text-2xl font-bold text-orange-700">{{ $inscriptionStats['fila_de_espera'] }}</p>
-                <p class="text-xs text-gray-500 mt-1">Fila de Espera</p>
+            <div class="bg-white rounded-lg shadow-md p-3 sm:p-4 text-center border-t-4 border-orange-400">
+                <p class="text-xl sm:text-2xl font-bold text-orange-700">{{ $inscriptionStats['fila_de_espera'] }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-1">Fila Espera</p>
             </div>
         </div>
 
         {{-- Lista de Inscrições do evento --}}
-        <div class="mt-6 bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-xl font-semibold">Inscrições deste Encontro</h2>
+        <div class="mt-6 bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                <h2 class="text-lg sm:text-xl font-semibold">Inscrições deste Encontro</h2>
                 <a href="{{ route('admin.inscricoes.index', ['city' => $event->city]) }}" class="text-sm text-indigo-600 hover:text-indigo-800">
-                    Ver todas com filtro
+                    Ver todas com filtro →
                 </a>
             </div>
             @if($event->inscriptions->count() > 0)
-                <div class="overflow-x-auto">
+                {{-- Tabela para desktop --}}
+                <div class="hidden sm:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead class="bg-gray-100">
                             <tr>
@@ -154,6 +155,26 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+
+                {{-- Cards para mobile --}}
+                <div class="sm:hidden space-y-3">
+                    @foreach($event->inscriptions->sortByDesc('created_at') as $inscription)
+                        <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="block bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-medium text-gray-900">{{ $inscription->full_name }}</p>
+                                <span class="px-2 py-0.5 text-xs rounded-full font-medium
+                                    @if($inscription->isPending()) bg-yellow-100 text-yellow-800
+                                    @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
+                                    @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
+                                    @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
+                                    @endif">
+                                    {{ $inscription->status_label }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">{{ $inscription->whatsapp }}</p>
+                        </a>
+                    @endforeach
                 </div>
             @else
                 <p class="text-gray-500">Nenhuma inscrição para este encontro.</p>
