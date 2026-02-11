@@ -11,25 +11,44 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // Cards de ação rápida
         $stats = [
-            'total_events' => Event::count(),
-            'active_events' => Event::where('status', 'published')->count(),
+            'pending' => Inscription::where('status', 'pendente')->count(),
+            'awaiting_proof' => Inscription::where('status', 'aprovado')->whereNull('payment_proof')->count(),
+            'proof_sent' => Inscription::where('status', 'aprovado')->whereNotNull('payment_proof')->count(),
+            'confirmed' => Inscription::where('status', 'confirmado')->count(),
+            'waitlisted' => Inscription::where('status', 'fila_de_espera')->count(),
             'total_inscriptions' => Inscription::count(),
-            'pending_inscriptions' => Inscription::where('status', 'pendente')->count(),
-            'approved_inscriptions' => Inscription::where('status', 'aprovado')->count(),
-            'confirmed_inscriptions' => Inscription::where('status', 'confirmado')->count(),
-            'waitlisted_inscriptions' => Inscription::where('status', 'fila_de_espera')->count(),
         ];
 
+        // Próximo encontro (destaque)
+        $next_event = Event::where('status', 'published')
+            ->where('date', '>=', now())
+            ->orderBy('date', 'asc')
+            ->withCount('inscriptions')
+            ->first();
+
+        // Encontros ativos (publicados e futuros)
+        $active_events = Event::where('status', 'published')
+            ->where('date', '>=', now())
+            ->orderBy('date', 'asc')
+            ->withCount('inscriptions')
+            ->get();
+
+        // Contadores de encontros
+        $events_counts = [
+            'active' => $active_events->count(),
+            'past' => Event::where('date', '<', now())->count(),
+            'total' => Event::count(),
+        ];
+
+        // Inscrições recentes
         $recent_inscriptions = Inscription::with('event')
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
-        $events_by_status = Event::select('status', DB::raw('count(*) as total'))
-            ->groupBy('status')
-            ->get();
-
+        // Inscrições por cidade
         $inscriptions_by_city = Inscription::join('events', 'inscriptions.event_id', '=', 'events.id')
             ->select('events.id as event_id', 'events.city', DB::raw('COUNT(*) as count'))
             ->whereNotNull('events.city')
@@ -38,6 +57,13 @@ class DashboardController extends Controller
             ->orderBy('count', 'desc')
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recent_inscriptions', 'events_by_status', 'inscriptions_by_city'));
+        return view('admin.dashboard', compact(
+            'stats',
+            'next_event',
+            'active_events',
+            'events_counts',
+            'recent_inscriptions',
+            'inscriptions_by_city'
+        ));
     }
 }
