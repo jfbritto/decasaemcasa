@@ -83,9 +83,9 @@
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Ações</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach($notifications as $notification)
-                                <tr class="hover:bg-gray-50" x-data="{ showDetails: false }">
+                        @foreach($notifications as $notification)
+                        <tbody x-data="{ showDetails: false }" class="divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-sm text-gray-700">
                                         @php
                                             $channelLabels = [
@@ -136,13 +136,13 @@
                                                 </form>
                                             @endif
                                             <button @click="showDetails = !showDetails" class="px-3 py-1 border border-gray-300 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50" title="Ver detalhes">
-                                                Detalhes
+                                                <span x-text="showDetails ? 'Ocultar' : 'Detalhes'"></span>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                                 {{-- Detalhes expandíveis --}}
-                                <tr x-show="showDetails" x-transition>
+                                <tr x-show="showDetails" x-transition x-cloak>
                                     <td colspan="6" class="px-4 py-3 bg-gray-50">
                                         <div class="space-y-2">
                                             <div>
@@ -158,8 +158,8 @@
                                         </div>
                                     </td>
                                 </tr>
-                            @endforeach
                         </tbody>
+                        @endforeach
                     </table>
                 </div>
 
