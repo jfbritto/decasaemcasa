@@ -58,8 +58,6 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        $event->load('inscriptions');
-
         $inscriptionStats = [
             'total' => $event->inscriptions()->count(),
             'pendente' => $event->inscriptions()->where('status', 'pendente')->count(),
@@ -68,7 +66,11 @@ class EventController extends Controller
             'fila_de_espera' => $event->inscriptions()->where('status', 'fila_de_espera')->count(),
         ];
 
-        return view('admin.events.show', compact('event', 'inscriptionStats'));
+        $inscriptions = $event->inscriptions()
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return view('admin.events.show', compact('event', 'inscriptionStats', 'inscriptions'));
     }
 
     public function edit(Event $event)

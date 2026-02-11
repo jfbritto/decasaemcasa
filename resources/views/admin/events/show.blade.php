@@ -141,7 +141,7 @@
                     Ver todas com filtro →
                 </a>
             </div>
-            @if($event->inscriptions->count() > 0)
+            @if($inscriptions->count() > 0)
                 {{-- Tabela para desktop --}}
                 <div class="hidden sm:block overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-300">
@@ -153,7 +153,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            @foreach($event->inscriptions->sortByDesc('created_at') as $inscription)
+                            @foreach($inscriptions as $inscription)
                                 <tr class="hover:bg-gray-50 cursor-pointer transition-colors"
                                     onclick="window.location='{{ route('admin.inscricoes.show', $inscription) }}'">
                                     <td class="px-4 py-3 text-sm font-medium text-gray-900">
@@ -178,7 +178,7 @@
 
                 {{-- Cards para mobile --}}
                 <div class="sm:hidden space-y-3">
-                    @foreach($event->inscriptions->sortByDesc('created_at') as $inscription)
+                    @foreach($inscriptions as $inscription)
                         <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="block bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm font-medium text-gray-900">{{ $inscription->full_name }}</p>
@@ -194,6 +194,11 @@
                             <p class="text-xs text-gray-500 mt-1">{{ $inscription->whatsapp }}</p>
                         </a>
                     @endforeach
+                </div>
+
+                {{-- Paginação --}}
+                <div class="mt-4 border-t pt-4">
+                    {{ $inscriptions->links() }}
                 </div>
             @else
                 <p class="text-gray-500">Nenhuma inscrição para este encontro.</p>
