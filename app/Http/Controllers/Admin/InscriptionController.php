@@ -37,6 +37,15 @@ class InscriptionController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filtro por comprovante
+        if ($request->filled('comprovante')) {
+            if ($request->comprovante === 'enviado') {
+                $query->whereNotNull('payment_proof');
+            } elseif ($request->comprovante === 'pendente') {
+                $query->whereNull('payment_proof');
+            }
+        }
+
         // Busca por nome
         if ($request->filled('search')) {
             $search = $request->search;

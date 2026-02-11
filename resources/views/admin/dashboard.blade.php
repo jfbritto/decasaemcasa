@@ -18,7 +18,7 @@
                 <p class="text-xs text-yellow-500 mt-1">aguardando curadoria</p>
             </a>
 
-            <a href="{{ route('admin.inscricoes.index', ['status' => 'aprovado']) }}" class="bg-blue-50 border border-blue-200 rounded-xl shadow p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all group">
+            <a href="{{ route('admin.inscricoes.index', ['status' => 'aprovado', 'comprovante' => 'pendente']) }}" class="bg-blue-50 border border-blue-200 rounded-xl shadow p-4 sm:p-5 hover:shadow-md hover:border-blue-300 transition-all group">
                 <div class="flex items-center justify-between mb-1">
                     <p class="text-sm text-blue-600 font-medium">Aguardando Pix</p>
                     <svg class="w-4 h-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -27,7 +27,7 @@
                 <p class="text-xs text-blue-500 mt-1">sem comprovante</p>
             </a>
 
-            <a href="{{ route('admin.inscricoes.index', ['status' => 'aprovado']) }}" class="bg-indigo-50 border border-indigo-200 rounded-xl shadow p-4 sm:p-5 hover:shadow-md hover:border-indigo-300 transition-all group">
+            <a href="{{ route('admin.inscricoes.index', ['status' => 'aprovado', 'comprovante' => 'enviado']) }}" class="bg-indigo-50 border border-indigo-200 rounded-xl shadow p-4 sm:p-5 hover:shadow-md hover:border-indigo-300 transition-all group">
                 <div class="flex items-center justify-between mb-1">
                     <p class="text-sm text-indigo-600 font-medium">Comprovante Enviado</p>
                     <svg class="w-4 h-4 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
