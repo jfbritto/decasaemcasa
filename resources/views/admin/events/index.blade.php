@@ -27,7 +27,8 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-300">
                     @foreach($events as $event)
-                        <tr class="hover:bg-gray-50 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors cursor-pointer"
+                            onclick="if(!event.target.closest('a')){window.location='{{ route('admin.events.show', $event) }}'}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
                                     <svg class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -67,8 +68,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('admin.events.show', $event) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold mr-3">Ver</a>
-                                <a href="{{ route('admin.events.edit', $event) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold mr-3">Editar</a>
+                                <a href="{{ route('admin.events.edit', $event) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">Editar</a>
                             </td>
                         </tr>
                     @endforeach
