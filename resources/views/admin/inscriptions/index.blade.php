@@ -78,7 +78,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Nome</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Cidade/Data</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Encontro</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">WhatsApp</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Comprovante</th>
@@ -98,9 +98,10 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-sm">
-                                        <span class="font-medium text-gray-900">{{ $inscription->event->city ?? $inscription->event->title }}</span>
-                                        <br>
-                                        <span class="text-xs text-gray-500">{{ $inscription->event->date->format('d/m/Y') }}</span>
+                                        <a href="{{ route('admin.events.show', $inscription->event) }}" class="font-medium text-indigo-600 hover:text-indigo-800">
+                                            {{ $inscription->event->city ?? $inscription->event->title }}
+                                        </a>
+                                        <p class="text-xs text-gray-500">{{ $inscription->event->date->format('d/m/Y') }}</p>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-700">{{ $inscription->whatsapp }}</td>
                                     <td class="px-4 py-3">
