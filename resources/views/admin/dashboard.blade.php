@@ -72,12 +72,12 @@
                 </div>
                 <div class="divide-y">
                     @forelse($inscriptions_by_city as $item)
-                        <div class="px-6 py-3 flex items-center justify-between">
-                            <span class="font-medium text-gray-900">{{ $item->city }}</span>
+                        <a href="{{ route('admin.events.show', $item->event_id) }}" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                            <span class="font-medium text-indigo-600 group-hover:text-indigo-800">{{ $item->city }}</span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
                                 {{ $item->count }}
                             </span>
-                        </div>
+                        </a>
                     @empty
                         <div class="px-6 py-8 text-center text-gray-500">Nenhum dado disponível.</div>
                     @endforelse

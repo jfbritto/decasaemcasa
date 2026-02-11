@@ -31,9 +31,10 @@ class DashboardController extends Controller
             ->get();
 
         $inscriptions_by_city = Inscription::join('events', 'inscriptions.event_id', '=', 'events.id')
-            ->select('events.city', DB::raw('COUNT(*) as count'))
+            ->select('events.id as event_id', 'events.city', DB::raw('COUNT(*) as count'))
             ->whereNotNull('events.city')
-            ->groupBy('events.city')
+            ->whereNull('events.deleted_at')
+            ->groupBy('events.id', 'events.city')
             ->orderBy('count', 'desc')
             ->get();
 
