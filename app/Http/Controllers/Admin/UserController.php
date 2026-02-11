@@ -61,24 +61,25 @@ class UserController extends Controller
     }
 
     /**
-     * Remover admin (não pode remover a si mesmo).
+     * Remover a própria conta (admin só pode remover a si mesmo).
      */
     public function destroy(User $user)
     {
-        if ($user->id === Auth::id()) {
+        if ($user->id !== Auth::id()) {
             return redirect()->back()
-                ->with('error', 'Você não pode remover sua própria conta.');
+                ->with('error', 'Você só pode remover sua própria conta.');
         }
 
-        if (! $user->isAdmin()) {
+        if (User::where('role', 'admin')->count() <= 1) {
             return redirect()->back()
-                ->with('error', 'Usuário não é administrador.');
+                ->with('error', 'Não é possível remover o único administrador do sistema.');
         }
 
+        Auth::logout();
         $user->delete();
 
-        return redirect()->route('admin.usuarios.index')
-            ->with('success', 'Administrador removido com sucesso!');
+        return redirect()->route('login')
+            ->with('success', 'Sua conta foi removida com sucesso.');
     }
 
     /**
