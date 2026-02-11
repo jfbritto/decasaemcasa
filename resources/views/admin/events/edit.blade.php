@@ -110,6 +110,20 @@
                 </button>
             </div>
         </form>
+
+        {{-- Zona de Perigo --}}
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-red-500">
+            <h2 class="text-lg font-bold text-red-700 mb-2">Zona de Perigo</h2>
+            <p class="text-sm text-gray-600 mb-4">Excluir este encontro removerá todas as inscrições associadas. Esta ação não pode ser desfeita.</p>
+            <form method="POST" action="{{ route('admin.events.destroy', $event) }}"
+                  x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja EXCLUIR o encontro {{ $event->city ?? $event->title }}? Todas as inscrições serão perdidas. Esta ação é irreversível.')) $el.submit()">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Excluir Encontro
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

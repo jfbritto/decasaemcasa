@@ -142,6 +142,9 @@
                                 <a href="{{ route('admin.inscricoes.index') }}" class="{{ request()->routeIs('admin.inscricoes.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
                                     Inscrições
                                 </a>
+                                <a href="{{ route('admin.notificacoes.index') }}" class="{{ request()->routeIs('admin.notificacoes.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                    Notificações
+                                </a>
                             @endif
                         @else
                             {{-- <a href="{{ route('inscricao.create') }}" class="{{ request()->routeIs('inscricao.*') ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
@@ -153,7 +156,12 @@
                 <!-- Menu Desktop - Direita -->
                 <div class="hidden sm:flex sm:items-center">
                     @auth
-                        <span class="text-gray-700 mr-4 text-sm">{{ auth()->user()->name }}</span>
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.usuarios.index') }}" class="text-gray-500 hover:text-gray-700 mr-4 text-sm">Admins</a>
+                            <a href="{{ route('admin.profile') }}" class="text-gray-500 hover:text-gray-700 mr-4 text-sm">{{ auth()->user()->name }}</a>
+                        @else
+                            <span class="text-gray-700 mr-4 text-sm">{{ auth()->user()->name }}</span>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" class="text-gray-500 hover:text-gray-700 text-sm">Sair</button>
@@ -192,6 +200,9 @@
                         <a href="{{ route('admin.inscricoes.index') }}" @click="open = false" class="{{ request()->routeIs('admin.inscricoes.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
                             Inscrições
                         </a>
+                        <a href="{{ route('admin.notificacoes.index') }}" @click="open = false" class="{{ request()->routeIs('admin.notificacoes.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                            Notificações
+                        </a>
                     @endif
                 @else
                     {{-- <a href="{{ route('inscricao.create') }}" @click="open = false" class="{{ request()->routeIs('inscricao.*') ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700' }} block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
@@ -206,6 +217,14 @@
                         <div class="text-sm font-medium text-gray-500">{{ auth()->user()->email }}</div>
                     </div>
                     <div class="space-y-1">
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.profile') }}" @click="open = false" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300">
+                                Meu Perfil
+                            </a>
+                            <a href="{{ route('admin.usuarios.index') }}" @click="open = false" class="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300">
+                                Administradores
+                            </a>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit" @click="open = false" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 hover:border-gray-300">

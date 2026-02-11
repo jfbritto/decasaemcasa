@@ -18,11 +18,11 @@ class RedirectIfAuthenticated
                 if (Auth::user()->isAdmin()) {
                     return redirect()->route('admin.dashboard');
                 }
-                return redirect()->route('events.index');
+
+                return redirect()->route('inscricao.create');
             }
         }
 
         return $next($request);
     }
 }
-

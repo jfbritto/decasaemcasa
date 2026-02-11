@@ -41,22 +41,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->role === 'client';
     }
 
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
-
-    public function tickets()
-    {
-        return $this->hasMany(Ticket::class);
-    }
-
     /**
      * Send the email verification notification.
      */
     public function sendEmailVerificationNotification()
     {
-        $this->notify(new \App\Notifications\VerifyEmail());
+        $this->notify(new \App\Notifications\VerifyEmail);
     }
 
     /**
@@ -67,4 +57,3 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new \App\Notifications\ResetPassword($token));
     }
 }
-

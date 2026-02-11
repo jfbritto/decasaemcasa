@@ -20,6 +20,8 @@
                 @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
                 @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
                 @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
+                @elseif($inscription->isRejected()) bg-red-100 text-red-800
+                @elseif($inscription->isCancelled()) bg-gray-100 text-gray-800
                 @endif">
                 {{ $inscription->status_label }}
             </span>
@@ -168,6 +170,13 @@
                                     Mover para Fila de Espera
                                 </button>
                             </form>
+                            <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}"
+                                  x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja rejeitar esta inscrição? O participante será notificado.')) $el.submit()">
+                                @csrf
+                                <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors">
+                                    Rejeitar Inscrição
+                                </button>
+                            </form>
                         @elseif($inscription->isApproved())
                             @if($inscription->payment_proof)
                                 <form method="POST" action="{{ route('admin.inscricoes.confirmar', $inscription) }}">
@@ -177,9 +186,15 @@
                                     </button>
                                 </form>
                             @else
-                                <div class="text-center py-3 bg-yellow-50 rounded-xl border border-yellow-200">
+                                <div class="text-center py-3 bg-yellow-50 rounded-xl border border-yellow-200 mb-3">
                                     <p class="text-sm text-yellow-700">Aguardando envio do comprovante pelo participante.</p>
                                 </div>
+                                <form method="POST" action="{{ route('admin.inscricoes.send-reminder', $inscription) }}">
+                                    @csrf
+                                    <button type="submit" class="w-full py-2.5 bg-amber-500 text-white font-medium rounded-xl hover:bg-amber-600 transition-colors">
+                                        Enviar Lembrete
+                                    </button>
+                                </form>
                             @endif
                         @elseif($inscription->isWaitlisted())
                             <form method="POST" action="{{ route('admin.inscricoes.aprovar', $inscription) }}">
@@ -188,12 +203,27 @@
                                     Aprovar da Fila de Espera
                                 </button>
                             </form>
+                            <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}"
+                                  x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja rejeitar esta inscrição? O participante será notificado.')) $el.submit()">
+                                @csrf
+                                <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors">
+                                    Rejeitar Inscrição
+                                </button>
+                            </form>
                         @elseif($inscription->isConfirmed())
                             <div class="text-center py-3 bg-green-50 rounded-xl border border-green-200">
                                 <p class="text-sm text-green-700 font-medium">Participação confirmada!</p>
                                 @if($inscription->confirmed_at)
                                     <p class="text-xs text-green-600 mt-1">Confirmado em {{ $inscription->confirmed_at->format('d/m/Y H:i') }}</p>
                                 @endif
+                            </div>
+                        @elseif($inscription->isRejected())
+                            <div class="text-center py-3 bg-red-50 rounded-xl border border-red-200">
+                                <p class="text-sm text-red-700 font-medium">Inscrição rejeitada</p>
+                            </div>
+                        @elseif($inscription->isCancelled())
+                            <div class="text-center py-3 bg-gray-50 rounded-xl border border-gray-200">
+                                <p class="text-sm text-gray-700 font-medium">Inscrição cancelada pelo participante</p>
                             </div>
                         @endif
                     </div>

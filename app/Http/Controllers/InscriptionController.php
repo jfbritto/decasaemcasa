@@ -6,7 +6,6 @@ use App\Models\Event;
 use App\Models\Inscription;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class InscriptionController extends Controller
@@ -43,6 +42,7 @@ class InscriptionController extends Controller
                 $cpf = preg_replace('/\D/', '', $value);
                 if (strlen($cpf) !== 11) {
                     $fail('O CPF deve conter 11 dígitos.');
+
                     return;
                 }
                 if (! $this->validateCpf($cpf)) {
@@ -165,6 +165,30 @@ class InscriptionController extends Controller
         return redirect()
             ->route('inscricao.status', $token)
             ->with('success', 'Comprovante enviado com sucesso! Aguarde a confirmação da equipe.');
+    }
+
+    /**
+     * Cancelar inscrição pelo participante.
+     */
+    public function cancel(Request $request, string $token)
+    {
+        $inscription = Inscription::where('token', $token)->firstOrFail();
+
+        // Só pode cancelar se não estiver já cancelada ou rejeitada
+        if ($inscription->isCancelled() || $inscription->isRejected()) {
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'Esta inscrição já está cancelada.');
+        }
+
+        $inscription->cancel();
+
+        // Notificar
+        $this->notificationService->notifyInscriptionCancelled($inscription);
+
+        return redirect()
+            ->route('inscricao.status', $token)
+            ->with('success', 'Sua inscrição foi cancelada com sucesso.');
     }
 
     /**

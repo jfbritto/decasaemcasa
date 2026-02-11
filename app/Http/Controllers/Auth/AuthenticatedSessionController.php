@@ -26,19 +26,20 @@ class AuthenticatedSessionController extends Controller
             $user = Auth::user();
 
             // Verificar se o email foi verificado (exceto para admins)
-            if (!$user->isAdmin() && !$user->hasVerifiedEmail()) {
+            if (! $user->isAdmin() && ! $user->hasVerifiedEmail()) {
                 Auth::logout();
+
                 return redirect()->route('verification.notice')
                     ->with('error', 'Por favor, verifique seu e-mail antes de fazer login. Verifique sua caixa de entrada.');
             }
 
             if ($user->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'))
-                    ->with('success', 'Bem-vindo, ' . $user->name . '!');
+                    ->with('success', 'Bem-vindo, '.$user->name.'!');
             }
 
-            return redirect()->intended(route('events.index'))
-                ->with('success', 'Bem-vindo, ' . $user->name . '!');
+            return redirect()->intended(route('inscricao.create'))
+                ->with('success', 'Bem-vindo, '.$user->name.'!');
         }
 
         return back()->withErrors([
@@ -56,4 +57,3 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 }
-

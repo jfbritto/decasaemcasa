@@ -76,6 +76,16 @@ class Inscription extends Model
         return $this->status === 'fila_de_espera';
     }
 
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejeitado';
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelado';
+    }
+
     // Status transitions
 
     public function approve(): void
@@ -101,6 +111,24 @@ class Inscription extends Model
         $this->event->increment('confirmed_count');
     }
 
+    public function reject(): void
+    {
+        $this->status = 'rejeitado';
+        $this->save();
+    }
+
+    public function cancel(): void
+    {
+        $previousStatus = $this->status;
+        $this->status = 'cancelado';
+        $this->save();
+
+        // Decrementar contador se estava confirmado
+        if ($previousStatus === 'confirmado') {
+            $this->event->decrement('confirmed_count');
+        }
+    }
+
     // Helpers
 
     public function getStatusLabelAttribute(): string
@@ -110,6 +138,8 @@ class Inscription extends Model
             'aprovado' => 'Aprovado',
             'confirmado' => 'Confirmado',
             'fila_de_espera' => 'Fila de Espera',
+            'rejeitado' => 'Rejeitado',
+            'cancelado' => 'Cancelado',
             default => $this->status,
         };
     }
@@ -121,6 +151,8 @@ class Inscription extends Model
             'aprovado' => 'blue',
             'confirmado' => 'green',
             'fila_de_espera' => 'orange',
+            'rejeitado' => 'red',
+            'cancelado' => 'gray',
             default => 'gray',
         };
     }
@@ -133,7 +165,7 @@ class Inscription extends Model
         $cpf = preg_replace('/\D/', '', $this->cpf);
 
         if (strlen($cpf) === 11) {
-            return substr($cpf, 0, 3) . '.' . substr($cpf, 3, 3) . '.' . substr($cpf, 6, 3) . '-' . substr($cpf, 9, 2);
+            return substr($cpf, 0, 3).'.'.substr($cpf, 3, 3).'.'.substr($cpf, 6, 3).'-'.substr($cpf, 9, 2);
         }
 
         return $this->cpf;

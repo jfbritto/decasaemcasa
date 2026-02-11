@@ -16,6 +16,12 @@
                 <a href="{{ route('admin.events.edit', $event) }}" class="bg-indigo-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-indigo-700 text-center">
                     Editar
                 </a>
+                <form method="POST" action="{{ route('admin.events.duplicate', $event) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="bg-amber-500 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-amber-600 text-center">
+                        Duplicar
+                    </button>
+                </form>
                 <a href="{{ route('admin.events.index') }}" class="bg-gray-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-gray-700 text-center">
                     Voltar
                 </a>
@@ -166,6 +172,8 @@
                                             @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
                                             @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
                                             @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
+                                            @elseif($inscription->isRejected()) bg-red-100 text-red-800
+                                            @elseif($inscription->isCancelled()) bg-gray-100 text-gray-800
                                             @endif">
                                             {{ $inscription->status_label }}
                                         </span>
@@ -187,6 +195,8 @@
                                     @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
                                     @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
                                     @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
+                                    @elseif($inscription->isRejected()) bg-red-100 text-red-800
+                                    @elseif($inscription->isCancelled()) bg-gray-100 text-gray-800
                                     @endif">
                                     {{ $inscription->status_label }}
                                 </span>

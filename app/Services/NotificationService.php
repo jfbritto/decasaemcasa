@@ -194,7 +194,7 @@ class NotificationService
 
         // WhatsApp
         $wa = "Olá {$inscription->full_name}! As vagas para o encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) já foram preenchidas. ";
-        $wa .= "Você está na nossa *Fila de Espera* e avisaremos caso surja uma vaga. ";
+        $wa .= 'Você está na nossa *Fila de Espera* e avisaremos caso surja uma vaga. ';
         $wa .= "Acompanhe aqui: {$statusUrl}";
 
         $this->sendWhatsApp(
@@ -202,6 +202,78 @@ class NotificationService
             $wa,
             null,
             'inscription_waitlisted',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Rejeição (status: rejeitado)
+     */
+    public function notifyInscriptionRejected(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        // Email
+        $subject = 'Sobre sua inscrição - De Casa em Casa';
+        $message = "Inscrição não aprovada para {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'inscription_rejected',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-rejected',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+        );
+
+        // WhatsApp
+        $wa = "Olá {$inscription->full_name}! Agradecemos muito o interesse em participar do encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}). ";
+        $wa .= 'Infelizmente, não conseguimos incluir sua participação nesta edição. ';
+        $wa .= 'Fique de olho nas próximas edições! Abraço da equipe De Casa em Casa.';
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'inscription_rejected',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Cancelamento pelo participante (status: cancelado)
+     */
+    public function notifyInscriptionCancelled(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+
+        // Email
+        $subject = 'Inscrição cancelada - De Casa em Casa';
+        $message = "Inscrição cancelada por {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'inscription_cancelled',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-cancelled',
+            ['inscription' => $inscription, 'event' => $event]
+        );
+
+        // WhatsApp
+        $wa = "Olá {$inscription->full_name}! Sua inscrição para o encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) foi cancelada conforme solicitado. ";
+        $wa .= 'Esperamos te ver em uma próxima edição! Abraço da equipe De Casa em Casa.';
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'inscription_cancelled',
             ['inscription_id' => $inscription->id]
         );
     }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 
 class EmailVerificationController extends Controller
@@ -24,13 +23,15 @@ class EmailVerificationController extends Controller
     {
         $user = \App\Models\User::findOrFail($request->route('id'));
 
-        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
+        if (! hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
             return redirect()->route('verification.notice')
                 ->with('error', 'Link de verificação inválido.');
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect()->route('events.index')
+            $redirect = $user->isAdmin() ? route('admin.dashboard') : route('inscricao.create');
+
+            return redirect($redirect)
                 ->with('info', 'Seu e-mail já foi verificado.');
         }
 
@@ -38,8 +39,10 @@ class EmailVerificationController extends Controller
             event(new Verified($user));
         }
 
-        return redirect()->route('events.index')
-            ->with('success', 'E-mail verificado com sucesso! Agora você pode garantir seus lugares nos encontros.');
+        $redirect = $user->isAdmin() ? route('admin.dashboard') : route('inscricao.create');
+
+        return redirect($redirect)
+            ->with('success', 'E-mail verificado com sucesso!');
     }
 
     /**
@@ -48,7 +51,9 @@ class EmailVerificationController extends Controller
     public function resend(Request $request)
     {
         if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->route('events.index')
+            $redirect = $request->user()->isAdmin() ? route('admin.dashboard') : route('inscricao.create');
+
+            return redirect($redirect)
                 ->with('info', 'Seu e-mail já foi verificado.');
         }
 

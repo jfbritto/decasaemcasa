@@ -48,6 +48,16 @@
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
                         Fila de Espera
                     </span>
+                @elseif($inscription->isRejected())
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                        Não Aprovada
+                    </span>
+                @elseif($inscription->isCancelled())
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                        Cancelada
+                    </span>
                 @endif
             </div>
 
@@ -70,6 +80,8 @@
                 @elseif($inscription->isApproved()) bg-blue-50 border border-blue-200
                 @elseif($inscription->isConfirmed()) bg-green-50 border border-green-200
                 @elseif($inscription->isWaitlisted()) bg-orange-50 border border-orange-200
+                @elseif($inscription->isRejected()) bg-red-50 border border-red-200
+                @elseif($inscription->isCancelled()) bg-gray-50 border border-gray-200
                 @endif">
 
                 @if($inscription->isPending())
@@ -87,6 +99,14 @@
                 @elseif($inscription->isWaitlisted())
                     <p class="text-gray-700 leading-relaxed">
                         Recebemos sua história e ficamos muito felizes! No momento, as cadeiras para este encontro já foram preenchidas. Vamos manter seu contato em nossa "Fila de Espera"; caso haja alguma desistência ou uma nova data por perto, avisaremos você.
+                    </p>
+                @elseif($inscription->isRejected())
+                    <p class="text-gray-700 leading-relaxed">
+                        Agradecemos muito o interesse em participar do encontro De Casa em Casa. Infelizmente, não conseguimos incluir sua participação nesta edição. Fique de olho nas próximas edições!
+                    </p>
+                @elseif($inscription->isCancelled())
+                    <p class="text-gray-700 leading-relaxed">
+                        Sua inscrição foi cancelada. Esperamos te ver em uma próxima edição!
                     </p>
                 @endif
             </div>
@@ -198,6 +218,31 @@
                 </div>
             @endif
         </div>
+
+        {{-- Botão de Cancelamento --}}
+        @if(!$inscription->isCancelled() && !$inscription->isRejected() && !$inscription->isConfirmed())
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6" x-data="{ confirmCancel: false }">
+            <div x-show="!confirmCancel">
+                <button @click="confirmCancel = true" class="w-full py-3 border-2 border-red-300 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors text-sm">
+                    Cancelar minha inscrição
+                </button>
+            </div>
+            <div x-show="confirmCancel" x-transition class="space-y-3">
+                <p class="text-sm text-gray-700 text-center">Tem certeza que deseja cancelar sua inscrição? Esta ação não pode ser desfeita.</p>
+                <div class="flex gap-3">
+                    <button @click="confirmCancel = false" class="flex-1 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">
+                        Não, manter
+                    </button>
+                    <form method="POST" action="{{ route('inscricao.cancel', $inscription->token) }}" class="flex-1">
+                        @csrf
+                        <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors text-sm">
+                            Sim, cancelar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endif
 
         {{-- Link para salvar --}}
         <div class="text-center">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
 use App\Models\Event;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -50,7 +51,10 @@ class EventController extends Controller
             $validated['image'] = $request->file('image')->store('events', 'public');
         }
 
-        Event::create($validated);
+        $event = Event::create($validated);
+
+        $eventName = $event->city ?? $event->title;
+        ActivityLog::log('criar_evento', "Criou o encontro {$eventName}", $event);
 
         return redirect()->route('admin.events.index')
             ->with('success', 'Encontro criado com sucesso!');
@@ -98,23 +102,43 @@ class EventController extends Controller
 
         $event->update($validated);
 
+        $eventName = $event->city ?? $event->title;
+        ActivityLog::log('atualizar_evento', "Atualizou o encontro {$eventName}", $event);
+
         return redirect()->route('admin.events.index')
             ->with('success', 'Encontro atualizado com sucesso!');
     }
 
     public function destroy(Event $event)
     {
+        $eventName = $event->city ?? $event->title;
+        ActivityLog::log('excluir_evento', "Excluiu o encontro {$eventName}", $event);
+
         $event->delete();
 
         return redirect()->route('admin.events.index')
             ->with('success', 'Encontro excluído com sucesso!');
     }
 
+    public function duplicate(Event $event)
+    {
+        $newEvent = $event->replicate(['slug', 'confirmed_count', 'deleted_at']);
+        $newEvent->slug = Str::slug($event->title.'-'.Str::random(4));
+        $newEvent->title = $event->title.' (Cópia)';
+        $newEvent->confirmed_count = 0;
+        $newEvent->status = 'draft';
+        $newEvent->date = now()->addMonth();
+        $newEvent->save();
+
+        return redirect()->route('admin.events.edit', $newEvent)
+            ->with('success', 'Encontro duplicado com sucesso! Edite os dados conforme necessário.');
+    }
+
     public function exportPdf(Event $event)
     {
         $event->load(['inscriptions' => function ($query) {
             $query->orderByRaw("FIELD(status, 'confirmado', 'aprovado', 'fila_de_espera', 'pendente')")
-                  ->orderBy('full_name');
+                ->orderBy('full_name');
         }]);
 
         $pdf = Pdf::loadView('admin.events.participantes-pdf', compact('event'))
