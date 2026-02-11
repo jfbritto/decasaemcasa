@@ -68,14 +68,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Inscrições (Curadoria)
     Route::get('/inscricoes', [AdminInscriptionController::class, 'index'])->name('inscricoes.index');
+    Route::get('/inscricoes/export-csv', [AdminInscriptionController::class, 'exportCsv'])->name('inscricoes.export-csv');
+    Route::post('/inscricoes/bulk-action', [AdminInscriptionController::class, 'bulkAction'])->name('inscricoes.bulk-action');
     Route::get('/inscricoes/{inscription}', [AdminInscriptionController::class, 'show'])->name('inscricoes.show');
     Route::post('/inscricoes/{inscription}/aprovar', [AdminInscriptionController::class, 'approve'])->name('inscricoes.aprovar');
     Route::post('/inscricoes/{inscription}/fila-espera', [AdminInscriptionController::class, 'waitlist'])->name('inscricoes.fila-espera');
     Route::post('/inscricoes/{inscription}/confirmar', [AdminInscriptionController::class, 'confirm'])->name('inscricoes.confirmar');
     Route::post('/inscricoes/{inscription}/rejeitar', [AdminInscriptionController::class, 'reject'])->name('inscricoes.rejeitar');
     Route::post('/inscricoes/{inscription}/send-reminder', [AdminInscriptionController::class, 'sendReminder'])->name('inscricoes.send-reminder');
-    Route::post('/inscricoes/bulk-action', [AdminInscriptionController::class, 'bulkAction'])->name('inscricoes.bulk-action');
-    Route::get('/inscricoes/export-csv', [AdminInscriptionController::class, 'exportCsv'])->name('inscricoes.export-csv');
     Route::patch('/inscricoes/{inscription}/notes', [AdminInscriptionController::class, 'updateNotes'])->name('inscricoes.update-notes');
 
     // Notificações
