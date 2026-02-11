@@ -122,20 +122,36 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('inscricao.upload-comprovante', $inscription->token) }}" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('inscricao.upload-comprovante', $inscription->token) }}" enctype="multipart/form-data"
+                          x-data="{ uploading: false, fileName: '' }"
+                          @submit="uploading = true">
                         @csrf
                         <div class="mb-4">
                             <label for="payment_proof" class="block text-sm text-gray-600 mb-2">
                                 {{ $inscription->payment_proof ? 'Enviar novo comprovante (substituir):' : 'Selecione o comprovante (imagem ou PDF, max 5MB):' }}
                             </label>
                             <input type="file" name="payment_proof" id="payment_proof" accept=".jpg,.jpeg,.png,.pdf"
+                                   @change="fileName = $event.target.files[0]?.name || ''"
                                    class="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                            <p x-show="fileName" x-text="'Arquivo selecionado: ' + fileName" class="mt-1 text-xs text-indigo-600"></p>
                             @error('payment_proof')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <button type="submit" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-200">
-                            Enviar Comprovante
+                        <button type="submit" :disabled="uploading"
+                                class="w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center">
+                            <template x-if="!uploading">
+                                <span>Enviar Comprovante</span>
+                            </template>
+                            <template x-if="uploading">
+                                <span class="flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Enviando... Aguarde
+                                </span>
+                            </template>
                         </button>
                     </form>
                 </div>
