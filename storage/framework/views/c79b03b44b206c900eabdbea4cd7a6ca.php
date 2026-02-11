@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title><?php echo $__env->yieldContent('title', 'De Casa em Casa'); ?> - Turnê</title>
+
+    <!-- SEO e compartilhamento -->
+    <meta name="description" content="<?php echo $__env->yieldContent('meta_description', 'De Casa em Casa é uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.'); ?>">
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?php echo $__env->yieldContent('og_title', 'De Casa em Casa - Turnê'); ?>">
+    <meta property="og:description" content="<?php echo $__env->yieldContent('og_description', 'Uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais, criando um encontro inédito e poderoso.'); ?>">
+    <meta property="og:image" content="<?php echo $__env->yieldContent('og_image', asset('images/og-share-compressed.jpg')); ?>">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:url" content="<?php echo e(url()->current()); ?>">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="De Casa em Casa">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="<?php echo $__env->yieldContent('og_title', 'De Casa em Casa - Turnê'); ?>">
+    <meta name="twitter:description" content="<?php echo $__env->yieldContent('og_description', 'Uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.'); ?>">
+    <meta name="twitter:image" content="<?php echo $__env->yieldContent('og_image', asset('images/og-share-compressed.jpg')); ?>">
+
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     <style>
         [x-cloak] { display: none !important; }
@@ -134,7 +155,8 @@
                         
                     <?php endif; ?>
                 </div>
-                <!-- Botão Hambúrguer Mobile -->
+                <!-- Botão Hambúrguer Mobile (apenas para logados) -->
+                <?php if(auth()->guard()->check()): ?>
                 <div class="sm:hidden flex items-center">
                     <button @click="open = !open" type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
                         <span class="sr-only">Abrir menu principal</span>
@@ -148,6 +170,7 @@
                         </svg>
                     </button>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
 

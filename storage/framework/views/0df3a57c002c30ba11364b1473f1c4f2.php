@@ -1,4 +1,7 @@
 <?php $__env->startSection('title', 'Inscreva-se - De Casa em Casa'); ?>
+<?php $__env->startSection('og_title', 'Inscreva-se - De Casa em Casa'); ?>
+<?php $__env->startSection('og_description', 'Inscreva-se para participar de um encontro único. Uma turnê que acontece dentro de casas reais, com pessoas reais.'); ?>
+<?php $__env->startSection('meta_description', 'Inscreva-se para participar de um encontro único da turnê De Casa em Casa. Música ao vivo em lares reais.'); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="min-h-screen bg-gradient-to-b from-amber-50 to-white py-8" x-data="inscriptionForm()">
