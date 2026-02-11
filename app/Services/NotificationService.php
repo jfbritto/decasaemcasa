@@ -59,8 +59,6 @@ class NotificationService
     public function sendWhatsApp(string $to, string $message, ?User $user = null, ?string $channel = null, array $metadata = []): bool
     {
         if (! $this->whatsAppService->isEnabled()) {
-            $this->logNotification('whatsapp', $channel ?? 'general', $to, null, $message, $user, $metadata, 'skipped', 'WhatsApp desativado');
-
             return true;
         }
 
