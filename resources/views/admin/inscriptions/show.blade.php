@@ -90,14 +90,31 @@
 
                 {{-- Comprovante de Pagamento --}}
                 @if($inscription->payment_proof)
-                <div class="bg-white rounded-xl shadow p-6">
+                <div class="bg-white rounded-xl shadow p-6" x-data="{ lightbox: false }">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Comprovante de Pagamento</h2>
                     <div class="border rounded-xl overflow-hidden">
                         @php
                             $extension = pathinfo($inscription->payment_proof, PATHINFO_EXTENSION);
                         @endphp
                         @if(in_array(strtolower($extension), ['jpg', 'jpeg', 'png']))
-                            <img src="{{ Storage::url($inscription->payment_proof) }}" alt="Comprovante" class="w-full max-h-96 object-contain bg-gray-100">
+                            <img src="{{ Storage::url($inscription->payment_proof) }}" alt="Comprovante"
+                                 class="w-full max-h-96 object-contain bg-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                                 @click="lightbox = true">
+
+                            {{-- Lightbox fullscreen --}}
+                            <div x-show="lightbox" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+                                 @click.self="lightbox = false" @keydown.escape.window="lightbox = false"
+                                 style="display: none;">
+                                <button @click="lightbox = false" class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10">
+                                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                                <img src="{{ Storage::url($inscription->payment_proof) }}" alt="Comprovante"
+                                     class="max-w-full max-h-full object-contain rounded-lg shadow-2xl">
+                            </div>
                         @elseif(strtolower($extension) === 'pdf')
                             <div class="p-4 bg-gray-50 text-center">
                                 <svg class="mx-auto h-12 w-12 text-red-500 mb-2" fill="currentColor" viewBox="0 0 20 20">
