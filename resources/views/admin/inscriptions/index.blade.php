@@ -41,13 +41,21 @@
 
         {{-- Filtros --}}
         <div class="bg-white rounded-xl shadow p-4 mb-6">
-            <form method="GET" action="{{ route('admin.inscricoes.index') }}" class="flex flex-col sm:flex-row gap-3">
-                <div class="flex-1">
+            <form method="GET" action="{{ route('admin.inscricoes.index') }}" class="flex flex-col sm:flex-row gap-3 flex-wrap">
+                <div class="flex-1 min-w-[200px]">
                     <input type="text" name="search" value="{{ request('search') }}"
                            placeholder="Buscar por nome, email ou CPF..."
                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                 </div>
-                <div class="sm:w-48">
+                <div class="sm:w-56">
+                    <select name="event_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="">Todos os encontros</option>
+                        @foreach($events as $event)
+                            <option value="{{ $event['id'] }}" {{ request('event_id') == $event['id'] ? 'selected' : '' }}>{{ $event['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="sm:w-44">
                     <select name="city" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         <option value="">Todas as cidades</option>
                         @foreach($cities as $city)
@@ -69,7 +77,7 @@
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                     Filtrar
                 </button>
-                @if(request()->hasAny(['search', 'city', 'status']))
+                @if(request()->hasAny(['search', 'city', 'status', 'event_id']))
                     <a href="{{ route('admin.inscricoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
                         Limpar
                     </a>

@@ -143,7 +143,7 @@
         <div class="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
                 <h2 class="text-lg sm:text-xl font-semibold">Inscrições deste Encontro</h2>
-                <a href="{{ route('admin.inscricoes.index', ['city' => $event->city]) }}" class="text-sm text-indigo-600 hover:text-indigo-800">
+                <a href="{{ route('admin.inscricoes.index', ['event_id' => $event->id]) }}" class="text-sm text-indigo-600 hover:text-indigo-800">
                     Ver todas com filtro →
                 </a>
             </div>

@@ -186,15 +186,15 @@
                 </div>
             </div>
 
-            {{-- Inscrições por cidade --}}
+            {{-- Inscrições por encontro --}}
             <div class="bg-white rounded-xl shadow">
                 <div class="px-6 py-4 border-b">
-                    <h2 class="text-base font-semibold text-gray-900">Inscrições por Cidade</h2>
+                    <h2 class="text-base font-semibold text-gray-900">Inscrições por Encontro</h2>
                 </div>
                 <div class="divide-y">
                     @forelse($inscriptions_by_city as $item)
-                        <a href="{{ route('admin.events.show', $item->event_id) }}" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
-                            <span class="font-medium text-gray-900 group-hover:text-gray-700 text-sm">{{ $item->city }}</span>
+                        <a href="{{ route('admin.inscricoes.index', ['event_id' => $item->event_id]) }}" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                            <span class="font-medium text-gray-900 group-hover:text-gray-700 text-sm">{{ $item->label }}</span>
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
                                 {{ $item->count }}
                             </span>
