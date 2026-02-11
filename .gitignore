@@ -1,6 +1,7 @@
 /node_modules
 /public/hot
 /public/storage
+/public/build
 /storage/*.key
 /vendor
 .env
@@ -15,3 +16,31 @@ yarn-error.log
 /.vscode
 .DS_Store
 
+# Cache do Laravel
+/bootstrap/cache/packages.php
+/bootstrap/cache/services.php
+
+# Storage - arquivos gerados em runtime
+/storage/app/public/events/*
+/storage/app/public/payment_proofs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+
+# Manter os diretórios mas ignorar conteúdo
+!/storage/app/public/events/.gitkeep
+!/storage/app/public/payment_proofs/.gitkeep
+!/storage/framework/cache/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/testing/.gitkeep
+!/storage/framework/views/.gitkeep
+!/storage/logs/.gitkeep
+
+# Arquivos de teste
+/public/teste.php
+/public/teste2.php
+.htaccess
+.htaccess---
+/public/.htaccess---
