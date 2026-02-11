@@ -18,7 +18,7 @@
                 </a>
                 <form method="POST" action="{{ route('admin.events.duplicate', $event) }}" class="inline">
                     @csrf
-                    <button type="submit" class="bg-amber-500 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-amber-600 text-center">
+                    <button type="submit" style="background-color:#f59e0b;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
                         Duplicar
                     </button>
                 </form>

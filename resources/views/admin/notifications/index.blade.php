@@ -39,13 +39,6 @@
                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                 </div>
                 <div class="sm:w-36">
-                    <select name="type" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                        <option value="">Todos os canais</option>
-                        <option value="email" {{ request('type') === 'email' ? 'selected' : '' }}>Email</option>
-                        <option value="whatsapp" {{ request('type') === 'whatsapp' ? 'selected' : '' }}>WhatsApp</option>
-                    </select>
-                </div>
-                <div class="sm:w-36">
                     <select name="status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         <option value="">Todos os status</option>
                         <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>Enviada</option>
@@ -67,7 +60,7 @@
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                     Filtrar
                 </button>
-                @if(request()->hasAny(['search', 'type', 'status', 'channel']))
+                @if(request()->hasAny(['search', 'status', 'channel']))
                     <a href="{{ route('admin.notificacoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
                         Limpar
                     </a>
@@ -82,7 +75,6 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Canal</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Tipo</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Destinatário</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Assunto</th>
@@ -94,17 +86,6 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach($notifications as $notification)
                                 <tr class="hover:bg-gray-50" x-data="{ showDetails: false }">
-                                    <td class="px-4 py-3">
-                                        @if($notification->type === 'email')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                Email
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                WhatsApp
-                                            </span>
-                                        @endif
-                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-700">
                                         @php
                                             $channelLabels = [
@@ -162,7 +143,7 @@
                                 </tr>
                                 {{-- Detalhes expandíveis --}}
                                 <tr x-show="showDetails" x-transition>
-                                    <td colspan="7" class="px-4 py-3 bg-gray-50">
+                                    <td colspan="6" class="px-4 py-3 bg-gray-50">
                                         <div class="space-y-2">
                                             <div>
                                                 <p class="text-xs font-semibold text-gray-500 uppercase">Mensagem:</p>

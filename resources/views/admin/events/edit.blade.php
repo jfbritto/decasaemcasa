@@ -119,7 +119,7 @@
                   x-data x-on:submit.prevent="if(confirm('Tem certeza que deseja EXCLUIR o encontro {{ $event->city ?? $event->title }}? Todas as inscrições serão perdidas. Esta ação é irreversível.')) $el.submit()">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <button type="submit" style="background-color:#dc2626;color:#fff;" class="hover:opacity-80 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Excluir Encontro
                 </button>
             </form>
