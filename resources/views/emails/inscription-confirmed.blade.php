@@ -15,9 +15,14 @@
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Que alegria ter você conosco! Sua presença está <strong style="color:#065f46;">confirmada</strong>. Prepare o coração para um encontro especial.
 </p>
-<p style="margin:0; color:#4a4639; font-size:14px; line-height:1.6; font-style:italic;">
+<p style="margin:0 0 16px; color:#4a4639; font-size:14px; line-height:1.6; font-style:italic;">
     Confira os detalhes do encontro abaixo.
 </p>
+@if($event->full_address)
+<p style="margin:0; padding:12px 16px; background-color:#fef2f2; border:1px solid #fca5a5; border-radius:8px; color:#991b1b; font-size:13px; line-height:1.6;">
+    <strong>IMPORTANTE:</strong> Não divulgue este endereço. Não compartilhe em grupos. Este encontro é secreto. Somente pessoas com nome na lista poderão entrar.
+</p>
+@endif
 @endsection
 
 @section('event_info')

@@ -15,9 +15,21 @@
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Tudo pronto! Sua participação foi <strong style="color:#1a2e6e;">aprovada</strong>. Para garantir sua cadeira na sala, conclua sua contribuição no link abaixo.
 </p>
-<p style="margin:0; color:#4a4639; font-size:15px; line-height:1.7;">
+<p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Acesse o link para enviar o comprovante de pagamento e finalizar sua confirmação.
 </p>
+@if(config('services.pix.key'))
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#eef2ff; border:1px solid #c7d2fe; border-radius:8px;">
+    <tr>
+        <td style="padding:16px;">
+            <p style="margin:0 0 6px; color:#1a2e6e; font-size:13px; font-weight:600;">Chave Pix para contribuição:</p>
+            <p style="margin:0 0 4px; color:#4f46e5; font-size:16px; font-weight:700; font-family:monospace;">{{ config('services.pix.key') }}</p>
+            <p style="margin:0 0 8px; color:#9a9384; font-size:12px;">{{ config('services.pix.holder') }}</p>
+            <p style="margin:0; color:#6b7280; font-size:12px; font-style:italic;">Você define o valor que faz sentido pra você.</p>
+        </td>
+    </tr>
+</table>
+@endif
 @endsection
 
 @section('event_info')

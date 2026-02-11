@@ -15,8 +15,11 @@
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Recebemos sua história! Estamos em fase de curadoria. Como os lugares são limitados e em lares, fazemos essa leitura com carinho.
 </p>
-<p style="margin:0; color:#4a4639; font-size:15px; line-height:1.7;">
+<p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Aguarde nosso retorno — avisaremos assim que tivermos novidades.
+</p>
+<p style="margin:0; padding:12px 16px; background-color:#fef3c7; border-radius:8px; color:#92400e; font-size:13px; line-height:1.6;">
+    <strong>Lembrete:</strong> Cada pessoa deve fazer sua própria inscrição, incluindo crianças e acompanhantes. Caso alguém queira te acompanhar, essa pessoa precisa preencher a própria inscrição.
 </p>
 @endsection
 

@@ -113,7 +113,8 @@ class NotificationService
 
         // WhatsApp
         $wa = "Olá {$inscription->full_name}! Recebemos sua inscrição para o encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}). ";
-        $wa .= "Estamos em fase de curadoria e retornaremos em breve. ";
+        $wa .= "Estamos em fase de curadoria e retornaremos em breve.\n\n";
+        $wa .= "Lembrete: cada pessoa deve fazer sua própria inscrição, incluindo crianças e acompanhantes.\n\n";
         $wa .= "Acompanhe aqui: {$statusUrl}";
 
         $this->sendWhatsApp(
@@ -149,7 +150,14 @@ class NotificationService
         );
 
         // WhatsApp
-        $wa = "Olá {$inscription->full_name}! Sua participação no encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) foi *aprovada*! ";
+        $wa = "Olá {$inscription->full_name}! Sua participação no encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) foi *aprovada*!\n\n";
+
+        $pixKey = config('services.pix.key');
+        if ($pixKey) {
+            $pixHolder = config('services.pix.holder', 'Marcos Almeida');
+            $wa .= "Chave Pix: *{$pixKey}*\nTitular: {$pixHolder}\nVocê define o valor que faz sentido pra você.\n\n";
+        }
+
         $wa .= "Envie seu comprovante de pagamento pelo link para garantir sua vaga: {$statusUrl}";
 
         $this->sendWhatsApp(
@@ -231,6 +239,9 @@ class NotificationService
             $wa .= "Horário: {$event->arrival_time}\n";
         }
         $wa .= "Data: {$event->date->format('d/m/Y')}\n\n";
+        if ($event->full_address) {
+            $wa .= "⚠️ *IMPORTANTE:* Não divulgue este endereço. Não compartilhe em grupos. Este encontro é secreto. Somente pessoas com nome na lista poderão entrar.\n\n";
+        }
         $wa .= "Prepare o coração! Detalhes: {$statusUrl}";
 
         $this->sendWhatsApp(

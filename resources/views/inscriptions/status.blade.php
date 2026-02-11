@@ -96,6 +96,23 @@
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-6 mb-6">
                     <h3 class="font-semibold text-gray-900 mb-3">Enviar Comprovante de Pagamento</h3>
 
+                    @if(config('services.pix.key'))
+                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+                        <p class="text-sm text-gray-700 mb-2"><strong>Chave Pix para contribuição:</strong></p>
+                        <div class="flex items-center justify-between bg-white rounded-lg border border-indigo-200 px-4 py-3">
+                            <div>
+                                <p class="font-mono text-base font-semibold text-indigo-700" id="pix-key">{{ config('services.pix.key') }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ config('services.pix.holder') }}</p>
+                            </div>
+                            <button onclick="navigator.clipboard.writeText(document.getElementById('pix-key').textContent); this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar', 2000);"
+                                    class="ml-3 px-3 py-1 bg-indigo-100 text-indigo-600 text-sm font-medium rounded-lg hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                Copiar
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Você define o valor que faz sentido pra você.</p>
+                    </div>
+                    @endif
+
                     @if($inscription->payment_proof)
                         <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
                             <div class="flex items-center text-green-700">
@@ -136,6 +153,16 @@
                     </h3>
 
                     @if($inscription->event->full_address)
+                        {{-- Alerta de sigilo --}}
+                        <div class="bg-red-50 border border-red-300 rounded-lg p-3 mb-4">
+                            <p class="text-sm text-red-800 font-semibold flex items-start">
+                                <svg class="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                Não divulgue este endereço. Este encontro é secreto. Somente pessoas com nome na lista poderão entrar.
+                            </p>
+                        </div>
+
                         <div class="space-y-2">
                             <p class="text-gray-700">
                                 <strong>Endereço:</strong> {{ $inscription->event->full_address }}
