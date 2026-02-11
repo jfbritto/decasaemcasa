@@ -101,13 +101,6 @@
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
 
-                    {{-- Aviso inscrição individual --}}
-                    <div class="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
-                        <p class="text-sm text-gray-700 leading-relaxed">
-                            <strong class="text-gray-900">Inscrição individual:</strong> Cada pessoa deve fazer sua própria inscrição — incluindo crianças e acompanhantes. Esse encontro é sobre valorizar cada pessoa individualmente; seja criança, jovem, adulto ou sênior!
-                        </p>
-                    </div>
-
                     <div class="mt-6 flex justify-end">
                         <button type="button" @click="nextStep()" :disabled="!formData.event_id"
                                 class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
@@ -136,18 +129,6 @@
                             "De Casa em Casa é uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais, criando um encontro inédito e poderoso: uma música familiar, na sua expressão mais espontânea, ao vivo, autêntica, dentro da experiência mais sagrada que existe, na bênção de estar em família."
                         </p>
                     </blockquote>
-
-                    {{-- Aviso sobre contribuição --}}
-                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-5">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                            </svg>
-                            <p class="ml-3 text-sm text-gray-700 leading-relaxed">
-                                <strong class="text-gray-900">Sobre a contribuição:</strong> Após a fase de curadoria, os aprovados serão convidados a enviar uma contribuição (via Pix) que ajuda a viabilizar esse encontro único. Você define o valor que faz sentido pra você.
-                            </p>
-                        </div>
-                    </div>
 
                     <div class="mt-8 flex justify-between">
                         <button type="button" @click="prevStep()"
@@ -305,6 +286,14 @@
                             <li class="flex items-start">
                                 <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
                                 <span><strong>Privacidade (LGPD):</strong> Autorizo o tratamento dos meus dados para logística, segurança e comunicações da turnê.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                <span><strong>Contribuição:</strong> Estou ciente de que, após a fase de curadoria, os aprovados serão convidados a enviar uma contribuição (via Pix) que ajuda a viabilizar esse encontro único. O valor é definido por cada participante.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                <span><strong>Inscrição individual:</strong> Cada pessoa deve fazer sua própria inscrição, incluindo crianças e acompanhantes. Caso alguém queira te acompanhar, essa pessoa deve preencher a própria inscrição. Esse encontro é sobre valorizar cada pessoa individualmente!</span>
                             </li>
                         </ul>
                     </div>
