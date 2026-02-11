@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('title', 'Inscreva-se - De Casa em Casa')
+@section('og_title', 'Inscreva-se - De Casa em Casa')
+@section('og_description', 'Inscreva-se para participar de um encontro único. Uma turnê que acontece dentro de casas reais, com pessoas reais.')
+@section('meta_description', 'Inscreva-se para participar de um encontro único da turnê De Casa em Casa. Música ao vivo em lares reais.')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-amber-50 to-white py-8" x-data="inscriptionForm()">

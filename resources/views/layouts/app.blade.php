@@ -5,6 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'De Casa em Casa') - Turnê</title>
+
+    <!-- SEO e compartilhamento -->
+    <meta name="description" content="@yield('meta_description', 'De Casa em Casa é uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.')">
+
+    <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@yield('og_title', 'De Casa em Casa - Turnê')">
+    <meta property="og:description" content="@yield('og_description', 'Uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais, criando um encontro inédito e poderoso.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-share.jpg'))">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="De Casa em Casa">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', 'De Casa em Casa - Turnê')">
+    <meta name="twitter:description" content="@yield('og_description', 'Uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-share.jpg'))">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         [x-cloak] { display: none !important; }

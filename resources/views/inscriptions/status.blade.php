@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('title', 'Status da Inscrição - De Casa em Casa')
+@section('og_title', 'Acompanhe sua Inscrição - De Casa em Casa')
+@section('og_description', 'Acompanhe o status da sua inscrição para o encontro De Casa em Casa.')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-b from-amber-50 to-white py-8">
