@@ -6,6 +6,11 @@
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title><?php echo $__env->yieldContent('title', 'De Casa em Casa'); ?> - Turnê</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?php echo e(asset('favicon.svg')); ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo e(asset('favicon.png')); ?>">
+    <link rel="apple-touch-icon" href="<?php echo e(asset('favicon.png')); ?>">
+
     <!-- SEO e compartilhamento -->
     <meta name="description" content="<?php echo $__env->yieldContent('meta_description', 'De Casa em Casa é uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.'); ?>">
 

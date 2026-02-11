@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Casa -->
+  <polygon points="32,6 4,30 12,30 12,56 52,56 52,30 60,30" fill="#4f46e5" />
+  <!-- Porta -->
+  <rect x="24" y="36" width="16" height="20" rx="2" fill="#312e81" />
+  <!-- Nota musical dentro da porta -->
+  <g fill="#fff">
+    <ellipse cx="29" cy="50" rx="4" ry="3" />
+    <rect x="32.5" y="38" width="2" height="13" />
+    <path d="M34.5,38 Q40,35 38,42 L36,41 Q38,36 34.5,38.5Z" />
+  </g>
+</svg>

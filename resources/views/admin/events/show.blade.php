@@ -8,6 +8,9 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-900">{{ $event->city ?? $event->title }}</h1>
             <div class="flex gap-2">
+                <a target="_blank" href="{{ route('admin.events.participantes-pdf', $event) }}" style="background-color:#dc2626;color:#fff;" class="px-4 py-2 rounded-md hover:opacity-80">
+                    Lista de Presença
+                </a>
                 <a href="{{ route('admin.events.edit', $event) }}" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
                     Editar
                 </a>
@@ -26,83 +29,81 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold mb-4">Informações do Encontro</h2>
-                <div class="space-y-3">
-                    @if($event->title && $event->city && $event->title !== $event->city)
-                    <div>
-                        <p class="text-sm text-gray-500">Título</p>
-                        <p class="text-gray-900">{{ $event->title }}</p>
-                    </div>
-                    @endif
-                    <div>
-                        <p class="text-sm text-gray-500">Cidade</p>
-                        <p class="text-gray-900">{{ $event->city ?? '—' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Data</p>
-                        <p class="text-gray-900">{{ $event->date->format('d/m/Y H:i') }}</p>
-                    </div>
-                    @if($event->arrival_time)
-                    <div>
-                        <p class="text-sm text-gray-500">Horário de Chegada</p>
-                        <p class="text-gray-900">{{ $event->arrival_time }}</p>
-                    </div>
-                    @endif
-                    @if($event->full_address)
-                    <div>
-                        <p class="text-sm text-gray-500">Endereço (SECRETO)</p>
-                        <p class="text-gray-900 bg-red-50 border border-red-200 rounded p-2 text-sm">{{ $event->full_address }}</p>
-                    </div>
-                    @endif
-                    <div>
-                        <p class="text-sm text-gray-500">Descrição</p>
-                        <p class="text-gray-900">{{ $event->description ?? 'Sem descrição' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Status</p>
-                        <span class="px-2 py-1 rounded text-xs
-                            @if($event->status === 'published') bg-green-100 text-green-800
-                            @elseif($event->status === 'draft') bg-gray-100 text-gray-800
-                            @else bg-red-100 text-red-800
-                            @endif">
-                            {{ ucfirst($event->status) }}
-                        </span>
-                    </div>
+        {{-- Detalhes do Encontro --}}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">Informações do Encontro</h2>
+                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                    @if($event->status === 'published') bg-green-100 text-green-800
+                    @elseif($event->status === 'draft') bg-gray-100 text-gray-800
+                    @else bg-red-100 text-red-800
+                    @endif">
+                    {{ ucfirst($event->status) }}
+                </span>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                @if($event->title && $event->city && $event->title !== $event->city)
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Título</p>
+                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $event->title }}</p>
+                </div>
+                @endif
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Cidade</p>
+                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $event->city ?? '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Data</p>
+                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $event->date->format('d/m/Y H:i') }}</p>
+                </div>
+                @if($event->arrival_time)
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Horário de Chegada</p>
+                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $event->arrival_time }}</p>
+                </div>
+                @endif
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-wide">Capacidade</p>
+                    <p class="text-sm font-medium text-gray-900 mt-1">{{ $event->capacity ?: 'Ilimitada' }}</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold mb-4">Estatísticas de Inscrições</h2>
-                <div class="space-y-3">
-                    <div>
-                        <p class="text-sm text-gray-500">Capacidade</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $event->capacity ?: 'Ilimitada' }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Total de Inscrições</p>
-                        <p class="text-2xl font-bold text-indigo-600">{{ $inscriptionStats['total'] }}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-yellow-50 rounded-lg p-3 text-center">
-                            <p class="text-xl font-bold text-yellow-700">{{ $inscriptionStats['pendente'] }}</p>
-                            <p class="text-xs text-yellow-600">Pendentes</p>
-                        </div>
-                        <div class="bg-blue-50 rounded-lg p-3 text-center">
-                            <p class="text-xl font-bold text-blue-700">{{ $inscriptionStats['aprovado'] }}</p>
-                            <p class="text-xs text-blue-600">Aprovados</p>
-                        </div>
-                        <div class="bg-green-50 rounded-lg p-3 text-center">
-                            <p class="text-xl font-bold text-green-700">{{ $inscriptionStats['confirmado'] }}</p>
-                            <p class="text-xs text-green-600">Confirmados</p>
-                        </div>
-                        <div class="bg-orange-50 rounded-lg p-3 text-center">
-                            <p class="text-xl font-bold text-orange-700">{{ $inscriptionStats['fila_de_espera'] }}</p>
-                            <p class="text-xs text-orange-600">Fila de Espera</p>
-                        </div>
-                    </div>
-                </div>
+            @if($event->full_address)
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Endereço (SECRETO)</p>
+                <p class="text-sm text-gray-900 bg-red-50 border border-red-200 rounded p-2">{{ $event->full_address }}</p>
+            </div>
+            @endif
+
+            @if($event->description)
+            <div class="mt-4 pt-4 border-t border-gray-100">
+                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Descrição</p>
+                <p class="text-sm text-gray-700 leading-relaxed">{{ $event->description }}</p>
+            </div>
+            @endif
+        </div>
+
+        {{-- Estatísticas de Inscrições --}}
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-indigo-500">
+                <p class="text-2xl font-bold text-indigo-600">{{ $inscriptionStats['total'] }}</p>
+                <p class="text-xs text-gray-500 mt-1">Total Inscritos</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-yellow-400">
+                <p class="text-2xl font-bold text-yellow-700">{{ $inscriptionStats['pendente'] }}</p>
+                <p class="text-xs text-gray-500 mt-1">Pendentes</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-blue-400">
+                <p class="text-2xl font-bold text-blue-700">{{ $inscriptionStats['aprovado'] }}</p>
+                <p class="text-xs text-gray-500 mt-1">Aprovados</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-green-400">
+                <p class="text-2xl font-bold text-green-700">{{ $inscriptionStats['confirmado'] }}</p>
+                <p class="text-xs text-gray-500 mt-1">Confirmados</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-orange-400">
+                <p class="text-2xl font-bold text-orange-700">{{ $inscriptionStats['fila_de_espera'] }}</p>
+                <p class="text-xs text-gray-500 mt-1">Fila de Espera</p>
             </div>
         </div>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -99,5 +100,20 @@ class EventController extends Controller
 
         return redirect()->route('admin.events.index')
             ->with('success', 'Encontro excluído com sucesso!');
+    }
+
+    public function exportPdf(Event $event)
+    {
+        $event->load(['inscriptions' => function ($query) {
+            $query->orderByRaw("FIELD(status, 'confirmado', 'aprovado', 'fila_de_espera', 'pendente')")
+                  ->orderBy('full_name');
+        }]);
+
+        $pdf = Pdf::loadView('admin.events.participantes-pdf', compact('event'))
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'participantes-'.Str::slug($event->city ?? $event->title).'-'.now()->format('Y-m-d').'.pdf';
+
+        return $pdf->stream($filename);
     }
 }

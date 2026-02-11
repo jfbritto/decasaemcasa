@@ -26,6 +26,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Eventos / Encontros
     Route::resource('events', AdminEventController::class);
+    Route::get('events/{event}/participantes-pdf', [AdminEventController::class, 'exportPdf'])->name('events.participantes-pdf');
 
     // Inscrições (Curadoria)
     Route::get('/inscricoes', [AdminInscriptionController::class, 'index'])->name('inscricoes.index');
