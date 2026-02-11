@@ -72,11 +72,6 @@
                 </button>
             </div>
 
-            <div class="text-center">
-                <a href="{{ route('register') }}" class="text-indigo-600 hover:text-indigo-500">
-                    Não tem uma conta? Cadastre-se
-                </a>
-            </div>
         </form>
     </div>
 </div>
