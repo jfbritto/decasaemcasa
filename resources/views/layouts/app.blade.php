@@ -13,7 +13,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="@yield('og_title', 'De Casa em Casa - Turnê')">
     <meta property="og:description" content="@yield('og_description', 'Uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais, criando um encontro inédito e poderoso.')">
-    <meta property="og:image" content="@yield('og_image', asset('images/og-share.png'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-share-compressed.jpg'))">
     <meta property="og:image:width" content="1024">
     <meta property="og:image:height" content="1024">
     <meta property="og:url" content="{{ url()->current() }}">
@@ -24,7 +24,7 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="@yield('og_title', 'De Casa em Casa - Turnê')">
     <meta name="twitter:description" content="@yield('og_description', 'Uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.')">
-    <meta name="twitter:image" content="@yield('og_image', asset('images/og-share.png'))">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-share-compressed.jpg'))">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
