@@ -82,6 +82,7 @@
              x-data="{
                 selectedIds: [],
                 selectAll: false,
+                statusMap: { {{ $inscriptions->map(fn($i) => $i->id . ': \'' . $i->status . '\'')->implode(', ') }} },
                 toggleAll() {
                     if (this.selectAll) {
                         this.selectedIds = [{{ $inscriptions->pluck('id')->implode(',') }}];
@@ -89,12 +90,77 @@
                         this.selectedIds = [];
                     }
                 },
-                get hasSelection() { return this.selectedIds.length > 0; }
+                get hasSelection() { return this.selectedIds.length > 0; },
+                countByStatus(...statuses) {
+                    return this.selectedIds.filter(id => statuses.includes(this.statusMap[id])).length;
+                },
+                get elegiveisAprovar() { return this.countByStatus('pendente', 'fila_de_espera'); },
+                get elegiveisRejeitar() { return this.countByStatus('pendente', 'fila_de_espera'); },
+                get elegiveisFila() { return this.countByStatus('pendente'); },
+                bulkConfirm(action) {
+                    const total = this.selectedIds.length;
+                    let elegiveis = 0;
+                    let titulo = '';
+                    let cor = '';
+                    let textoBtn = '';
+                    let regra = '';
+
+                    if (action === 'aprovar') {
+                        elegiveis = this.elegiveisAprovar;
+                        titulo = 'Aprovar inscrições';
+                        cor = '#4f46e5';
+                        textoBtn = 'Sim, aprovar';
+                        regra = 'pendentes ou em fila de espera';
+                    } else if (action === 'fila_espera') {
+                        elegiveis = this.elegiveisFila;
+                        titulo = 'Mover para fila de espera';
+                        cor = '#f59e0b';
+                        textoBtn = 'Sim, mover';
+                        regra = 'pendentes';
+                    } else if (action === 'rejeitar') {
+                        elegiveis = this.elegiveisRejeitar;
+                        titulo = 'Rejeitar inscrições';
+                        cor = '#dc2626';
+                        textoBtn = 'Sim, rejeitar';
+                        regra = 'pendentes ou em fila de espera';
+                    }
+
+                    if (elegiveis === 0) {
+                        Swal.fire({
+                            title: 'Nenhuma inscrição elegível',
+                            text: 'Nenhuma das ' + total + ' inscrições selecionadas pode receber esta ação. Apenas inscrições ' + regra + ' são elegíveis.',
+                            icon: 'info',
+                            confirmButtonColor: '#4f46e5',
+                            confirmButtonText: 'Entendi'
+                        });
+                        return null;
+                    }
+
+                    const texto = elegiveis === total
+                        ? elegiveis + ' inscrição(ões) serão afetadas. Os participantes serão notificados.'
+                        : elegiveis + ' de ' + total + ' selecionadas são elegíveis (apenas ' + regra + '). As demais serão ignoradas.';
+
+                    return Swal.fire({
+                        title: titulo + '?',
+                        text: texto,
+                        icon: action === 'rejeitar' ? 'warning' : 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: cor,
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: textoBtn + ' (' + elegiveis + ')',
+                        cancelButtonText: 'Cancelar'
+                    });
+                }
              }">
 
             {{-- Barra de ações em lote --}}
-            <div x-show="hasSelection" x-transition class="bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex items-center justify-between">
-                <span class="text-sm text-indigo-700 font-medium" x-text="selectedIds.length + ' inscrição(ões) selecionada(s)'"></span>
+            <div x-show="hasSelection" x-transition class="bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <span class="text-sm text-indigo-700 font-medium" x-text="selectedIds.length + ' inscrição(ões) selecionada(s)'"></span>
+                    <span class="text-xs text-indigo-500 ml-1" x-show="hasSelection"
+                          x-text="'(' + countByStatus('pendente') + ' pendente, ' + countByStatus('aprovado') + ' aprovado, ' + countByStatus('confirmado') + ' confirmado, ' + countByStatus('fila_de_espera') + ' fila)'">
+                    </span>
+                </div>
                 <div class="flex items-center gap-2">
                     <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline">
                         @csrf
@@ -102,9 +168,10 @@
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="button" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
-                                @click="Swal.fire({ title: 'Aprovar inscrições?', text: 'As inscrições selecionadas serão aprovadas e os participantes notificados.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, aprovar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
-                            Aprovar Selecionados
+                        <button type="button" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="elegiveisAprovar === 0"
+                                @click="let p = bulkConfirm('aprovar'); if (p) p.then((r) => { if (r.isConfirmed) $el.closest('form').submit() })">
+                            Aprovar (<span x-text="elegiveisAprovar"></span>)
                         </button>
                     </form>
                     <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline">
@@ -113,9 +180,10 @@
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="button" class="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600"
-                                @click="Swal.fire({ title: 'Mover para fila de espera?', text: 'As inscrições selecionadas serão movidas para a fila de espera.', icon: 'question', showCancelButton: true, confirmButtonColor: '#f59e0b', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, mover', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
-                            Mover p/ Fila
+                        <button type="button" class="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="elegiveisFila === 0"
+                                @click="let p = bulkConfirm('fila_espera'); if (p) p.then((r) => { if (r.isConfirmed) $el.closest('form').submit() })">
+                            Fila (<span x-text="elegiveisFila"></span>)
                         </button>
                     </form>
                     <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline">
@@ -124,9 +192,10 @@
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="button" style="background-color:#dc2626;color:#fff;" class="px-3 py-1.5 text-xs font-medium rounded-lg hover:opacity-80"
-                                @click="Swal.fire({ title: 'Rejeitar inscrições?', text: 'As inscrições selecionadas serão rejeitadas e os participantes serão notificados.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
-                            Rejeitar Selecionados
+                        <button type="button" style="background-color:#dc2626;color:#fff;" class="px-3 py-1.5 text-xs font-medium rounded-lg hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+                                :disabled="elegiveisRejeitar === 0"
+                                @click="let p = bulkConfirm('rejeitar'); if (p) p.then((r) => { if (r.isConfirmed) $el.closest('form').submit() })">
+                            Rejeitar (<span x-text="elegiveisRejeitar"></span>)
                         </button>
                     </form>
                 </div>
