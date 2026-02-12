@@ -119,15 +119,15 @@
                     @if(config('services.pix.key'))
                     <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
                         <p class="text-sm text-gray-700 mb-2"><strong>Chave Pix para contribuição:</strong></p>
-                        <div class="flex items-center justify-between bg-white rounded-lg border border-indigo-200 px-4 py-3">
-                            <div>
-                                <p class="font-mono text-base font-semibold text-indigo-700" id="pix-key">{{ config('services.pix.key') }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ config('services.pix.holder') }}</p>
+                        <div class="bg-white rounded-lg border border-indigo-200 px-4 py-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="font-mono text-sm sm:text-base font-semibold text-indigo-700 break-all min-w-0" id="pix-key">{{ config('services.pix.key') }}</p>
+                                <button onclick="navigator.clipboard.writeText(document.getElementById('pix-key').textContent.trim()); this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar', 2000);"
+                                        class="px-3 py-1 bg-indigo-100 text-indigo-600 text-sm font-medium rounded-lg hover:bg-indigo-200 transition-colors flex-shrink-0">
+                                    Copiar
+                                </button>
                             </div>
-                            <button onclick="navigator.clipboard.writeText(document.getElementById('pix-key').textContent); this.textContent = 'Copiado!'; setTimeout(() => this.textContent = 'Copiar', 2000);"
-                                    class="ml-3 px-3 py-1 bg-indigo-100 text-indigo-600 text-sm font-medium rounded-lg hover:bg-indigo-200 transition-colors flex-shrink-0">
-                                Copiar
-                            </button>
+                            <p class="text-xs text-gray-500 mt-1">{{ config('services.pix.holder') }}</p>
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Você define o valor que faz sentido pra você.</p>
                     </div>
