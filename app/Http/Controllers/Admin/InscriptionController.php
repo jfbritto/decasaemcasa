@@ -107,7 +107,13 @@ class InscriptionController extends Controller
     {
         $inscription->load('event');
 
-        return view('admin.inscriptions.show', compact('inscription'));
+        $activityLogs = ActivityLog::where('subject_type', Inscription::class)
+            ->where('subject_id', $inscription->id)
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.inscriptions.show', compact('inscription', 'activityLogs'));
     }
 
     /**
