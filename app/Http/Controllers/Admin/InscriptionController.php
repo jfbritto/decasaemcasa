@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\Inscription;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class InscriptionController extends Controller
 {
@@ -122,10 +123,18 @@ class InscriptionController extends Controller
 
         $inscription->approve();
 
-        ActivityLog::log('aprovar_inscricao', "Aprovou inscrição de {$inscription->full_name}", $inscription);
+        try {
+            ActivityLog::log('aprovar_inscricao', "Aprovou inscrição de {$inscription->full_name}", $inscription);
+        } catch (\Exception $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
 
         // Notificar participante
-        $this->notificationService->notifyInscriptionApproved($inscription);
+        try {
+            $this->notificationService->notifyInscriptionApproved($inscription);
+        } catch (\Exception $e) {
+            Log::error('Falha ao notificar aprovação: '.$e->getMessage());
+        }
 
         return redirect()
             ->back()
@@ -145,10 +154,18 @@ class InscriptionController extends Controller
 
         $inscription->waitlist();
 
-        ActivityLog::log('fila_espera_inscricao', "Moveu {$inscription->full_name} para fila de espera", $inscription);
+        try {
+            ActivityLog::log('fila_espera_inscricao', "Moveu {$inscription->full_name} para fila de espera", $inscription);
+        } catch (\Exception $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
 
         // Notificar participante
-        $this->notificationService->notifyInscriptionWaitlisted($inscription);
+        try {
+            $this->notificationService->notifyInscriptionWaitlisted($inscription);
+        } catch (\Exception $e) {
+            Log::error('Falha ao notificar fila de espera: '.$e->getMessage());
+        }
 
         return redirect()
             ->back()
@@ -168,10 +185,18 @@ class InscriptionController extends Controller
 
         $inscription->confirm();
 
-        ActivityLog::log('confirmar_inscricao', "Confirmou pagamento de {$inscription->full_name}", $inscription);
+        try {
+            ActivityLog::log('confirmar_inscricao', "Confirmou pagamento de {$inscription->full_name}", $inscription);
+        } catch (\Exception $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
 
         // Notificar participante com endereço
-        $this->notificationService->notifyInscriptionConfirmed($inscription);
+        try {
+            $this->notificationService->notifyInscriptionConfirmed($inscription);
+        } catch (\Exception $e) {
+            Log::error('Falha ao notificar confirmação: '.$e->getMessage());
+        }
 
         return redirect()
             ->back()
@@ -234,10 +259,18 @@ class InscriptionController extends Controller
 
         $inscription->reject();
 
-        ActivityLog::log('rejeitar_inscricao', "Rejeitou inscrição de {$inscription->full_name}", $inscription);
+        try {
+            ActivityLog::log('rejeitar_inscricao', "Rejeitou inscrição de {$inscription->full_name}", $inscription);
+        } catch (\Exception $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
 
         // Notificar participante
-        $this->notificationService->notifyInscriptionRejected($inscription);
+        try {
+            $this->notificationService->notifyInscriptionRejected($inscription);
+        } catch (\Exception $e) {
+            Log::error('Falha ao notificar rejeição: '.$e->getMessage());
+        }
 
         return redirect()
             ->back()
@@ -259,28 +292,32 @@ class InscriptionController extends Controller
         $count = 0;
 
         foreach ($inscriptions as $inscription) {
-            switch ($request->action) {
-                case 'aprovar':
-                    if ($inscription->isPending() || $inscription->isWaitlisted()) {
-                        $inscription->approve();
-                        $this->notificationService->notifyInscriptionApproved($inscription);
-                        $count++;
-                    }
-                    break;
-                case 'rejeitar':
-                    if ($inscription->isPending() || $inscription->isWaitlisted()) {
-                        $inscription->reject();
-                        $this->notificationService->notifyInscriptionRejected($inscription);
-                        $count++;
-                    }
-                    break;
-                case 'fila_espera':
-                    if ($inscription->isPending()) {
-                        $inscription->waitlist();
-                        $this->notificationService->notifyInscriptionWaitlisted($inscription);
-                        $count++;
-                    }
-                    break;
+            try {
+                switch ($request->action) {
+                    case 'aprovar':
+                        if ($inscription->isPending() || $inscription->isWaitlisted()) {
+                            $inscription->approve();
+                            $this->notificationService->notifyInscriptionApproved($inscription);
+                            $count++;
+                        }
+                        break;
+                    case 'rejeitar':
+                        if ($inscription->isPending() || $inscription->isWaitlisted()) {
+                            $inscription->reject();
+                            $this->notificationService->notifyInscriptionRejected($inscription);
+                            $count++;
+                        }
+                        break;
+                    case 'fila_espera':
+                        if ($inscription->isPending()) {
+                            $inscription->waitlist();
+                            $this->notificationService->notifyInscriptionWaitlisted($inscription);
+                            $count++;
+                        }
+                        break;
+                }
+            } catch (\Exception $e) {
+                Log::error("Falha na ação em lote para inscrição #{$inscription->id}: ".$e->getMessage());
             }
         }
 
@@ -290,11 +327,15 @@ class InscriptionController extends Controller
             'fila_espera' => 'movidas para fila de espera',
         };
 
-        ActivityLog::log('bulk_action', "Ação em lote: {$count} inscrições {$actionLabel}", null, [
-            'action' => $request->action,
-            'count' => $count,
-            'ids' => $request->inscription_ids,
-        ]);
+        try {
+            ActivityLog::log('bulk_action', "Ação em lote: {$count} inscrições {$actionLabel}", null, [
+                'action' => $request->action,
+                'count' => $count,
+                'ids' => $request->inscription_ids,
+            ]);
+        } catch (\Exception $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
 
         return redirect()
             ->back()
