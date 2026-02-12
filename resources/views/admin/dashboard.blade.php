@@ -162,7 +162,7 @@
                 </div>
                 <div class="divide-y">
                     @forelse($recent_inscriptions as $inscription)
-                        <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
+                        <a href="{{ route('admin.inscricoes.show', $inscription) }}?from=dashboard" class="px-6 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors group">
                             <div>
                                 <span class="font-medium text-gray-900 group-hover:text-gray-700 text-sm">
                                     {{ $inscription->full_name }}

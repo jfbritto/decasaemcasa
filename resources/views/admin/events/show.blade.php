@@ -174,7 +174,7 @@
                         <tbody class="divide-y divide-gray-200">
                             @foreach($inscriptions as $inscription)
                                 <tr class="hover:bg-gray-50 cursor-pointer transition-colors"
-                                    onclick="window.location='{{ route('admin.inscricoes.show', $inscription) }}'">
+                                    onclick="window.location='{{ route('admin.inscricoes.show', $inscription) }}?from=event:{{ $event->id }}'">
                                     <td class="px-4 py-3 text-sm font-medium text-gray-900">
                                         {{ $inscription->full_name }}
                                     </td>
@@ -210,7 +210,7 @@
                 {{-- Cards para mobile --}}
                 <div class="sm:hidden space-y-3">
                     @foreach($inscriptions as $inscription)
-                        <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="block bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                        <a href="{{ route('admin.inscricoes.show', $inscription) }}?from=event:{{ $event->id }}" class="block bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm font-medium text-gray-900">{{ $inscription->full_name }}</p>
                                 <span class="px-2 py-0.5 text-xs rounded-full font-medium"
