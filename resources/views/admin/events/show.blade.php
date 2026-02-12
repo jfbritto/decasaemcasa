@@ -168,6 +168,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Nome</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">WhatsApp</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Comprovante</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -179,16 +180,26 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-700">{{ $inscription->whatsapp }}</td>
                                     <td class="px-4 py-3">
-                                        <span class="px-2 py-0.5 text-xs rounded-full font-medium
-                                            @if($inscription->isPending()) bg-yellow-100 text-yellow-800
-                                            @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
-                                            @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
-                                            @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
-                                            @elseif($inscription->isRejected()) bg-red-100 text-red-800
-                                            @elseif($inscription->isCancelled()) bg-gray-100 text-gray-800
-                                            @endif">
+                                        <span class="px-2 py-0.5 text-xs rounded-full font-medium"
+                                            @if($inscription->isPending()) style="background-color:#fef9c3;color:#854d0e;"
+                                            @elseif($inscription->isApproved()) style="background-color:#dbeafe;color:#1e40af;"
+                                            @elseif($inscription->isConfirmed()) style="background-color:#dcfce7;color:#166534;"
+                                            @elseif($inscription->isWaitlisted()) style="background-color:#ffedd5;color:#9a3412;"
+                                            @elseif($inscription->isRejected()) style="background-color:#fee2e2;color:#991b1b;"
+                                            @elseif($inscription->isCancelled()) style="background-color:#f3f4f6;color:#374151;"
+                                            @endif>
                                             {{ $inscription->status_label }}
                                         </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        @if($inscription->payment_proof)
+                                            <span class="inline-flex items-center" style="color:#16a34a;">
+                                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                                Enviado
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
@@ -202,18 +213,26 @@
                         <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="block bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
                             <div class="flex items-center justify-between">
                                 <p class="text-sm font-medium text-gray-900">{{ $inscription->full_name }}</p>
-                                <span class="px-2 py-0.5 text-xs rounded-full font-medium
-                                    @if($inscription->isPending()) bg-yellow-100 text-yellow-800
-                                    @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
-                                    @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
-                                    @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
-                                    @elseif($inscription->isRejected()) bg-red-100 text-red-800
-                                    @elseif($inscription->isCancelled()) bg-gray-100 text-gray-800
-                                    @endif">
+                                <span class="px-2 py-0.5 text-xs rounded-full font-medium"
+                                    @if($inscription->isPending()) style="background-color:#fef9c3;color:#854d0e;"
+                                    @elseif($inscription->isApproved()) style="background-color:#dbeafe;color:#1e40af;"
+                                    @elseif($inscription->isConfirmed()) style="background-color:#dcfce7;color:#166534;"
+                                    @elseif($inscription->isWaitlisted()) style="background-color:#ffedd5;color:#9a3412;"
+                                    @elseif($inscription->isRejected()) style="background-color:#fee2e2;color:#991b1b;"
+                                    @elseif($inscription->isCancelled()) style="background-color:#f3f4f6;color:#374151;"
+                                    @endif>
                                     {{ $inscription->status_label }}
                                 </span>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">{{ $inscription->whatsapp }}</p>
+                            <div class="flex items-center justify-between mt-1">
+                                <p class="text-xs text-gray-500">{{ $inscription->whatsapp }}</p>
+                                @if($inscription->payment_proof)
+                                    <span class="inline-flex items-center text-xs" style="color:#16a34a;">
+                                        <svg class="w-3 h-3 mr-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                        Comprovante
+                                    </span>
+                                @endif
+                            </div>
                         </a>
                     @endforeach
                 </div>
