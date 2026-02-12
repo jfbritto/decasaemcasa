@@ -16,7 +16,7 @@
                         $backLabel = 'Voltar para dashboard';
                     } elseif ($from && str_starts_with($from, 'event:')) {
                         $eventId = (int) str_replace('event:', '', $from);
-                        $backUrl = route('admin.eventos.show', $eventId);
+                        $backUrl = route('admin.events.show', $eventId);
                         $backLabel = 'Voltar para encontro';
                     } else {
                         $backUrl = route('admin.inscricoes.index');
