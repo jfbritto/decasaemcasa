@@ -292,32 +292,40 @@ class InscriptionController extends Controller
         $count = 0;
 
         foreach ($inscriptions as $inscription) {
-            try {
-                switch ($request->action) {
-                    case 'aprovar':
-                        if ($inscription->isPending() || $inscription->isWaitlisted()) {
-                            $inscription->approve();
+            switch ($request->action) {
+                case 'aprovar':
+                    if ($inscription->isPending() || $inscription->isWaitlisted()) {
+                        $inscription->approve();
+                        $count++;
+                        try {
                             $this->notificationService->notifyInscriptionApproved($inscription);
-                            $count++;
+                        } catch (\Exception $e) {
+                            Log::error("Falha ao notificar aprovação da inscrição #{$inscription->id}: ".$e->getMessage());
                         }
-                        break;
-                    case 'rejeitar':
-                        if ($inscription->isPending() || $inscription->isWaitlisted()) {
-                            $inscription->reject();
+                    }
+                    break;
+                case 'rejeitar':
+                    if ($inscription->isPending() || $inscription->isWaitlisted()) {
+                        $inscription->reject();
+                        $count++;
+                        try {
                             $this->notificationService->notifyInscriptionRejected($inscription);
-                            $count++;
+                        } catch (\Exception $e) {
+                            Log::error("Falha ao notificar rejeição da inscrição #{$inscription->id}: ".$e->getMessage());
                         }
-                        break;
-                    case 'fila_espera':
-                        if ($inscription->isPending()) {
-                            $inscription->waitlist();
+                    }
+                    break;
+                case 'fila_espera':
+                    if ($inscription->isPending()) {
+                        $inscription->waitlist();
+                        $count++;
+                        try {
                             $this->notificationService->notifyInscriptionWaitlisted($inscription);
-                            $count++;
+                        } catch (\Exception $e) {
+                            Log::error("Falha ao notificar fila de espera da inscrição #{$inscription->id}: ".$e->getMessage());
                         }
-                        break;
-                }
-            } catch (\Exception $e) {
-                Log::error("Falha na ação em lote para inscrição #{$inscription->id}: ".$e->getMessage());
+                    }
+                    break;
             }
         }
 
