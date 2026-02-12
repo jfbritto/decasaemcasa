@@ -1,12 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Casa -->
-  <polygon points="32,6 4,30 12,30 12,56 52,56 52,30 60,30" fill="#4f46e5" />
-  <!-- Porta -->
-  <rect x="24" y="36" width="16" height="20" rx="2" fill="#312e81" />
-  <!-- Nota musical dentro da porta -->
-  <g fill="#fff">
-    <ellipse cx="29" cy="50" rx="4" ry="3" />
-    <rect x="32.5" y="38" width="2" height="13" />
-    <path d="M34.5,38 Q40,35 38,42 L36,41 Q38,36 34.5,38.5Z" />
-  </g>
+  <!-- Braco do violao -->
+  <rect x="29" y="2" width="6" height="28" rx="2" fill="#c06a1a"/>
+  <!-- Trastes -->
+  <line x1="30" y1="8" x2="34" y2="8" stroke="#e88a2d" stroke-width="1"/>
+  <line x1="30" y1="14" x2="34" y2="14" stroke="#e88a2d" stroke-width="1"/>
+  <line x1="30" y1="20" x2="34" y2="20" stroke="#e88a2d" stroke-width="1"/>
+  <!-- Cabeca do violao -->
+  <rect x="27" y="0" width="10" height="6" rx="3" fill="#b35e17"/>
+  <!-- Tarraxas -->
+  <circle cx="28" cy="2" r="1.5" fill="#e88a2d"/>
+  <circle cx="36" cy="2" r="1.5" fill="#e88a2d"/>
+  <circle cx="28" cy="5" r="1.5" fill="#e88a2d"/>
+  <circle cx="36" cy="5" r="1.5" fill="#e88a2d"/>
+  <!-- Corpo do violao - parte superior -->
+  <ellipse cx="32" cy="36" rx="14" ry="11" fill="#e88a2d"/>
+  <!-- Corpo do violao - parte inferior -->
+  <ellipse cx="32" cy="50" rx="17" ry="13" fill="#e88a2d"/>
+  <!-- Cintura (curva entre as duas partes) -->
+  <ellipse cx="32" cy="43" rx="11" ry="6" fill="#e88a2d"/>
+  <!-- Boca do violao -->
+  <circle cx="32" cy="44" r="6" fill="#c06a1a"/>
+  <circle cx="32" cy="44" r="5" fill="none" stroke="#b35e17" stroke-width="1"/>
+  <!-- Roseta (decoracao ao redor da boca) -->
+  <circle cx="32" cy="44" r="7" fill="none" stroke="#d4781f" stroke-width="0.8"/>
+  <!-- Cavalete -->
+  <rect x="28" y="52" width="8" height="2" rx="1" fill="#b35e17"/>
+  <!-- Cordas -->
+  <line x1="31" y1="6" x2="31" y2="52" stroke="#fff" stroke-width="0.5" opacity="0.6"/>
+  <line x1="33" y1="6" x2="33" y2="52" stroke="#fff" stroke-width="0.5" opacity="0.6"/>
+  <line x1="30" y1="6" x2="30" y2="52" stroke="#fff" stroke-width="0.4" opacity="0.4"/>
+  <line x1="34" y1="6" x2="34" y2="52" stroke="#fff" stroke-width="0.4" opacity="0.4"/>
 </svg>
