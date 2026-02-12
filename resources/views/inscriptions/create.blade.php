@@ -69,7 +69,7 @@
                                                 {{ $event->city ?? $event->title }}
                                             </span>
                                             <span class="text-sm font-medium text-indigo-600">
-                                                {{ $event->date->format('d/M') }}
+                                                {{ $event->date->translatedFormat('d/M') }}
                                             </span>
                                         </div>
                                         @if($event->title && $event->city && $event->title !== $event->city)
