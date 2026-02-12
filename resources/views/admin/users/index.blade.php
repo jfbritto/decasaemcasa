@@ -27,7 +27,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @foreach($users as $user)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50" x-data>
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
                                     <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-3">

@@ -206,7 +206,7 @@
                 </div>
 
                 {{-- Ações --}}
-                <div class="bg-white rounded-xl shadow p-6">
+                <div class="bg-white rounded-xl shadow p-6" x-data>
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Ações</h2>
                     <div class="space-y-3">
                         @if($inscription->isPending())

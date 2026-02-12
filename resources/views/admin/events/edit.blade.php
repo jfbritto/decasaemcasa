@@ -112,7 +112,7 @@
         </form>
 
         {{-- Zona de Perigo --}}
-        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-red-500">
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-red-500" x-data>
             <h2 class="text-lg font-bold text-red-700 mb-2">Zona de Perigo</h2>
             <p class="text-sm text-gray-600 mb-4">Excluir este encontro removerá todas as inscrições associadas. Esta ação não pode ser desfeita.</p>
             <form method="POST" action="{{ route('admin.events.destroy', $event) }}">
