@@ -66,6 +66,8 @@ class EventController extends Controller
             'total' => $event->inscriptions()->count(),
             'pendente' => $event->inscriptions()->where('status', 'pendente')->count(),
             'aprovado' => $event->inscriptions()->where('status', 'aprovado')->count(),
+            'aguardando_pix' => $event->inscriptions()->where('status', 'aprovado')->whereNull('payment_proof')->count(),
+            'comprovante_enviado' => $event->inscriptions()->where('status', 'aprovado')->whereNotNull('payment_proof')->count(),
             'confirmado' => $event->inscriptions()->where('status', 'confirmado')->count(),
             'fila_de_espera' => $event->inscriptions()->where('status', 'fila_de_espera')->count(),
             'rejeitado' => $event->inscriptions()->where('status', 'rejeitado')->count(),

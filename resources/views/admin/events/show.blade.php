@@ -116,15 +116,19 @@
                     @endif
                 </div>
 
-                {{-- Mini-cards 3x2 --}}
-                <div class="grid grid-cols-3 gap-3">
+                {{-- Mini-cards --}}
+                <div class="grid grid-cols-2 gap-3">
                     <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #eab308;">
                         <p class="text-2xl font-bold" style="color:#a16207;">{{ $inscriptionStats['pendente'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Pendentes</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #3b82f6;">
-                        <p class="text-2xl font-bold" style="color:#1d4ed8;">{{ $inscriptionStats['aprovado'] }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Aprovados</p>
+                        <p class="text-2xl font-bold" style="color:#1d4ed8;">{{ $inscriptionStats['aguardando_pix'] }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Aguardando Pix</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #6366f1;">
+                        <p class="text-2xl font-bold" style="color:#4338ca;">{{ $inscriptionStats['comprovante_enviado'] }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Comprovante Enviado</p>
                     </div>
                     <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #22c55e;">
                         <p class="text-2xl font-bold" style="color:#15803d;">{{ $inscriptionStats['confirmado'] }}</p>
@@ -138,7 +142,7 @@
                         <p class="text-2xl font-bold" style="color:#b91c1c;">{{ $inscriptionStats['rejeitado'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Rejeitados</p>
                     </div>
-                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #9ca3af;">
+                    <div class="col-span-2 bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #9ca3af;">
                         <p class="text-2xl font-bold" style="color:#374151;">{{ $inscriptionStats['cancelado'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Cancelados</p>
                     </div>
