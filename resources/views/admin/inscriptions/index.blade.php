@@ -16,7 +16,7 @@
         </div>
 
         {{-- Contadores --}}
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
             <div class="bg-white rounded-xl shadow p-4 text-center">
                 <p class="text-2xl font-bold text-gray-900">{{ $counts['total'] }}</p>
                 <p class="text-sm text-gray-500">Total</p>
@@ -36,6 +36,14 @@
             <div class="bg-orange-50 rounded-xl shadow p-4 text-center border border-orange-200">
                 <p class="text-2xl font-bold text-orange-700">{{ $counts['fila_de_espera'] }}</p>
                 <p class="text-sm text-orange-600">Fila de Espera</p>
+            </div>
+            <div class="bg-red-50 rounded-xl shadow p-4 text-center border border-red-200">
+                <p class="text-2xl font-bold text-red-700">{{ $counts['rejeitado'] }}</p>
+                <p class="text-sm text-red-600">Rejeitados</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl shadow p-4 text-center border border-gray-200">
+                <p class="text-2xl font-bold text-gray-700">{{ $counts['cancelado'] }}</p>
+                <p class="text-sm text-gray-500">Cancelados</p>
             </div>
         </div>
 
