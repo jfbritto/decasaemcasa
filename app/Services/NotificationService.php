@@ -41,16 +41,17 @@ class NotificationService
             $this->logNotification('email', $channel ?? 'general', $to, $subject, $message, $user, $metadata, 'sent');
 
             return true;
-        } catch (\Exception $e) {
-            $this->logNotification('email', $channel ?? 'general', $to, $subject, $message, $user, $metadata, 'failed', $e->getMessage());
+        } catch (\Throwable $e) {
+            try {
+                $this->logNotification('email', $channel ?? 'general', $to, $subject, $message, $user, $metadata, 'failed', $e->getMessage());
+            } catch (\Throwable $logError) {
+                Log::warning('Falha ao registrar log de notificação: '.$logError->getMessage());
+            }
             Log::error('Erro ao enviar email: '.$e->getMessage(), [
                 'to' => $to,
                 'subject' => $subject,
-                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
             ]);
-            if (config('app.env') === 'local') {
-                return true;
-            }
 
             return false;
         }
@@ -68,15 +69,16 @@ class NotificationService
             $this->logNotification('whatsapp', $channel ?? 'general', $to, null, $message, $user, $metadata, 'sent');
 
             return true;
-        } catch (\Exception $e) {
-            $this->logNotification('whatsapp', $channel ?? 'general', $to, null, $message, $user, $metadata, 'failed', $e->getMessage());
+        } catch (\Throwable $e) {
+            try {
+                $this->logNotification('whatsapp', $channel ?? 'general', $to, null, $message, $user, $metadata, 'failed', $e->getMessage());
+            } catch (\Throwable $logError) {
+                Log::warning('Falha ao registrar log de notificação: '.$logError->getMessage());
+            }
             Log::error('Erro ao enviar WhatsApp: '.$e->getMessage(), [
                 'to' => $to,
-                'exception' => $e,
+                'trace' => $e->getTraceAsString(),
             ]);
-            if (config('app.env') === 'local') {
-                return true;
-            }
 
             return false;
         }
@@ -325,17 +327,21 @@ class NotificationService
 
     private function logNotification(string $type, string $channel, string $recipient, ?string $subject, string $message, ?User $user, array $metadata, string $status, ?string $errorMessage = null): void
     {
-        Notification::create([
-            'user_id' => $user?->id,
-            'type' => $type,
-            'channel' => $channel,
-            'recipient' => $recipient,
-            'subject' => $subject,
-            'message' => $message,
-            'status' => $status,
-            'error_message' => $errorMessage,
-            'metadata' => $metadata,
-            'sent_at' => $status === 'sent' ? now() : null,
-        ]);
+        try {
+            Notification::create([
+                'user_id' => $user?->id,
+                'type' => $type,
+                'channel' => $channel,
+                'recipient' => $recipient,
+                'subject' => $subject,
+                'message' => $message,
+                'status' => $status,
+                'error_message' => $errorMessage,
+                'metadata' => $metadata,
+                'sent_at' => $status === 'sent' ? now() : null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning("Falha ao salvar log de notificação ({$type}/{$channel}): ".$e->getMessage());
+        }
     }
 }

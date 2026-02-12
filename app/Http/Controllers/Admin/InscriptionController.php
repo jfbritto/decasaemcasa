@@ -121,19 +121,24 @@ class InscriptionController extends Controller
                 ->with('error', 'Apenas inscrições pendentes ou em fila de espera podem ser aprovadas.');
         }
 
-        $inscription->approve();
+        try {
+            $inscription->approve();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao aprovar inscrição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao aprovar inscrição. Verifique os logs.');
+        }
 
         try {
             ActivityLog::log('aprovar_inscricao', "Aprovou inscrição de {$inscription->full_name}", $inscription);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
         }
 
-        // Notificar participante
         try {
             $this->notificationService->notifyInscriptionApproved($inscription);
-        } catch (\Exception $e) {
-            Log::error('Falha ao notificar aprovação: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar aprovação: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
         }
 
         return redirect()
@@ -152,19 +157,24 @@ class InscriptionController extends Controller
                 ->with('error', 'Apenas inscrições pendentes podem ser movidas para a fila de espera.');
         }
 
-        $inscription->waitlist();
+        try {
+            $inscription->waitlist();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao mover para fila: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao mover para fila de espera. Verifique os logs.');
+        }
 
         try {
             ActivityLog::log('fila_espera_inscricao', "Moveu {$inscription->full_name} para fila de espera", $inscription);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
         }
 
-        // Notificar participante
         try {
             $this->notificationService->notifyInscriptionWaitlisted($inscription);
-        } catch (\Exception $e) {
-            Log::error('Falha ao notificar fila de espera: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar fila de espera: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
         }
 
         return redirect()
@@ -183,19 +193,24 @@ class InscriptionController extends Controller
                 ->with('error', 'Apenas inscrições aprovadas podem ter o pagamento confirmado.');
         }
 
-        $inscription->confirm();
+        try {
+            $inscription->confirm();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao confirmar inscrição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao confirmar pagamento. Verifique os logs.');
+        }
 
         try {
             ActivityLog::log('confirmar_inscricao', "Confirmou pagamento de {$inscription->full_name}", $inscription);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
         }
 
-        // Notificar participante com endereço
         try {
             $this->notificationService->notifyInscriptionConfirmed($inscription);
-        } catch (\Exception $e) {
-            Log::error('Falha ao notificar confirmação: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar confirmação: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
         }
 
         return redirect()
@@ -214,32 +229,38 @@ class InscriptionController extends Controller
                 ->with('error', 'O lembrete só pode ser enviado para inscrições aprovadas sem comprovante.');
         }
 
-        $event = $inscription->event;
-        $statusUrl = route('inscricao.status', $inscription->token);
+        try {
+            $event = $inscription->event;
+            $statusUrl = route('inscricao.status', $inscription->token);
 
-        // Email
-        $this->notificationService->sendEmail(
-            $inscription->email,
-            'Lembrete: Envie seu comprovante - De Casa em Casa',
-            "Lembrete de comprovante para {$inscription->full_name}",
-            null,
-            'payment_reminder',
-            ['inscription_id' => $inscription->id],
-            'emails.payment-reminder',
-            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
-        );
+            // Email
+            $this->notificationService->sendEmail(
+                $inscription->email,
+                'Lembrete: Envie seu comprovante - De Casa em Casa',
+                "Lembrete de comprovante para {$inscription->full_name}",
+                null,
+                'payment_reminder',
+                ['inscription_id' => $inscription->id],
+                'emails.payment-reminder',
+                ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+            );
 
-        // WhatsApp
-        $wa = "Olá {$inscription->full_name}! Lembramos que sua participação no encontro *De Casa em Casa* em *{$event->city}* foi aprovada. ";
-        $wa .= "Para garantir sua vaga, envie o comprovante de pagamento pelo link: {$statusUrl}";
+            // WhatsApp
+            $wa = "Olá {$inscription->full_name}! Lembramos que sua participação no encontro *De Casa em Casa* em *{$event->city}* foi aprovada. ";
+            $wa .= "Para garantir sua vaga, envie o comprovante de pagamento pelo link: {$statusUrl}";
 
-        $this->notificationService->sendWhatsApp(
-            $inscription->whatsapp,
-            $wa,
-            null,
-            'payment_reminder',
-            ['inscription_id' => $inscription->id]
-        );
+            $this->notificationService->sendWhatsApp(
+                $inscription->whatsapp,
+                $wa,
+                null,
+                'payment_reminder',
+                ['inscription_id' => $inscription->id]
+            );
+        } catch (\Throwable $e) {
+            Log::error('Falha ao enviar lembrete: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao enviar lembrete. Verifique os logs.');
+        }
 
         return redirect()
             ->back()
@@ -257,19 +278,24 @@ class InscriptionController extends Controller
                 ->with('error', 'Apenas inscrições pendentes ou em fila de espera podem ser rejeitadas.');
         }
 
-        $inscription->reject();
+        try {
+            $inscription->reject();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao rejeitar inscrição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao rejeitar inscrição. Verifique os logs.');
+        }
 
         try {
             ActivityLog::log('rejeitar_inscricao', "Rejeitou inscrição de {$inscription->full_name}", $inscription);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
         }
 
-        // Notificar participante
         try {
             $this->notificationService->notifyInscriptionRejected($inscription);
-        } catch (\Exception $e) {
-            Log::error('Falha ao notificar rejeição: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar rejeição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
         }
 
         return redirect()
@@ -292,40 +318,44 @@ class InscriptionController extends Controller
         $count = 0;
 
         foreach ($inscriptions as $inscription) {
-            switch ($request->action) {
-                case 'aprovar':
-                    if ($inscription->isPending() || $inscription->isWaitlisted()) {
-                        $inscription->approve();
-                        $count++;
-                        try {
-                            $this->notificationService->notifyInscriptionApproved($inscription);
-                        } catch (\Exception $e) {
-                            Log::error("Falha ao notificar aprovação da inscrição #{$inscription->id}: ".$e->getMessage());
+            try {
+                switch ($request->action) {
+                    case 'aprovar':
+                        if ($inscription->isPending() || $inscription->isWaitlisted()) {
+                            $inscription->approve();
+                            $count++;
+                            try {
+                                $this->notificationService->notifyInscriptionApproved($inscription);
+                            } catch (\Throwable $e) {
+                                Log::error("Falha ao notificar aprovação da inscrição #{$inscription->id}: ".$e->getMessage());
+                            }
                         }
-                    }
-                    break;
-                case 'rejeitar':
-                    if ($inscription->isPending() || $inscription->isWaitlisted()) {
-                        $inscription->reject();
-                        $count++;
-                        try {
-                            $this->notificationService->notifyInscriptionRejected($inscription);
-                        } catch (\Exception $e) {
-                            Log::error("Falha ao notificar rejeição da inscrição #{$inscription->id}: ".$e->getMessage());
+                        break;
+                    case 'rejeitar':
+                        if ($inscription->isPending() || $inscription->isWaitlisted()) {
+                            $inscription->reject();
+                            $count++;
+                            try {
+                                $this->notificationService->notifyInscriptionRejected($inscription);
+                            } catch (\Throwable $e) {
+                                Log::error("Falha ao notificar rejeição da inscrição #{$inscription->id}: ".$e->getMessage());
+                            }
                         }
-                    }
-                    break;
-                case 'fila_espera':
-                    if ($inscription->isPending()) {
-                        $inscription->waitlist();
-                        $count++;
-                        try {
-                            $this->notificationService->notifyInscriptionWaitlisted($inscription);
-                        } catch (\Exception $e) {
-                            Log::error("Falha ao notificar fila de espera da inscrição #{$inscription->id}: ".$e->getMessage());
+                        break;
+                    case 'fila_espera':
+                        if ($inscription->isPending()) {
+                            $inscription->waitlist();
+                            $count++;
+                            try {
+                                $this->notificationService->notifyInscriptionWaitlisted($inscription);
+                            } catch (\Throwable $e) {
+                                Log::error("Falha ao notificar fila de espera da inscrição #{$inscription->id}: ".$e->getMessage());
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
+            } catch (\Throwable $e) {
+                Log::error("Falha na ação em lote para inscrição #{$inscription->id}: ".$e->getMessage(), ['trace' => $e->getTraceAsString()]);
             }
         }
 
@@ -341,7 +371,7 @@ class InscriptionController extends Controller
                 'count' => $count,
                 'ids' => $request->inscription_ids,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
         }
 
