@@ -68,6 +68,8 @@ class EventController extends Controller
             'aprovado' => $event->inscriptions()->where('status', 'aprovado')->count(),
             'confirmado' => $event->inscriptions()->where('status', 'confirmado')->count(),
             'fila_de_espera' => $event->inscriptions()->where('status', 'fila_de_espera')->count(),
+            'rejeitado' => $event->inscriptions()->where('status', 'rejeitado')->count(),
+            'cancelado' => $event->inscriptions()->where('status', 'cancelado')->count(),
         ];
 
         $inscriptions = $event->inscriptions()

@@ -116,23 +116,31 @@
                     @endif
                 </div>
 
-                {{-- Mini-cards 2x2 --}}
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-yellow-400">
-                        <p class="text-2xl font-bold text-yellow-700">{{ $inscriptionStats['pendente'] }}</p>
+                {{-- Mini-cards 3x2 --}}
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #eab308;">
+                        <p class="text-2xl font-bold" style="color:#a16207;">{{ $inscriptionStats['pendente'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Pendentes</p>
                     </div>
-                    <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-blue-400">
-                        <p class="text-2xl font-bold text-blue-700">{{ $inscriptionStats['aprovado'] }}</p>
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #3b82f6;">
+                        <p class="text-2xl font-bold" style="color:#1d4ed8;">{{ $inscriptionStats['aprovado'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Aprovados</p>
                     </div>
-                    <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-green-400">
-                        <p class="text-2xl font-bold text-green-700">{{ $inscriptionStats['confirmado'] }}</p>
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #22c55e;">
+                        <p class="text-2xl font-bold" style="color:#15803d;">{{ $inscriptionStats['confirmado'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Confirmados</p>
                     </div>
-                    <div class="bg-white rounded-lg shadow-md p-4 text-center border-t-4 border-orange-400">
-                        <p class="text-2xl font-bold text-orange-700">{{ $inscriptionStats['fila_de_espera'] }}</p>
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #f97316;">
+                        <p class="text-2xl font-bold" style="color:#c2410c;">{{ $inscriptionStats['fila_de_espera'] }}</p>
                         <p class="text-xs text-gray-500 mt-1">Fila de Espera</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #ef4444;">
+                        <p class="text-2xl font-bold" style="color:#b91c1c;">{{ $inscriptionStats['rejeitado'] }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Rejeitados</p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4 text-center" style="border-top:4px solid #9ca3af;">
+                        <p class="text-2xl font-bold" style="color:#374151;">{{ $inscriptionStats['cancelado'] }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Cancelados</p>
                     </div>
                 </div>
             </div>
