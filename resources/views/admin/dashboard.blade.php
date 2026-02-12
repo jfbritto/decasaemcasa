@@ -171,12 +171,14 @@
                                     {{ $inscription->event->city ?? $inscription->event->title }} · {{ $inscription->created_at->diffForHumans() }}
                                 </p>
                             </div>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0
-                                @if($inscription->isPending()) bg-yellow-100 text-yellow-800
-                                @elseif($inscription->isApproved()) bg-blue-100 text-blue-800
-                                @elseif($inscription->isConfirmed()) bg-green-100 text-green-800
-                                @elseif($inscription->isWaitlisted()) bg-orange-100 text-orange-800
-                                @endif">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
+                                @if($inscription->isPending()) style="background-color:#fef9c3;color:#854d0e;"
+                                @elseif($inscription->isApproved()) style="background-color:#dbeafe;color:#1e40af;"
+                                @elseif($inscription->isConfirmed()) style="background-color:#dcfce7;color:#166534;"
+                                @elseif($inscription->isWaitlisted()) style="background-color:#ffedd5;color:#9a3412;"
+                                @elseif($inscription->isRejected()) style="background-color:#fee2e2;color:#991b1b;"
+                                @elseif($inscription->isCancelled()) style="background-color:#f3f4f6;color:#374151;"
+                                @endif>
                                 {{ $inscription->status_label }}
                             </span>
                         </a>
