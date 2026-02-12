@@ -115,11 +115,11 @@
         <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 border-t-4 border-red-500">
             <h2 class="text-lg font-bold text-red-700 mb-2">Zona de Perigo</h2>
             <p class="text-sm text-gray-600 mb-4">Excluir este encontro removerá todas as inscrições associadas. Esta ação não pode ser desfeita.</p>
-            <form method="POST" action="{{ route('admin.events.destroy', $event) }}"
-                  x-data x-on:submit.prevent="Swal.fire({ title: 'Tem certeza?', text: 'O encontro {{ $event->city ?? $event->title }} e todas as inscrições serão excluídos permanentemente.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, excluir', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
+            <form method="POST" action="{{ route('admin.events.destroy', $event) }}">
                 @csrf
                 @method('DELETE')
-                <button type="submit" style="background-color:#dc2626;color:#fff;" class="hover:opacity-80 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                <button type="button" style="background-color:#dc2626;color:#fff;" class="hover:opacity-80 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        @click="Swal.fire({ title: 'Tem certeza?', text: 'O encontro {{ $event->city ?? $event->title }} e todas as inscrições serão excluídos permanentemente.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, excluir', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
                     Excluir Encontro
                 </button>
             </form>

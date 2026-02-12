@@ -170,10 +170,10 @@
                                     Mover para Fila de Espera
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}"
-                                  x-data x-on:submit.prevent="Swal.fire({ title: 'Rejeitar inscrição?', text: 'O participante será notificado sobre a rejeição.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
+                            <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}">
                                 @csrf
-                                <button type="submit" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors">
+                                <button type="button" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors"
+                                        @click="Swal.fire({ title: 'Rejeitar inscrição?', text: 'O participante será notificado sobre a rejeição.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
                                     Rejeitar Inscrição
                                 </button>
                             </form>
@@ -203,10 +203,10 @@
                                     Aprovar da Fila de Espera
                                 </button>
                             </form>
-                            <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}"
-                                  x-data x-on:submit.prevent="Swal.fire({ title: 'Rejeitar inscrição?', text: 'O participante será notificado sobre a rejeição.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
+                            <form method="POST" action="{{ route('admin.inscricoes.rejeitar', $inscription) }}">
                                 @csrf
-                                <button type="submit" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors">
+                                <button type="button" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors"
+                                        @click="Swal.fire({ title: 'Rejeitar inscrição?', text: 'O participante será notificado sobre a rejeição.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
                                     Rejeitar Inscrição
                                 </button>
                             </form>

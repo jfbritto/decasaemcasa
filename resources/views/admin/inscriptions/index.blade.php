@@ -96,36 +96,36 @@
             <div x-show="hasSelection" x-transition class="bg-indigo-50 border-b border-indigo-200 px-4 py-3 flex items-center justify-between">
                 <span class="text-sm text-indigo-700 font-medium" x-text="selectedIds.length + ' inscrição(ões) selecionada(s)'"></span>
                 <div class="flex items-center gap-2">
-                    <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline"
-                          x-on:submit.prevent="Swal.fire({ title: 'Aprovar inscrições?', text: 'As inscrições selecionadas serão aprovadas e os participantes notificados.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, aprovar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
+                    <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline">
                         @csrf
                         <input type="hidden" name="action" value="aprovar">
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="submit" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700">
+                        <button type="button" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
+                                @click="Swal.fire({ title: 'Aprovar inscrições?', text: 'As inscrições selecionadas serão aprovadas e os participantes notificados.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, aprovar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
                             Aprovar Selecionados
                         </button>
                     </form>
-                    <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline"
-                          x-on:submit.prevent="Swal.fire({ title: 'Mover para fila de espera?', text: 'As inscrições selecionadas serão movidas para a fila de espera.', icon: 'question', showCancelButton: true, confirmButtonColor: '#f59e0b', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, mover', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
+                    <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline">
                         @csrf
                         <input type="hidden" name="action" value="fila_espera">
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="submit" class="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600">
+                        <button type="button" class="px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600"
+                                @click="Swal.fire({ title: 'Mover para fila de espera?', text: 'As inscrições selecionadas serão movidas para a fila de espera.', icon: 'question', showCancelButton: true, confirmButtonColor: '#f59e0b', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, mover', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
                             Mover p/ Fila
                         </button>
                     </form>
-                    <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline"
-                          x-on:submit.prevent="Swal.fire({ title: 'Rejeitar inscrições?', text: 'As inscrições selecionadas serão rejeitadas e os participantes serão notificados.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.submit() })">
+                    <form method="POST" action="{{ route('admin.inscricoes.bulk-action') }}" class="inline">
                         @csrf
                         <input type="hidden" name="action" value="rejeitar">
                         <template x-for="id in selectedIds" :key="id">
                             <input type="hidden" name="inscription_ids[]" :value="id">
                         </template>
-                        <button type="submit" style="background-color:#dc2626;color:#fff;" class="px-3 py-1.5 text-xs font-medium rounded-lg hover:opacity-80">
+                        <button type="button" style="background-color:#dc2626;color:#fff;" class="px-3 py-1.5 text-xs font-medium rounded-lg hover:opacity-80"
+                                @click="Swal.fire({ title: 'Rejeitar inscrições?', text: 'As inscrições selecionadas serão rejeitadas e os participantes serão notificados.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
                             Rejeitar Selecionados
                         </button>
                     </form>
