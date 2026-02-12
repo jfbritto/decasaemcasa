@@ -235,7 +235,7 @@
                     </button>
                     <form method="POST" action="{{ route('inscricao.cancel', $inscription->token) }}" class="flex-1">
                         @csrf
-                        <button type="submit" class="w-full py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors text-sm">
+                        <button type="submit" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors text-sm">
                             Sim, cancelar
                         </button>
                     </form>
