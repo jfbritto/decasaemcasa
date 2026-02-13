@@ -474,4 +474,21 @@ class InscriptionController extends Controller
             ->back()
             ->with('success', 'Notas atualizadas.');
     }
+
+    /**
+     * Atualizar valor da contribuição.
+     */
+    public function updateContribution(Request $request, Inscription $inscription)
+    {
+        $request->validate([
+            'contribution_amount' => 'nullable|numeric|min:0',
+        ]);
+
+        $inscription->contribution_amount = $request->contribution_amount;
+        $inscription->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Valor da contribuição atualizado.');
+    }
 }
