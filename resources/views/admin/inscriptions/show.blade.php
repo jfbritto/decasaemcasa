@@ -247,6 +247,14 @@
                             @if($inscription->payment_proof)
                                 <form method="POST" action="{{ route('admin.inscricoes.confirmar', $inscription) }}">
                                     @csrf
+                                    <div class="mb-3">
+                                        <label for="contribution_amount" class="block text-sm font-medium text-gray-700 mb-1">Valor da Contribuição (R$)</label>
+                                        <input type="number" name="contribution_amount" id="contribution_amount"
+                                               step="0.01" min="0" placeholder="0,00"
+                                               value="{{ old('contribution_amount') }}"
+                                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                                        <p class="text-xs text-gray-500 mt-1">Informe o valor do comprovante antes de confirmar.</p>
+                                    </div>
                                     <button type="submit" class="w-full py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors">
                                         Confirmar Pagamento
                                     </button>
@@ -281,6 +289,9 @@
                                 <p class="text-sm text-green-700 font-medium">Participação confirmada!</p>
                                 @if($inscription->confirmed_at)
                                     <p class="text-xs text-green-600 mt-1">Confirmado em {{ $inscription->confirmed_at->format('d/m/Y H:i') }}</p>
+                                @endif
+                                @if($inscription->contribution_amount)
+                                    <p class="text-sm text-green-800 font-semibold mt-2">Contribuição: R$ {{ number_format($inscription->contribution_amount, 2, ',', '.') }}</p>
                                 @endif
                             </div>
                         @elseif($inscription->isRejected())

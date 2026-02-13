@@ -24,6 +24,7 @@ class Inscription extends Model
         'terms_accepted',
         'status',
         'payment_proof',
+        'contribution_amount',
         'admin_notes',
         'approved_at',
         'confirmed_at',
@@ -34,6 +35,7 @@ class Inscription extends Model
         'terms_accepted' => 'boolean',
         'approved_at' => 'datetime',
         'confirmed_at' => 'datetime',
+        'contribution_amount' => 'decimal:2',
     ];
 
     protected static function boot()

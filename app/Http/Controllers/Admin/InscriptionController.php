@@ -191,12 +191,18 @@ class InscriptionController extends Controller
     /**
      * Confirmar pagamento.
      */
-    public function confirm(Inscription $inscription)
+    public function confirm(Request $request, Inscription $inscription)
     {
         if (! $inscription->isApproved()) {
             return redirect()
                 ->back()
                 ->with('error', 'Apenas inscrições aprovadas podem ter o pagamento confirmado.');
+        }
+
+        // Salvar valor da contribuição (se informado)
+        if ($request->filled('contribution_amount')) {
+            $inscription->contribution_amount = $request->contribution_amount;
+            $inscription->save();
         }
 
         try {
@@ -424,7 +430,7 @@ class InscriptionController extends Controller
             fputcsv($file, [
                 'Nome Completo', 'CPF', 'Data Nascimento', 'Bairro/Cidade',
                 'WhatsApp', 'Email', 'Instagram', 'Encontro', 'Data Encontro',
-                'Status', 'Comprovante', 'Motivação', 'Data Inscrição',
+                'Status', 'Comprovante', 'Contribuição (R$)', 'Motivação', 'Data Inscrição',
             ], ';');
 
             foreach ($inscriptions as $inscription) {
@@ -440,6 +446,7 @@ class InscriptionController extends Controller
                     $inscription->event->date->format('d/m/Y'),
                     $inscription->status_label,
                     $inscription->payment_proof ? 'Sim' : 'Não',
+                    $inscription->contribution_amount ? number_format($inscription->contribution_amount, 2, ',', '.') : '',
                     $inscription->motivation,
                     $inscription->created_at->format('d/m/Y H:i'),
                 ], ';');
