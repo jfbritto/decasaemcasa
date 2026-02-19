@@ -24,7 +24,7 @@ class InscriptionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Inscription::with('event');
+        $query = Inscription::with('event')->whereHas('event');
 
         // Ordenação
         $sortField = $request->get('sort', 'created_at');

@@ -268,10 +268,14 @@
                                         </div>
                                     </td>
                                     <td class="px-4 py-3 text-sm">
-                                        <a href="{{ route('admin.events.show', $inscription->event) }}" class="font-medium text-indigo-600 hover:text-indigo-800">
-                                            {{ $inscription->event->city ?? $inscription->event->title }}
-                                        </a>
-                                        <p class="text-xs text-gray-500">{{ $inscription->event->date->format('d/m/Y') }}</p>
+                                        @if($inscription->event)
+                                            <a href="{{ route('admin.events.show', $inscription->event) }}" class="font-medium text-indigo-600 hover:text-indigo-800">
+                                                {{ $inscription->event->city ?? $inscription->event->title }}
+                                            </a>
+                                            <p class="text-xs text-gray-500">{{ $inscription->event->date->format('d/m/Y') }}</p>
+                                        @else
+                                            <span class="text-gray-400">Evento removido</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-700">{{ $inscription->whatsapp }}</td>
                                     <td class="px-4 py-3">
