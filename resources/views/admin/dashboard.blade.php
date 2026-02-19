@@ -168,7 +168,7 @@
                                     {{ $inscription->full_name }}
                                 </span>
                                 <p class="text-xs text-gray-500">
-                                    {{ $inscription->event->city ?? $inscription->event->title }} · {{ $inscription->created_at->diffForHumans() }}
+                                    {{ $inscription->event ? ($inscription->event->city ?? $inscription->event->title) : 'Evento removido' }} · {{ $inscription->created_at->diffForHumans() }}
                                 </p>
                             </div>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"

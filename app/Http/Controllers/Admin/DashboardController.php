@@ -44,6 +44,7 @@ class DashboardController extends Controller
 
         // Inscrições recentes
         $recent_inscriptions = Inscription::with('event')
+            ->whereHas('event')
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
