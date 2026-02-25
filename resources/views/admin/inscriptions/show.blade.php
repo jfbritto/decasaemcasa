@@ -205,6 +205,7 @@
                 {{-- Evento --}}
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Encontro</h2>
+                    @if($inscription->event)
                     <div class="space-y-2">
                         <p class="font-medium text-gray-900">{{ $inscription->event->city ?? $inscription->event->title }}</p>
                         <p class="text-sm text-gray-600">{{ $inscription->event->date->format('d/m/Y') }}</p>
@@ -217,6 +218,9 @@
                             </p>
                         @endif
                     </div>
+                    @else
+                    <p class="text-sm text-gray-400">Evento removido</p>
+                    @endif
                 </div>
 
                 {{-- Ações --}}
