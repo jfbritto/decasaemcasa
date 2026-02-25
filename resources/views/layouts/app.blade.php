@@ -122,7 +122,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 min-h-screen flex flex-col">
     <nav class="bg-white shadow-md border-b border-gray-200" x-data="{ open: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
@@ -243,7 +243,7 @@
         </div>
     </nav>
 
-    <main>
+    <main class="flex-1">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="px-4 sm:px-0">
                 @if(session('success'))
@@ -284,12 +284,10 @@
         @yield('content')
     </main>
 
-    <footer class="border-t mt-auto">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-gray-400 text-xs">
-                desenvolvido em casa por <a href="https://instagram.com/bianchijf" target="_blank" class="text-indigo-400 hover:text-indigo-600 transition-colors">@bianchijf</a>
-            </p>
-        </div>
+    <footer class="py-6">
+        <p class="text-center text-gray-400 text-xs">
+            desenvolvido em casa por <a href="https://instagram.com/bianchijf" target="_blank" class="text-indigo-400 hover:text-indigo-600 transition-colors">@bianchijf</a>
+        </p>
     </footer>
 
     <script>
