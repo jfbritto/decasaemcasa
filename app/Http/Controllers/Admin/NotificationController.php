@@ -53,7 +53,14 @@ class NotificationController extends Controller
             'skipped' => Notification::where('status', 'skipped')->count(),
         ];
 
-        return view('admin.notifications.index', compact('notifications', 'counts'));
+        $resentKeys = Notification::where('status', 'sent')
+            ->get(['recipient', 'channel'])
+            ->map(fn ($n) => $n->recipient . '|' . $n->channel)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys'));
     }
 
     /**

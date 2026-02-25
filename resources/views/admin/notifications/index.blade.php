@@ -115,6 +115,11 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" title="{{ $notification->error_message }}">
                                                 Falhou
                                             </span>
+                                            @if(in_array($notification->recipient . '|' . $notification->channel, $resentKeys))
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ml-1">
+                                                    Reenviado
+                                                </span>
+                                            @endif
                                         @elseif($notification->status === 'skipped')
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800" title="{{ $notification->error_message }}">
                                                 Ignorada
@@ -126,7 +131,7 @@
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            @if($notification->status === 'failed' || $notification->status === 'skipped')
+                                            @if(($notification->status === 'failed' || $notification->status === 'skipped') && !in_array($notification->recipient . '|' . $notification->channel, $resentKeys))
                                                 <form method="POST" action="{{ route('admin.notificacoes.resend', $notification) }}" class="inline">
                                                     @csrf
                                                     <button type="button" class="px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700" title="Reenviar"
