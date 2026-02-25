@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
 
     <!-- SEO e compartilhamento -->
-    <meta name="description" content="@yield('meta_description', 'De Casa em Casa é uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais.')">
+    <meta name="description" content="@yield('meta_description', 'De Casa em Casa — um encontro que acontece dentro de lares reais. Música e conexão de verdade.')">
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
     <meta property="og:type" content="website">

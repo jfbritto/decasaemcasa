@@ -13,7 +13,7 @@
     Olá <strong>{{ $inscription->full_name }}</strong>,
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Recebemos sua história! Estamos em fase de curadoria. Como os lugares são limitados e em lares, fazemos essa leitura com carinho.
+    Recebemos sua história! Aqui do nosso lado, pessoas reais estão conferindo seus dados e logo logo responderemos. Calma, que esse processo é manual. Assim que sua inscrição for aprovada, você poderá fazer sua contribuição. Obrigado pelo interesse em participar desse encontro especial!
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Aguarde nosso retorno — avisaremos assim que tivermos novidades.

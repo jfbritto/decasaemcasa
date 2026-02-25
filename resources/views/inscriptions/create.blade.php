@@ -126,7 +126,7 @@
 
                     <blockquote class="border-l-4 border-amber-400 pl-6 py-4 bg-amber-50 rounded-r-xl">
                         <p class="text-lg text-gray-700 italic leading-relaxed">
-                            "De Casa em Casa é uma turnê que acontece onde a vida acontece. Dentro de casas reais, com pessoas reais, criando um encontro inédito e poderoso: uma música familiar, na sua expressão mais espontânea, ao vivo, autêntica, dentro da experiência mais sagrada que existe, na bênção de estar em família."
+                            "Esse encontro é sobre valorizar cada pessoa individualmente. Só é possível fazer uma inscrição de cada vez. Caso você queira levar mais alguém, uma nova inscrição será necessária. É bem rapidinho. Bora!"
                         </p>
                     </blockquote>
 
