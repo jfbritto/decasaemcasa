@@ -15,7 +15,7 @@
         </div>
 
         {{-- Imagem de capa do evento --}}
-        @if($inscription->event->image)
+        @if($inscription->event && $inscription->event->image)
             <div class="rounded-2xl overflow-hidden shadow-lg mb-6">
                 <img src="{{ asset('storage/' . $inscription->event->image) }}"
                      alt="{{ $inscription->event->title }}"
@@ -63,6 +63,7 @@
 
             {{-- Evento Info --}}
             <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                @if($inscription->event)
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="font-semibold text-gray-900">{{ $inscription->event->city ?? $inscription->event->title }}</p>
@@ -72,6 +73,9 @@
                         <p class="text-sm text-gray-500">{{ $inscription->event->title }}</p>
                     @endif
                 </div>
+                @else
+                <p class="text-sm text-gray-400">Evento não disponível</p>
+                @endif
             </div>
 
             {{-- Mensagem por Status --}}
@@ -176,7 +180,7 @@
             @endif
 
             {{-- Endereço (só se confirmado) --}}
-            @if($inscription->isConfirmed())
+            @if($inscription->isConfirmed() && $inscription->event)
                 <div class="bg-green-50 border-2 border-green-300 rounded-xl p-6">
                     <h3 class="font-semibold text-green-800 mb-3 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -187,7 +191,6 @@
                     </h3>
 
                     @if($inscription->event->full_address)
-                        {{-- Alerta de sigilo --}}
                         <div class="bg-red-50 border border-red-300 rounded-lg p-3 mb-4">
                             <p class="text-sm text-red-800 font-semibold flex items-start">
                                 <svg class="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
