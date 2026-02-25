@@ -73,6 +73,9 @@
                         <p class="text-sm text-gray-500">{{ $inscription->event->title }}</p>
                     @endif
                 </div>
+                @if($inscription->event->description)
+                    <p class="text-sm text-gray-600 mt-3">{{ $inscription->event->description }}</p>
+                @endif
                 @else
                 <p class="text-sm text-gray-400">Evento não disponível</p>
                 @endif
