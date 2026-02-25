@@ -24,8 +24,9 @@ class InscriptionController extends Controller
     {
         $events = Event::where('status', 'published')
             ->whereDate('date', '>=', now())
+            ->orderBy('city')
             ->orderBy('date')
-            ->get(['id', 'title', 'city', 'date', 'capacity', 'confirmed_count', 'status']);
+            ->get(['id', 'title', 'description', 'city', 'date', 'capacity', 'confirmed_count', 'status']);
 
         return view('inscriptions.create', compact('events'));
     }

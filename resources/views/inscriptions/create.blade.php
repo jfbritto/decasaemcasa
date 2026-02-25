@@ -75,9 +75,6 @@
                                         @if($event->title && $event->city && $event->title !== $event->city)
                                             <p class="text-sm text-gray-500 mt-1">{{ $event->title }}</p>
                                         @endif
-                                        @if($event->description)
-                                            <p class="text-sm text-gray-500 mt-1">{{ $event->description }}</p>
-                                        @endif
                                         @if($event->capacity > 0)
                                             <p class="text-xs mt-1 {{ $event->isFull() ? 'text-red-500' : 'text-gray-400' }}">
                                                 @if($event->isFull())
