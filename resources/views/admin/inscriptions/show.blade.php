@@ -250,7 +250,7 @@
                                     <div class="mb-3">
                                         <label for="contribution_amount" class="block text-sm font-medium text-gray-700 mb-1">Valor da Contribuição (R$)</label>
                                         <input type="number" name="contribution_amount" id="contribution_amount"
-                                               step="0.01" min="0" placeholder="0,00"
+                                               step="0.01" min="0" placeholder="0.00"
                                                value="{{ old('contribution_amount') }}"
                                                class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
                                         <p class="text-xs text-gray-500 mt-1">Informe o valor do comprovante antes de confirmar.</p>
@@ -285,26 +285,12 @@
                                 </button>
                             </form>
                         @elseif($inscription->isConfirmed())
-                            <div class="text-center py-3 bg-green-50 rounded-xl border border-green-200 mb-3">
+                            <div class="text-center py-3 bg-green-50 rounded-xl border border-green-200">
                                 <p class="text-sm text-green-700 font-medium">Participação confirmada!</p>
                                 @if($inscription->confirmed_at)
                                     <p class="text-xs text-green-600 mt-1">Confirmado em {{ $inscription->confirmed_at->format('d/m/Y H:i') }}</p>
                                 @endif
                             </div>
-                            <form method="POST" action="{{ route('admin.inscricoes.update-contribution', $inscription) }}">
-                                @csrf
-                                @method('PATCH')
-                                <label for="contribution_amount_edit" class="block text-sm font-medium text-gray-700 mb-1">Valor da Contribuição (R$)</label>
-                                <div class="flex gap-2">
-                                    <input type="number" name="contribution_amount" id="contribution_amount_edit"
-                                           step="0.01" min="0" placeholder="0,00"
-                                           value="{{ $inscription->contribution_amount }}"
-                                           class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
-                                    <button type="submit" class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex-shrink-0">
-                                        Salvar
-                                    </button>
-                                </div>
-                            </form>
                         @elseif($inscription->isRejected())
                             <div class="text-center py-3 bg-red-50 rounded-xl border border-red-200">
                                 <p class="text-sm text-red-700 font-medium">Inscrição rejeitada</p>
@@ -316,6 +302,25 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- Valor da Contribuição --}}
+                @if($inscription->isConfirmed())
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">Contribuição</h2>
+                    <form method="POST" action="{{ route('admin.inscricoes.update-contribution', $inscription) }}">
+                        @csrf
+                        @method('PATCH')
+                        <label for="contribution_amount_edit" class="block text-sm text-gray-600 mb-1">Valor em R$</label>
+                        <input type="number" name="contribution_amount" id="contribution_amount_edit"
+                               step="0.01" min="0" placeholder="0.00"
+                               value="{{ $inscription->contribution_amount ? number_format($inscription->contribution_amount, 2, '.', '') : '' }}"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                        <button type="submit" class="mt-3 w-full py-2 bg-green-600 text-white text-sm font-medium rounded-xl hover:bg-green-700 transition-colors">
+                            Salvar Contribuição
+                        </button>
+                    </form>
+                </div>
+                @endif
 
                 {{-- Notas do Admin --}}
                 <div class="bg-white rounded-xl shadow p-6">
