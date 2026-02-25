@@ -284,7 +284,7 @@
         @yield('content')
     </main>
 
-    <footer class="bg-white border-t mt-12">
+    <footer class="border-t mt-auto">
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
             <p class="text-center text-gray-400 text-xs">
                 desenvolvido em casa por <a href="https://instagram.com/bianchijf" target="_blank" class="text-indigo-400 hover:text-indigo-600 transition-colors">@bianchijf</a>
