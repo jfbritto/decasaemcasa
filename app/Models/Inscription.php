@@ -109,8 +109,9 @@ class Inscription extends Model
         $this->confirmed_at = now();
         $this->save();
 
-        // Incrementar contador de confirmados no evento
-        $this->event->increment('confirmed_count');
+        if ($this->event) {
+            $this->event->increment('confirmed_count');
+        }
     }
 
     public function reject(): void
@@ -125,8 +126,7 @@ class Inscription extends Model
         $this->status = 'cancelado';
         $this->save();
 
-        // Decrementar contador se estava confirmado
-        if ($previousStatus === 'confirmado') {
+        if ($previousStatus === 'confirmado' && $this->event) {
             $this->event->decrement('confirmed_count');
         }
     }
