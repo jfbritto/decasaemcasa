@@ -1,4 +1,9 @@
 @if ($paginator->hasPages())
+    <div class="flex items-center justify-between mb-3">
+        <p class="text-sm text-gray-600">
+            Exibindo <span class="font-medium">{{ $paginator->firstItem() }}</span> a <span class="font-medium">{{ $paginator->lastItem() }}</span> de <span class="font-medium">{{ $paginator->total() }}</span> resultados
+        </p>
+    </div>
     <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-center">
         <ul class="inline-flex items-center -space-x-px text-sm">
             {{-- Previous --}}
