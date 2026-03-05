@@ -21,7 +21,7 @@
     <p style="margin:0 0 8px; color:#4a4639; font-size:14px;"><strong>Chave Pix:</strong></p>
     <p style="margin:0 0 4px; color:#4338ca; font-size:16px; font-weight:700; font-family:monospace;">{{ config('services.pix.key') }}</p>
     <p style="margin:0; color:#9a9384; font-size:12px;">{{ config('services.pix.holder') }}</p>
-    <p style="margin:8px 0 0; color:#9a9384; font-size:12px;">Você define o valor que faz sentido pra você.</p>
+    <p style="margin:8px 0 0; color:#9a9384; font-size:12px;">Oi! Que bom que você vai estar com a gente! Eu tô muito empolgado com o nosso projeto. Pra gente conseguir cobrir os custos, a sugestão é de R$ 100, mas sinta-se à vontade para ver o que faz sentido e fica confortável para você. O importante mesmo é ter você junto da gente!</p>
 </div>
 @endif
 

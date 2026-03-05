@@ -25,7 +25,7 @@
             <p style="margin:0 0 6px; color:#1a2e6e; font-size:13px; font-weight:600;">Chave Pix para contribuição:</p>
             <p style="margin:0 0 4px; color:#4f46e5; font-size:16px; font-weight:700; font-family:monospace;">{{ config('services.pix.key') }}</p>
             <p style="margin:0 0 8px; color:#9a9384; font-size:12px;">{{ config('services.pix.holder') }}</p>
-            <p style="margin:0; color:#6b7280; font-size:12px; font-style:italic;">Você define o valor que faz sentido pra você.</p>
+            <p style="margin:0; color:#6b7280; font-size:12px; font-style:italic;">Oi! Que bom que você vai estar com a gente! Eu tô muito empolgado com o nosso projeto. Pra gente conseguir cobrir os custos, a sugestão é de R$ 100, mas sinta-se à vontade para ver o que faz sentido e fica confortável para você. O importante mesmo é ter você junto da gente!</p>
         </td>
     </tr>
 </table>

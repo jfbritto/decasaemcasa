@@ -134,7 +134,7 @@
                                 Copiar chave Pix
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">Você define o valor que faz sentido pra você.</p>
+                        <p class="text-xs text-gray-500 mt-2">Oi! Que bom que você vai estar com a gente! Eu tô muito empolgado com o nosso projeto. Pra gente conseguir cobrir os custos, a sugestão é de R$ 100, mas sinta-se à vontade para ver o que faz sentido e fica confortável para você. O importante mesmo é ter você junto da gente!</p>
                     </div>
                     @endif
 
