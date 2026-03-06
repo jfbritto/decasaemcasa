@@ -24,7 +24,22 @@ class InscriptionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Inscription::with('event')->whereHas('event');
+        $eventStatus = $request->get('event_status', 'active');
+        $needsTrashed = in_array($eventStatus, ['deleted', 'all']);
+
+        $query = Inscription::with($needsTrashed ? ['event' => fn ($q) => $q->withTrashed()] : 'event');
+
+        if ($eventStatus === 'active') {
+            $query->whereHas('event', fn ($q) => $q->whereIn('status', ['published', 'draft']));
+        } elseif ($eventStatus === 'finished') {
+            $query->whereHas('event', fn ($q) => $q->where('status', 'finished'));
+        } elseif ($eventStatus === 'cancelled') {
+            $query->whereHas('event', fn ($q) => $q->where('status', 'cancelled'));
+        } elseif ($eventStatus === 'deleted') {
+            $query->whereHas('event', fn ($q) => $q->onlyTrashed());
+        } else {
+            $query->whereHas('event', fn ($q) => $q->withTrashed());
+        }
 
         // Ordenação
         $sortField = $request->get('sort', 'created_at');
@@ -68,20 +83,43 @@ class InscriptionController extends Controller
 
         $inscriptions = $query->paginate(20)->appends($request->query());
 
-        // Meses em português para labels
         $meses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
         ];
 
-        // Encontros para o filtro
-        $events = Event::orderBy('date', 'desc')->get()->map(fn ($e) => [
+        // Encontros para o filtro (respeitando o filtro de status do evento)
+        $eventsQuery = Event::query();
+        if ($eventStatus === 'active') {
+            $eventsQuery->whereIn('status', ['published', 'draft']);
+        } elseif ($eventStatus === 'finished') {
+            $eventsQuery->where('status', 'finished');
+        } elseif ($eventStatus === 'cancelled') {
+            $eventsQuery->where('status', 'cancelled');
+        } elseif ($eventStatus === 'deleted') {
+            $eventsQuery->onlyTrashed();
+        } else {
+            $eventsQuery->withTrashed();
+        }
+
+        $events = $eventsQuery->orderBy('date', 'desc')->get()->map(fn ($e) => [
             'id' => $e->id,
             'label' => ($e->city ?? $e->title).' - '.$meses[$e->date->month - 1].'/'.$e->date->year,
         ]);
 
-        // Contadores sensíveis ao filtro de encontro
+        // Contadores sensíveis aos filtros (evento + status do evento)
         $countsQuery = Inscription::query();
+        if ($eventStatus === 'active') {
+            $countsQuery->whereHas('event', fn ($q) => $q->whereIn('status', ['published', 'draft']));
+        } elseif ($eventStatus === 'finished') {
+            $countsQuery->whereHas('event', fn ($q) => $q->where('status', 'finished'));
+        } elseif ($eventStatus === 'cancelled') {
+            $countsQuery->whereHas('event', fn ($q) => $q->where('status', 'cancelled'));
+        } elseif ($eventStatus === 'deleted') {
+            $countsQuery->whereHas('event', fn ($q) => $q->onlyTrashed());
+        } else {
+            $countsQuery->whereHas('event', fn ($q) => $q->withTrashed());
+        }
 
         if ($request->filled('event_id')) {
             $countsQuery->where('event_id', $request->event_id);

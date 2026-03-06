@@ -58,6 +58,15 @@
                            placeholder="Buscar por nome, email ou CPF..."
                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                 </div>
+                <div class="sm:w-44">
+                    <select name="event_status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="active" {{ request('event_status', 'active') === 'active' ? 'selected' : '' }}>Eventos ativos</option>
+                        <option value="finished" {{ request('event_status') === 'finished' ? 'selected' : '' }}>Finalizados</option>
+                        <option value="cancelled" {{ request('event_status') === 'cancelled' ? 'selected' : '' }}>Cancelados</option>
+                        <option value="deleted" {{ request('event_status') === 'deleted' ? 'selected' : '' }}>Excluídos</option>
+                        <option value="all" {{ request('event_status') === 'all' ? 'selected' : '' }}>Todos os eventos</option>
+                    </select>
+                </div>
                 <div class="sm:w-56">
                     <select name="event_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         <option value="">Todos os encontros</option>
@@ -80,7 +89,7 @@
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                     Filtrar
                 </button>
-                @if(request()->hasAny(['search', 'status', 'event_id']))
+                @if(request()->hasAny(['search', 'status', 'event_id', 'event_status']) && !(request()->only(['event_status']) == ['event_status' => 'active'] && !request()->hasAny(['search', 'status', 'event_id'])))
                     <a href="{{ route('admin.inscricoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
                         Limpar
                     </a>
@@ -272,10 +281,13 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm">
                                         @if($inscription->event)
-                                            <a href="{{ route('admin.events.show', $inscription->event) }}" class="font-medium text-indigo-600 hover:text-indigo-800">
+                                            <a href="{{ route('admin.events.show', $inscription->event) }}" class="font-medium text-indigo-600 hover:text-indigo-800 {{ $inscription->event->trashed() ? 'line-through' : '' }}">
                                                 {{ $inscription->event->city ?? $inscription->event->title }}
                                             </a>
                                             <p class="text-xs text-gray-500">{{ $inscription->event->date->format('d/m/Y') }}</p>
+                                            @if($inscription->event->trashed())
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">Excluído</span>
+                                            @endif
                                         @else
                                             <span class="text-gray-400">Evento removido</span>
                                         @endif
