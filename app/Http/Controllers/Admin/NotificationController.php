@@ -47,21 +47,25 @@ class NotificationController extends Controller
         }
 
         if ($request->filled('event_id')) {
-            $inscriptionIds = Inscription::where('event_id', $request->event_id)->pluck('id');
-            $query->where(function ($q) use ($inscriptionIds) {
-                foreach ($inscriptionIds as $id) {
-                    $q->orWhereJsonContains('metadata->inscription_id', $id);
-                }
-            });
+            $inscriptionIds = Inscription::where('event_id', $request->event_id)->pluck('id')->toArray();
+            if (count($inscriptionIds) > 0) {
+                $query->whereRaw(
+                    'JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.inscription_id")) IN (' . implode(',', $inscriptionIds) . ')'
+                );
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         if ($request->filled('inscription_status')) {
-            $inscriptionIds = Inscription::where('status', $request->inscription_status)->pluck('id');
-            $query->where(function ($q) use ($inscriptionIds) {
-                foreach ($inscriptionIds as $id) {
-                    $q->orWhereJsonContains('metadata->inscription_id', $id);
-                }
-            });
+            $inscriptionIds = Inscription::where('status', $request->inscription_status)->pluck('id')->toArray();
+            if (count($inscriptionIds) > 0) {
+                $query->whereRaw(
+                    'JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.inscription_id")) IN (' . implode(',', $inscriptionIds) . ')'
+                );
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
         $notifications = $query->paginate(25)->appends($request->query());
@@ -80,9 +84,15 @@ class NotificationController extends Controller
             ->values()
             ->toArray();
 
-        $events = Event::withTrashed()->orderBy('city')->get(['id', 'title', 'city', 'date']);
+        $events = Event::orderBy('date', 'desc')->get(['id', 'title', 'city', 'date']);
 
-        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events'));
+        $inscriptionIds = $notifications->pluck('metadata.inscription_id')->filter()->unique()->toArray();
+        $inscriptions = Inscription::with('event')
+            ->whereIn('id', $inscriptionIds)
+            ->get()
+            ->keyBy('id');
+
+        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events', 'inscriptions'));
     }
 
     /**

@@ -104,7 +104,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Tipo</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Destinatário</th>
-                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Assunto</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Encontro</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Data</th>
                                 <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Ações</th>
@@ -136,8 +136,16 @@
                                             {{ $notification->recipient }}
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">
-                                        {{ $notification->subject ?? '-' }}
+                                    <td class="px-4 py-3 text-sm text-gray-700">
+                                        @php
+                                            $insc = $inscriptions[$notification->metadata['inscription_id'] ?? null] ?? null;
+                                        @endphp
+                                        @if($insc && $insc->event)
+                                            <span class="font-medium">{{ $insc->event->city ?? $insc->event->title }}</span>
+                                            <p class="text-xs text-gray-400">{{ $insc->event->date->format('d/m/Y') }}</p>
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3">
                                         @if($notification->status === 'sent')
