@@ -23,40 +23,45 @@
             ]);
             $isComprovante = request('status') === 'aprovado' && request('comprovante');
         @endphp
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-3 mb-6">
-            <a href="{{ route('admin.inscricoes.index', $filterBase) }}" class="bg-white rounded-xl shadow p-4 text-center hover:ring-2 hover:ring-gray-300 transition {{ !request('status') && !request('comprovante') ? 'ring-2 ring-gray-400' : '' }}">
+        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+            <a href="{{ route('admin.inscricoes.index', $filterBase) }}" class="bg-white rounded-xl shadow p-3 text-center hover:ring-2 hover:ring-gray-300 transition {{ !request('status') && !request('comprovante') ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-900">{{ $counts['total'] }}</p>
                 <p class="text-xs text-gray-500">Total</p>
             </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'pendente'])) }}" class="bg-yellow-50 rounded-xl shadow p-4 text-center border border-yellow-200 hover:ring-2 hover:ring-yellow-400 transition {{ request('status') === 'pendente' ? 'ring-2 ring-yellow-400' : '' }}">
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'pendente'])) }}" class="bg-yellow-50 rounded-xl shadow p-3 text-center border border-yellow-200 hover:ring-2 hover:ring-yellow-400 transition {{ request('status') === 'pendente' ? 'ring-2 ring-yellow-400' : '' }}">
                 <p class="text-2xl font-bold text-yellow-700">{{ $counts['pendente'] }}</p>
                 <p class="text-xs text-yellow-600">Pendentes</p>
             </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado'])) }}" class="bg-blue-50 rounded-xl shadow p-4 text-center border border-blue-200 hover:ring-2 hover:ring-blue-400 transition {{ request('status') === 'aprovado' && !request('comprovante') ? 'ring-2 ring-blue-400' : '' }}">
-                <p class="text-2xl font-bold text-blue-700">{{ $counts['aprovado'] }}</p>
-                <p class="text-xs text-blue-600">Aprovados</p>
-            </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'pendente'])) }}" class="bg-amber-50 rounded-xl shadow p-4 text-center border border-amber-200 hover:ring-2 hover:ring-amber-400 transition {{ $isComprovante && request('comprovante') === 'pendente' ? 'ring-2 ring-amber-400' : '' }}">
-                <p class="text-2xl font-bold text-amber-700">{{ $counts['aguardando_pix'] }}</p>
-                <p class="text-xs text-amber-600">Aguardando Pix</p>
-            </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'enviado'])) }}" class="bg-indigo-50 rounded-xl shadow p-4 text-center border border-indigo-200 hover:ring-2 hover:ring-indigo-400 transition {{ $isComprovante && request('comprovante') === 'enviado' ? 'ring-2 ring-indigo-400' : '' }}">
-                <p class="text-2xl font-bold text-indigo-700">{{ $counts['comprovante_enviado'] }}</p>
-                <p class="text-xs text-indigo-600">Comprovante Enviado</p>
-            </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'confirmado'])) }}" class="bg-green-50 rounded-xl shadow p-4 text-center border border-green-200 hover:ring-2 hover:ring-green-400 transition {{ request('status') === 'confirmado' ? 'ring-2 ring-green-400' : '' }}">
+            {{-- Aprovados com sub-breakdown --}}
+            <div class="bg-blue-50 rounded-xl shadow border border-blue-200 overflow-hidden {{ request('status') === 'aprovado' ? 'ring-2 ring-blue-400' : '' }}">
+                <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado'])) }}" class="block p-3 text-center hover:bg-blue-100 transition {{ request('status') === 'aprovado' && !request('comprovante') ? 'bg-blue-100' : '' }}">
+                    <p class="text-2xl font-bold text-blue-700">{{ $counts['aprovado'] }}</p>
+                    <p class="text-xs text-blue-600">Aprovados</p>
+                </a>
+                <div class="flex divide-x divide-blue-200 border-t border-blue-200">
+                    <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'pendente'])) }}" class="flex-1 py-1.5 text-center hover:bg-amber-100 transition {{ $isComprovante && request('comprovante') === 'pendente' ? 'bg-amber-100' : '' }}">
+                        <p class="text-sm font-bold text-amber-700">{{ $counts['aguardando_pix'] }}</p>
+                        <p class="text-[10px] text-amber-600 leading-tight">Aguard. Pix</p>
+                    </a>
+                    <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'enviado'])) }}" class="flex-1 py-1.5 text-center hover:bg-indigo-100 transition {{ $isComprovante && request('comprovante') === 'enviado' ? 'bg-indigo-100' : '' }}">
+                        <p class="text-sm font-bold text-indigo-700">{{ $counts['comprovante_enviado'] }}</p>
+                        <p class="text-[10px] text-indigo-600 leading-tight">Comprovante</p>
+                    </a>
+                </div>
+            </div>
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'confirmado'])) }}" class="bg-green-50 rounded-xl shadow p-3 text-center border border-green-200 hover:ring-2 hover:ring-green-400 transition {{ request('status') === 'confirmado' ? 'ring-2 ring-green-400' : '' }}">
                 <p class="text-2xl font-bold text-green-700">{{ $counts['confirmado'] }}</p>
                 <p class="text-xs text-green-600">Confirmados</p>
             </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'fila_de_espera'])) }}" class="bg-orange-50 rounded-xl shadow p-4 text-center border border-orange-200 hover:ring-2 hover:ring-orange-400 transition {{ request('status') === 'fila_de_espera' ? 'ring-2 ring-orange-400' : '' }}">
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'fila_de_espera'])) }}" class="bg-orange-50 rounded-xl shadow p-3 text-center border border-orange-200 hover:ring-2 hover:ring-orange-400 transition {{ request('status') === 'fila_de_espera' ? 'ring-2 ring-orange-400' : '' }}">
                 <p class="text-2xl font-bold text-orange-700">{{ $counts['fila_de_espera'] }}</p>
                 <p class="text-xs text-orange-600">Fila de Espera</p>
             </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'rejeitado'])) }}" class="bg-red-50 rounded-xl shadow p-4 text-center border border-red-200 hover:ring-2 hover:ring-red-400 transition {{ request('status') === 'rejeitado' ? 'ring-2 ring-red-400' : '' }}">
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'rejeitado'])) }}" class="bg-red-50 rounded-xl shadow p-3 text-center border border-red-200 hover:ring-2 hover:ring-red-400 transition {{ request('status') === 'rejeitado' ? 'ring-2 ring-red-400' : '' }}">
                 <p class="text-2xl font-bold text-red-700">{{ $counts['rejeitado'] }}</p>
                 <p class="text-xs text-red-600">Rejeitados</p>
             </a>
-            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'cancelado'])) }}" class="bg-gray-50 rounded-xl shadow p-4 text-center border border-gray-200 hover:ring-2 hover:ring-gray-400 transition {{ request('status') === 'cancelado' ? 'ring-2 ring-gray-400' : '' }}">
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'cancelado'])) }}" class="bg-gray-50 rounded-xl shadow p-3 text-center border border-gray-200 hover:ring-2 hover:ring-gray-400 transition {{ request('status') === 'cancelado' ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-700">{{ $counts['cancelado'] }}</p>
                 <p class="text-xs text-gray-500">Cancelados</p>
             </a>
