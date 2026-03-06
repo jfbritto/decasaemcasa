@@ -22,7 +22,7 @@
                 'event_status' => request('event_status', 'active'),
             ]);
         @endphp
-        <div class="grid grid-cols-4 gap-3 mb-6">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <a href="{{ route('admin.inscricoes.index', $filterBase) }}" class="bg-white rounded-xl shadow p-3 text-center hover:ring-2 hover:ring-gray-300 transition {{ !request('status') && !request('comprovante') ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-900">{{ $counts['total'] }}</p>
                 <p class="text-xs text-gray-500">Total</p>
