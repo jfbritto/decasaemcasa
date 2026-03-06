@@ -169,6 +169,26 @@
                                                 Ignorada
                                             </span>
                                         @endif
+                                        @if($notification->status === 'sent' && $notification->channel !== 'general')
+                                            @php
+                                                $templateChannels = ['inscription_received','inscription_approved','inscription_waitlisted','inscription_confirmed','inscription_rejected','inscription_cancelled','payment_reminder'];
+                                                $isResendNew = isset($notification->metadata['resent_from']);
+                                                $isResendOld = !$isResendNew && in_array($notification->recipient.'|'.$notification->channel, $failedKeys);
+                                                $wasTextOnly = false;
+
+                                                if ($isResendNew) {
+                                                    $wasTextOnly = isset($notification->metadata['template_used']) && !$notification->metadata['template_used'];
+                                                } elseif ($isResendOld) {
+                                                    $nInsc = $inscriptions[$notification->metadata['inscription_id'] ?? null] ?? null;
+                                                    $wasTextOnly = !$nInsc || !$nInsc->event || !in_array($notification->channel, $templateChannels);
+                                                }
+                                            @endphp
+                                            @if($wasTextOnly)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 ml-1" title="Este email foi reenviado sem o layout HTML completo, apenas com texto simples">
+                                                    Texto puro
+                                                </span>
+                                            @endif
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-500">
                                         {{ $notification->created_at->format('d/m/Y H:i') }}

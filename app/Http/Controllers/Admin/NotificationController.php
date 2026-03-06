@@ -82,12 +82,20 @@ class NotificationController extends Controller
         $events = Event::orderBy('date', 'desc')->get(['id', 'title', 'city', 'date']);
 
         $inscriptionIds = $notifications->pluck('metadata.inscription_id')->filter()->unique()->toArray();
-        $inscriptions = Inscription::with('event')
+        $inscriptions = Inscription::with(['event' => fn ($q) => $q->withTrashed()])
             ->whereIn('id', $inscriptionIds)
             ->get()
             ->keyBy('id');
 
-        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events', 'inscriptions'));
+        // IDs de notificações "failed" (para identificar reenvios antigos sem resent_from)
+        $failedKeys = Notification::where('status', 'failed')
+            ->whereIn('recipient', $notifications->pluck('recipient')->unique())
+            ->get(['recipient', 'channel'])
+            ->map(fn ($n) => $n->recipient.'|'.$n->channel)
+            ->unique()
+            ->toArray();
+
+        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events', 'inscriptions', 'failedKeys'));
     }
 
     /**
@@ -99,42 +107,52 @@ class NotificationController extends Controller
 
         if ($notification->type === 'email') {
             $inscriptionId = $notification->metadata['inscription_id'] ?? null;
-            $inscription = $inscriptionId ? Inscription::with('event')->find($inscriptionId) : null;
+            $inscription = $inscriptionId ? Inscription::with(['event' => fn ($q) => $q->withTrashed()])->find($inscriptionId) : null;
 
-            if ($inscription && $inscription->event && $notification->channel !== 'general') {
-                $event = $inscription->event;
-                $statusUrl = route('inscricao.status', $inscription->token);
-                $viewMap = [
-                    'inscription_received' => 'emails.inscription-received',
-                    'inscription_approved' => 'emails.inscription-approved',
-                    'inscription_waitlisted' => 'emails.inscription-waitlisted',
-                    'inscription_confirmed' => 'emails.inscription-confirmed',
-                    'inscription_rejected' => 'emails.inscription-rejected',
-                    'inscription_cancelled' => 'emails.inscription-cancelled',
+            $viewMap = [
+                'inscription_received' => 'emails.inscription-received',
+                'inscription_approved' => 'emails.inscription-approved',
+                'inscription_waitlisted' => 'emails.inscription-waitlisted',
+                'inscription_confirmed' => 'emails.inscription-confirmed',
+                'inscription_rejected' => 'emails.inscription-rejected',
+                'inscription_cancelled' => 'emails.inscription-cancelled',
+                'payment_reminder' => 'emails.payment-reminder',
+            ];
+
+            $view = null;
+            $viewData = [];
+
+            if ($inscription && $inscription->event && isset($viewMap[$notification->channel])) {
+                $view = $viewMap[$notification->channel];
+                $viewData = [
+                    'inscription' => $inscription,
+                    'event' => $inscription->event,
+                    'statusUrl' => route('inscricao.status', $inscription->token),
                 ];
-                $view = $viewMap[$notification->channel] ?? null;
-                $viewData = ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl];
-
-                $success = $this->notificationService->sendEmail(
-                    $notification->recipient,
-                    $notification->subject ?? 'De Casa em Casa',
-                    $notification->message,
-                    null,
-                    $notification->channel,
-                    $notification->metadata ?? [],
-                    $view,
-                    $viewData
-                );
-            } else {
-                $success = $this->notificationService->sendEmail(
-                    $notification->recipient,
-                    $notification->subject ?? 'De Casa em Casa',
-                    $notification->message,
-                    null,
-                    $notification->channel,
-                    $notification->metadata ?? []
-                );
+            } elseif ($notification->channel !== 'general') {
+                \Log::warning('Reenvio sem template HTML', [
+                    'notification_id' => $notification->id,
+                    'channel' => $notification->channel,
+                    'inscription_exists' => (bool) $inscription,
+                    'event_exists' => $inscription ? (bool) $inscription->event : false,
+                ]);
             }
+
+            $resendMetadata = array_merge($notification->metadata ?? [], [
+                'resent_from' => $notification->id,
+                'template_used' => $view !== null,
+            ]);
+
+            $success = $this->notificationService->sendEmail(
+                $notification->recipient,
+                $notification->subject ?? 'De Casa em Casa',
+                $notification->message,
+                null,
+                $notification->channel,
+                $resendMetadata,
+                $view,
+                $viewData
+            );
         } elseif ($notification->type === 'whatsapp') {
             $success = $this->notificationService->sendWhatsApp(
                 $notification->recipient,
