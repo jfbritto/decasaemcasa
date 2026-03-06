@@ -21,9 +21,8 @@
                 'event_id' => request('event_id'),
                 'event_status' => request('event_status', 'active'),
             ]);
-            $isComprovante = request('status') === 'aprovado' && request('comprovante');
         @endphp
-        <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+        <div class="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-2">
             <a href="{{ route('admin.inscricoes.index', $filterBase) }}" class="bg-white rounded-xl shadow p-3 text-center hover:ring-2 hover:ring-gray-300 transition {{ !request('status') && !request('comprovante') ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-900">{{ $counts['total'] }}</p>
                 <p class="text-xs text-gray-500">Total</p>
@@ -32,23 +31,10 @@
                 <p class="text-2xl font-bold text-yellow-700">{{ $counts['pendente'] }}</p>
                 <p class="text-xs text-yellow-600">Pendentes</p>
             </a>
-            {{-- Aprovados com sub-breakdown --}}
-            <div class="bg-blue-50 rounded-xl shadow border border-blue-200 overflow-hidden {{ request('status') === 'aprovado' ? 'ring-2 ring-blue-400' : '' }}">
-                <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado'])) }}" class="block p-3 text-center hover:bg-blue-100 transition {{ request('status') === 'aprovado' && !request('comprovante') ? 'bg-blue-100' : '' }}">
-                    <p class="text-2xl font-bold text-blue-700">{{ $counts['aprovado'] }}</p>
-                    <p class="text-xs text-blue-600">Aprovados</p>
-                </a>
-                <div class="flex divide-x divide-blue-200 border-t border-blue-200">
-                    <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'pendente'])) }}" class="flex-1 py-1.5 text-center hover:bg-amber-100 transition {{ $isComprovante && request('comprovante') === 'pendente' ? 'bg-amber-100' : '' }}">
-                        <p class="text-sm font-bold text-amber-700">{{ $counts['aguardando_pix'] }}</p>
-                        <p class="text-[10px] text-amber-600 leading-tight">Aguard. Pix</p>
-                    </a>
-                    <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'enviado'])) }}" class="flex-1 py-1.5 text-center hover:bg-indigo-100 transition {{ $isComprovante && request('comprovante') === 'enviado' ? 'bg-indigo-100' : '' }}">
-                        <p class="text-sm font-bold text-indigo-700">{{ $counts['comprovante_enviado'] }}</p>
-                        <p class="text-[10px] text-indigo-600 leading-tight">Comprovante</p>
-                    </a>
-                </div>
-            </div>
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado'])) }}" class="bg-blue-50 rounded-xl shadow p-3 text-center border border-blue-200 hover:ring-2 hover:ring-blue-400 transition {{ request('status') === 'aprovado' && !request('comprovante') ? 'ring-2 ring-blue-400' : '' }}">
+                <p class="text-2xl font-bold text-blue-700">{{ $counts['aprovado'] }}</p>
+                <p class="text-xs text-blue-600">Aprovados</p>
+            </a>
             <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'confirmado'])) }}" class="bg-green-50 rounded-xl shadow p-3 text-center border border-green-200 hover:ring-2 hover:ring-green-400 transition {{ request('status') === 'confirmado' ? 'ring-2 ring-green-400' : '' }}">
                 <p class="text-2xl font-bold text-green-700">{{ $counts['confirmado'] }}</p>
                 <p class="text-xs text-green-600">Confirmados</p>
@@ -64,6 +50,19 @@
             <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'cancelado'])) }}" class="bg-gray-50 rounded-xl shadow p-3 text-center border border-gray-200 hover:ring-2 hover:ring-gray-400 transition {{ request('status') === 'cancelado' ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-700">{{ $counts['cancelado'] }}</p>
                 <p class="text-xs text-gray-500">Cancelados</p>
+            </a>
+        </div>
+        {{-- Detalhamento dos aprovados --}}
+        <div class="flex items-center justify-center gap-1 text-xs text-gray-500 mb-6">
+            <span>Aprovados:</span>
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'pendente'])) }}"
+               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full transition {{ request('comprovante') === 'pendente' ? 'bg-amber-200 text-amber-800 font-semibold' : 'bg-amber-50 text-amber-700 hover:bg-amber-100' }}">
+                <span class="font-semibold">{{ $counts['aguardando_pix'] }}</span> aguardando pix
+            </a>
+            <span class="text-gray-300">|</span>
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['status' => 'aprovado', 'comprovante' => 'enviado'])) }}"
+               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full transition {{ request('comprovante') === 'enviado' ? 'bg-indigo-200 text-indigo-800 font-semibold' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100' }}">
+                <span class="font-semibold">{{ $counts['comprovante_enviado'] }}</span> comprovante enviado
             </a>
         </div>
 
