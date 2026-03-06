@@ -208,7 +208,12 @@
                 </div>
 
                 <div class="px-4 py-3 border-t">
-                    {{ $notifications->links() }}
+                    <p class="text-sm text-gray-600 mb-2">
+                        Exibindo <span class="font-medium">{{ $notifications->firstItem() }}</span> a <span class="font-medium">{{ $notifications->lastItem() }}</span> de <span class="font-medium">{{ $notifications->total() }}</span> resultados
+                    </p>
+                    @if($notifications->hasPages())
+                        {{ $notifications->links() }}
+                    @endif
                 </div>
             @else
                 <div class="text-center py-12">

@@ -23,59 +23,54 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
+        $baseFilter = function ($q) use ($request) {
+            if ($request->filled('type')) {
+                $q->where('type', $request->type);
+            }
+            if ($request->filled('channel')) {
+                $q->where('channel', $request->channel);
+            }
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('recipient', 'like', "%{$search}%")
+                        ->orWhere('subject', 'like', "%{$search}%")
+                        ->orWhere('message', 'like', "%{$search}%");
+                });
+            }
+            if ($request->filled('event_id')) {
+                $ids = Inscription::where('event_id', $request->event_id)->pluck('id')->toArray();
+                if (count($ids) > 0) {
+                    $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.inscription_id")) IN (' . implode(',', $ids) . ')');
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
+            }
+            if ($request->filled('inscription_status')) {
+                $ids = Inscription::where('status', $request->inscription_status)->pluck('id')->toArray();
+                if (count($ids) > 0) {
+                    $q->whereRaw('JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.inscription_id")) IN (' . implode(',', $ids) . ')');
+                } else {
+                    $q->whereRaw('1 = 0');
+                }
+            }
+        };
+
+        $countBase = Notification::where(function ($q) use ($baseFilter) { $baseFilter($q); });
+        $counts = [
+            'total' => (clone $countBase)->count(),
+            'sent' => (clone $countBase)->where('status', 'sent')->count(),
+            'failed' => (clone $countBase)->where('status', 'failed')->count(),
+            'skipped' => (clone $countBase)->where('status', 'skipped')->count(),
+        ];
+
         $query = Notification::orderBy('created_at', 'desc');
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
+        $baseFilter($query);
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('channel')) {
-            $query->where('channel', $request->channel);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('recipient', 'like', "%{$search}%")
-                    ->orWhere('subject', 'like', "%{$search}%")
-                    ->orWhere('message', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('event_id')) {
-            $inscriptionIds = Inscription::where('event_id', $request->event_id)->pluck('id')->toArray();
-            if (count($inscriptionIds) > 0) {
-                $query->whereRaw(
-                    'JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.inscription_id")) IN (' . implode(',', $inscriptionIds) . ')'
-                );
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-        }
-
-        if ($request->filled('inscription_status')) {
-            $inscriptionIds = Inscription::where('status', $request->inscription_status)->pluck('id')->toArray();
-            if (count($inscriptionIds) > 0) {
-                $query->whereRaw(
-                    'JSON_UNQUOTE(JSON_EXTRACT(metadata, "$.inscription_id")) IN (' . implode(',', $inscriptionIds) . ')'
-                );
-            } else {
-                $query->whereRaw('1 = 0');
-            }
-        }
-
         $notifications = $query->paginate(25)->appends($request->query());
-
-        $counts = [
-            'total' => Notification::count(),
-            'sent' => Notification::where('status', 'sent')->count(),
-            'failed' => Notification::where('status', 'failed')->count(),
-            'skipped' => Notification::where('status', 'skipped')->count(),
-        ];
 
         $resentKeys = Notification::where('status', 'sent')
             ->get(['recipient', 'channel'])

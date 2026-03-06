@@ -361,7 +361,12 @@
                 </div>
 
                 <div class="px-4 py-3 border-t">
-                    {{ $inscriptions->links() }}
+                    <p class="text-sm text-gray-600 mb-2">
+                        Exibindo <span class="font-medium">{{ $inscriptions->firstItem() }}</span> a <span class="font-medium">{{ $inscriptions->lastItem() }}</span> de <span class="font-medium">{{ $inscriptions->total() }}</span> resultados
+                    </p>
+                    @if($inscriptions->hasPages())
+                        {{ $inscriptions->links() }}
+                    @endif
                 </div>
             @else
                 <div class="text-center py-12">
