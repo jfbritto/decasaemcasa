@@ -63,7 +63,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Eventos / Encontros
-    Route::resource('events', AdminEventController::class);
+    Route::resource('events', AdminEventController::class)->except(['show']);
+    Route::get('events/{event}', [AdminEventController::class, 'show'])->name('events.show')->withTrashed();
     Route::get('events/{event}/participantes-pdf', [AdminEventController::class, 'exportPdf'])->name('events.participantes-pdf');
 
     // Inscrições (Curadoria)

@@ -6,22 +6,37 @@
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
     <div class="px-4 sm:px-0">
 
+        {{-- Tarja de evento excluído --}}
+        @if($event->trashed())
+            <div class="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 mb-6 flex items-center gap-3">
+                <svg class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                <div>
+                    <p class="text-red-800 font-semibold">Este encontro foi excluído</p>
+                    <p class="text-red-600 text-sm">Excluído em {{ $event->deleted_at->format('d/m/Y \à\s H:i') }}. As informações estão disponíveis apenas para consulta.</p>
+                </div>
+            </div>
+        @endif
+
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">{{ $event->city ?? $event->title }}</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 {{ $event->trashed() ? 'line-through text-gray-500' : '' }}">{{ $event->city ?? $event->title }}</h1>
             <div class="flex flex-wrap gap-2">
-                <a target="_blank" href="{{ route('admin.events.participantes-pdf', $event) }}" style="background-color:#dc2626;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
-                    Lista de Presença
-                </a>
-                <a href="{{ route('admin.events.edit', $event) }}" class="bg-indigo-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-indigo-700 text-center">
-                    Editar
-                </a>
-                <form method="POST" action="{{ route('admin.events.duplicate', $event) }}" class="inline">
-                    @csrf
-                    <button type="submit" style="background-color:#f59e0b;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
-                        Duplicar
-                    </button>
-                </form>
+                @unless($event->trashed())
+                    <a target="_blank" href="{{ route('admin.events.participantes-pdf', $event) }}" style="background-color:#dc2626;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
+                        Lista de Presença
+                    </a>
+                    <a href="{{ route('admin.events.edit', $event) }}" class="bg-indigo-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-indigo-700 text-center">
+                        Editar
+                    </a>
+                    <form method="POST" action="{{ route('admin.events.duplicate', $event) }}" class="inline">
+                        @csrf
+                        <button type="submit" style="background-color:#f59e0b;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
+                            Duplicar
+                        </button>
+                    </form>
+                @endunless
                 <a href="{{ route('admin.events.index') }}" class="bg-gray-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-gray-700 text-center">
                     Voltar
                 </a>
@@ -44,18 +59,22 @@
                     <div class="p-4 sm:p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h2 class="text-lg sm:text-xl font-semibold">Informações do Encontro</h2>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                @if($event->status === 'published') bg-green-100 text-green-800
-                                @elseif($event->status === 'draft') bg-gray-100 text-gray-800
-                                @else bg-red-100 text-red-800
-                                @endif">
-                                @if($event->status === 'published') Publicado
-                                @elseif($event->status === 'draft') Rascunho
-                                @elseif($event->status === 'cancelled') Cancelado
-                                @elseif($event->status === 'finished') Finalizado
-                                @else {{ ucfirst($event->status) }}
-                                @endif
-                            </span>
+                            @if($event->trashed())
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">Excluído</span>
+                            @else
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                    @if($event->status === 'published') bg-green-100 text-green-800
+                                    @elseif($event->status === 'draft') bg-gray-100 text-gray-800
+                                    @else bg-red-100 text-red-800
+                                    @endif">
+                                    @if($event->status === 'published') Publicado
+                                    @elseif($event->status === 'draft') Rascunho
+                                    @elseif($event->status === 'cancelled') Cancelado
+                                    @elseif($event->status === 'finished') Finalizado
+                                    @else {{ ucfirst($event->status) }}
+                                    @endif
+                                </span>
+                            @endif
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
