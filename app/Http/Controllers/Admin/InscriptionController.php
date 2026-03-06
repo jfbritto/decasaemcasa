@@ -129,6 +129,8 @@ class InscriptionController extends Controller
             'total' => (clone $countsQuery)->count(),
             'pendente' => (clone $countsQuery)->where('status', 'pendente')->count(),
             'aprovado' => (clone $countsQuery)->where('status', 'aprovado')->count(),
+            'aguardando_pix' => (clone $countsQuery)->where('status', 'aprovado')->whereNull('payment_proof')->count(),
+            'comprovante_enviado' => (clone $countsQuery)->where('status', 'aprovado')->whereNotNull('payment_proof')->count(),
             'confirmado' => (clone $countsQuery)->where('status', 'confirmado')->count(),
             'fila_de_espera' => (clone $countsQuery)->where('status', 'fila_de_espera')->count(),
             'rejeitado' => (clone $countsQuery)->where('status', 'rejeitado')->count(),
