@@ -32,39 +32,66 @@
 
         {{-- Filtros --}}
         <div class="bg-white rounded-xl shadow p-4 mb-6">
-            <form method="GET" action="{{ route('admin.notificacoes.index') }}" class="flex flex-col sm:flex-row gap-3">
-                <div class="flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}"
-                           placeholder="Buscar por destinatário, assunto ou mensagem..."
-                           class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+            <form method="GET" action="{{ route('admin.notificacoes.index') }}">
+                <div class="flex flex-col sm:flex-row gap-3 mb-3">
+                    <div class="flex-1">
+                        <input type="text" name="search" value="{{ request('search') }}"
+                               placeholder="Buscar por destinatário, assunto ou mensagem..."
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div class="sm:w-36">
+                        <select name="status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Status envio</option>
+                            <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>Enviada</option>
+                            <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Falhou</option>
+                            <option value="skipped" {{ request('status') === 'skipped' ? 'selected' : '' }}>Ignorada</option>
+                        </select>
+                    </div>
+                    <div class="sm:w-44">
+                        <select name="channel" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Tipo de email</option>
+                            <option value="inscription_received" {{ request('channel') === 'inscription_received' ? 'selected' : '' }}>Inscrição Recebida</option>
+                            <option value="inscription_approved" {{ request('channel') === 'inscription_approved' ? 'selected' : '' }}>Aprovação</option>
+                            <option value="inscription_waitlisted" {{ request('channel') === 'inscription_waitlisted' ? 'selected' : '' }}>Fila de Espera</option>
+                            <option value="inscription_confirmed" {{ request('channel') === 'inscription_confirmed' ? 'selected' : '' }}>Confirmação</option>
+                            <option value="inscription_rejected" {{ request('channel') === 'inscription_rejected' ? 'selected' : '' }}>Rejeição</option>
+                            <option value="inscription_cancelled" {{ request('channel') === 'inscription_cancelled' ? 'selected' : '' }}>Cancelamento</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="sm:w-36">
-                    <select name="status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                        <option value="">Todos os status</option>
-                        <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>Enviada</option>
-                        <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Falhou</option>
-                        <option value="skipped" {{ request('status') === 'skipped' ? 'selected' : '' }}>Ignorada</option>
-                    </select>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="sm:w-48">
+                        <select name="event_id" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Todos os encontros</option>
+                            @foreach($events as $event)
+                                <option value="{{ $event->id }}" {{ request('event_id') == $event->id ? 'selected' : '' }}>
+                                    {{ $event->city ?? $event->title }} - {{ $event->date->format('m/Y') }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="sm:w-44">
+                        <select name="inscription_status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            <option value="">Status inscrição</option>
+                            <option value="pendente" {{ request('inscription_status') === 'pendente' ? 'selected' : '' }}>Pendente</option>
+                            <option value="aprovado" {{ request('inscription_status') === 'aprovado' ? 'selected' : '' }}>Aprovado</option>
+                            <option value="confirmado" {{ request('inscription_status') === 'confirmado' ? 'selected' : '' }}>Confirmado</option>
+                            <option value="fila_de_espera" {{ request('inscription_status') === 'fila_de_espera' ? 'selected' : '' }}>Fila de Espera</option>
+                            <option value="rejeitado" {{ request('inscription_status') === 'rejeitado' ? 'selected' : '' }}>Rejeitado</option>
+                            <option value="cancelado" {{ request('inscription_status') === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+                            Filtrar
+                        </button>
+                        @if(request()->hasAny(['search', 'status', 'channel', 'event_id', 'inscription_status']))
+                            <a href="{{ route('admin.notificacoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
+                                Limpar
+                            </a>
+                        @endif
+                    </div>
                 </div>
-                <div class="sm:w-44">
-                    <select name="channel" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                        <option value="">Todos os tipos</option>
-                        <option value="inscription_received" {{ request('channel') === 'inscription_received' ? 'selected' : '' }}>Inscrição Recebida</option>
-                        <option value="inscription_approved" {{ request('channel') === 'inscription_approved' ? 'selected' : '' }}>Inscrição Aprovada</option>
-                        <option value="inscription_waitlisted" {{ request('channel') === 'inscription_waitlisted' ? 'selected' : '' }}>Fila de Espera</option>
-                        <option value="inscription_confirmed" {{ request('channel') === 'inscription_confirmed' ? 'selected' : '' }}>Confirmação</option>
-                        <option value="inscription_rejected" {{ request('channel') === 'inscription_rejected' ? 'selected' : '' }}>Rejeição</option>
-                        <option value="inscription_cancelled" {{ request('channel') === 'inscription_cancelled' ? 'selected' : '' }}>Cancelamento</option>
-                    </select>
-                </div>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
-                    Filtrar
-                </button>
-                @if(request()->hasAny(['search', 'status', 'channel']))
-                    <a href="{{ route('admin.notificacoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
-                        Limpar
-                    </a>
-                @endif
             </form>
         </div>
 
@@ -131,15 +158,13 @@
                                     </td>
                                     <td class="px-4 py-3 text-center">
                                         <div class="flex items-center justify-center gap-2">
-                                            @if(($notification->status === 'failed' || $notification->status === 'skipped') && !in_array($notification->recipient . '|' . $notification->channel, $resentKeys))
-                                                <form method="POST" action="{{ route('admin.notificacoes.resend', $notification) }}" class="inline">
-                                                    @csrf
-                                                    <button type="button" class="px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700" title="Reenviar"
-                                                            @click="Swal.fire({ title: 'Reenviar notificação?', text: 'A notificação será reenviada ao destinatário.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, reenviar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
-                                                        Reenviar
-                                                    </button>
-                                                </form>
-                                            @endif
+                                            <form method="POST" action="{{ route('admin.notificacoes.resend', $notification) }}" class="inline">
+                                                @csrf
+                                                <button type="button" class="px-3 py-1 bg-indigo-600 text-white text-xs font-medium rounded-lg hover:bg-indigo-700" title="Reenviar"
+                                                        @click="Swal.fire({ title: 'Reenviar notificação?', text: 'A notificação será reenviada para {{ $notification->recipient }}.', icon: 'question', showCancelButton: true, confirmButtonColor: '#4f46e5', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, reenviar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
+                                                    Reenviar
+                                                </button>
+                                            </form>
                                             <button @click="showDetails = !showDetails" class="px-3 py-1 border border-gray-300 text-gray-700 text-xs font-medium rounded-lg hover:bg-gray-50" title="Ver detalhes">
                                                 <span x-text="showDetails ? 'Ocultar' : 'Detalhes'"></span>
                                             </button>
