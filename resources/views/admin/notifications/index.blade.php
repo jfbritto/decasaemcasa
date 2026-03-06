@@ -11,23 +11,26 @@
         </div>
 
         {{-- Contadores --}}
+        @php
+            $notifBase = array_filter(request()->only(['search', 'channel', 'event_id', 'inscription_status']));
+        @endphp
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white rounded-xl shadow p-4 text-center">
+            <a href="{{ route('admin.notificacoes.index', $notifBase) }}" class="bg-white rounded-xl shadow p-4 text-center hover:ring-2 hover:ring-gray-300 transition {{ !request('status') ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-900">{{ $counts['total'] }}</p>
                 <p class="text-sm text-gray-500">Total</p>
-            </div>
-            <div class="bg-green-50 rounded-xl shadow p-4 text-center border border-green-200">
+            </a>
+            <a href="{{ route('admin.notificacoes.index', array_merge($notifBase, ['status' => 'sent'])) }}" class="bg-green-50 rounded-xl shadow p-4 text-center border border-green-200 hover:ring-2 hover:ring-green-400 transition {{ request('status') === 'sent' ? 'ring-2 ring-green-400' : '' }}">
                 <p class="text-2xl font-bold text-green-700">{{ $counts['sent'] }}</p>
                 <p class="text-sm text-green-600">Enviadas</p>
-            </div>
-            <div class="bg-red-50 rounded-xl shadow p-4 text-center border border-red-200">
+            </a>
+            <a href="{{ route('admin.notificacoes.index', array_merge($notifBase, ['status' => 'failed'])) }}" class="bg-red-50 rounded-xl shadow p-4 text-center border border-red-200 hover:ring-2 hover:ring-red-400 transition {{ request('status') === 'failed' ? 'ring-2 ring-red-400' : '' }}">
                 <p class="text-2xl font-bold text-red-700">{{ $counts['failed'] }}</p>
                 <p class="text-sm text-red-600">Falharam</p>
-            </div>
-            <div class="bg-gray-50 rounded-xl shadow p-4 text-center border border-gray-200">
+            </a>
+            <a href="{{ route('admin.notificacoes.index', array_merge($notifBase, ['status' => 'skipped'])) }}" class="bg-gray-50 rounded-xl shadow p-4 text-center border border-gray-200 hover:ring-2 hover:ring-gray-400 transition {{ request('status') === 'skipped' ? 'ring-2 ring-gray-400' : '' }}">
                 <p class="text-2xl font-bold text-gray-700">{{ $counts['skipped'] }}</p>
                 <p class="text-sm text-gray-600">Ignoradas</p>
-            </div>
+            </a>
         </div>
 
         {{-- Filtros --}}
