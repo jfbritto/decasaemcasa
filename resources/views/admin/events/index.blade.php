@@ -182,7 +182,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-300">
                             @foreach($deleted as $event)
-                                <tr class="hover:bg-gray-50 transition-colors">
+                                <tr class="hover:bg-red-50 transition-colors cursor-pointer" onclick="window.location='{{ route('admin.events.show', $event) }}'">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
                                             <svg class="w-5 h-5 text-red-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,7 +191,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-semibold text-gray-400 line-through">{{ $event->city ?? $event->title }}</div>
+                                        <div class="text-sm font-semibold text-red-400 line-through hover:text-red-600">{{ $event->city ?? $event->title }}</div>
                                         @if($event->title && $event->city && $event->title !== $event->city)
                                             <div class="text-xs text-gray-300">{{ $event->title }}</div>
                                         @endif
