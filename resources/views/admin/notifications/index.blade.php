@@ -98,6 +98,55 @@
             </form>
         </div>
 
+        {{-- Legenda de status --}}
+        <div class="mb-4" x-data="{ open: false }">
+            <button @click="open = !open" class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Legenda dos status</span>
+                <svg class="w-3 h-3 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div x-show="open" x-transition x-cloak class="mt-3 bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm space-y-2">
+                <div class="flex flex-wrap gap-x-6 gap-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Enviada</span>
+                        <span class="text-gray-600">Email entregue com sucesso.</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Falhou</span>
+                        <span class="text-gray-600">Erro no envio (quota, caixa inexistente, etc).</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Ignorada</span>
+                        <span class="text-gray-600">Envio não realizado (mailer não configurado).</span>
+                    </div>
+                </div>
+                <hr class="border-gray-200">
+                <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Indicadores de reenvio</p>
+                <div class="flex flex-wrap gap-x-6 gap-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Reenviado</span>
+                        <span class="text-gray-600">A falha já foi corrigida com um novo envio.</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Reenvio ✓</span>
+                        <span class="text-gray-600">Reenviado com o layout HTML completo.</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Reenvio · Texto puro</span>
+                        <span class="text-gray-600">Reenviado sem layout, apenas texto simples. Reenvie novamente para corrigir.</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">Reenvio · Verificar</span>
+                        <span class="text-gray-600">Reenvio antigo — pode ter sido texto puro. Reenvie para garantir o layout correto.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Lista --}}
         <div class="bg-white rounded-xl shadow overflow-hidden">
             @if($notifications->count() > 0)
@@ -155,6 +204,21 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 Enviada
                                             </span>
+                                            @if(isset($notification->metadata['resent_from']))
+                                                @if(!empty($notification->metadata['template_used']))
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ml-1" title="Reenvio com layout HTML completo">
+                                                        Reenvio ✓
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 ml-1" title="Reenviado sem layout HTML, apenas texto simples">
+                                                        Reenvio · Texto puro
+                                                    </span>
+                                                @endif
+                                            @elseif(in_array($notification->recipient.'|'.$notification->channel, $failedKeys))
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 ml-1" title="Provável reenvio anterior à correção — pode ter sido enviado como texto puro. Reenvie para garantir o layout completo.">
+                                                    Reenvio · Verificar
+                                                </span>
+                                            @endif
                                         @elseif($notification->status === 'failed')
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" title="{{ $notification->error_message }}">
                                                 Falhou
@@ -168,26 +232,6 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800" title="{{ $notification->error_message }}">
                                                 Ignorada
                                             </span>
-                                        @endif
-                                        @if($notification->status === 'sent' && $notification->channel !== 'general')
-                                            @php
-                                                $templateChannels = ['inscription_received','inscription_approved','inscription_waitlisted','inscription_confirmed','inscription_rejected','inscription_cancelled','payment_reminder'];
-                                                $isResendNew = isset($notification->metadata['resent_from']);
-                                                $isResendOld = !$isResendNew && in_array($notification->recipient.'|'.$notification->channel, $failedKeys);
-                                                $wasTextOnly = false;
-
-                                                if ($isResendNew) {
-                                                    $wasTextOnly = isset($notification->metadata['template_used']) && !$notification->metadata['template_used'];
-                                                } elseif ($isResendOld) {
-                                                    $nInsc = $inscriptions[$notification->metadata['inscription_id'] ?? null] ?? null;
-                                                    $wasTextOnly = !$nInsc || !$nInsc->event || !in_array($notification->channel, $templateChannels);
-                                                }
-                                            @endphp
-                                            @if($wasTextOnly)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 ml-1" title="Este email foi reenviado sem o layout HTML completo, apenas com texto simples">
-                                                    Texto puro
-                                                </span>
-                                            @endif
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-500">
