@@ -23,7 +23,12 @@ class EventController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('admin.events.index', compact('upcoming', 'past'));
+        $deleted = Event::onlyTrashed()
+            ->withCount(['inscriptions'])
+            ->orderBy('deleted_at', 'desc')
+            ->get();
+
+        return view('admin.events.index', compact('upcoming', 'past', 'deleted'));
     }
 
     public function create()

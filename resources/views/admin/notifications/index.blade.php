@@ -41,7 +41,7 @@
                     </div>
                     <div class="sm:w-36">
                         <select name="status" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
-                            <option value="">Status envio</option>
+                            <option value="">Envio (todos)</option>
                             <option value="sent" {{ request('status') === 'sent' ? 'selected' : '' }}>Enviada</option>
                             <option value="failed" {{ request('status') === 'failed' ? 'selected' : '' }}>Falhou</option>
                             <option value="skipped" {{ request('status') === 'skipped' ? 'selected' : '' }}>Ignorada</option>
@@ -128,7 +128,13 @@
                                         {{ $channelLabels[$notification->channel] ?? $notification->channel }}
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-700">
-                                        {{ $notification->recipient }}
+                                        @if($notification->metadata['inscription_id'] ?? null)
+                                            <a href="{{ route('admin.inscricoes.show', $notification->metadata['inscription_id']) }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 hover:underline">
+                                                {{ $notification->recipient }}
+                                            </a>
+                                        @else
+                                            {{ $notification->recipient }}
+                                        @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate">
                                         {{ $notification->subject ?? '-' }}
