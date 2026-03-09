@@ -82,6 +82,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/inscricoes/{inscription}/send-reminder', [AdminInscriptionController::class, 'sendReminder'])->name('inscricoes.send-reminder');
     Route::patch('/inscricoes/{inscription}/notes', [AdminInscriptionController::class, 'updateNotes'])->name('inscricoes.update-notes');
     Route::patch('/inscricoes/{inscription}/contribution', [AdminInscriptionController::class, 'updateContribution'])->name('inscricoes.update-contribution');
+    Route::patch('/inscricoes/{inscription}/participant', [AdminInscriptionController::class, 'updateParticipant'])->name('inscricoes.update-participant');
 
     // Notificações
     Route::get('/notificacoes', [AdminNotificationController::class, 'index'])->name('notificacoes.index');

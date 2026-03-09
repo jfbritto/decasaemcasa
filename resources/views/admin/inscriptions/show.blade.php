@@ -47,9 +47,18 @@
             <div class="lg:col-span-2 space-y-6">
 
                 {{-- Informações Pessoais --}}
-                <div class="bg-white rounded-xl shadow p-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Dados do Participante</h2>
-                    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl shadow p-6" x-data="{ editing: false }">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">Dados do Participante</h2>
+                        <button @click="editing = !editing" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
+                            <svg x-show="!editing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            <span x-show="!editing">Editar</span>
+                            <span x-show="editing">Cancelar</span>
+                        </button>
+                    </div>
+
+                    {{-- Visualização --}}
+                    <dl x-show="!editing" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <dt class="text-sm font-medium text-gray-500">Nome Completo</dt>
                             <dd class="text-sm text-gray-900 mt-1">{{ $inscription->full_name }}</dd>
@@ -94,6 +103,47 @@
                             <dd class="text-sm text-gray-900 mt-1">{{ $inscription->created_at->format('d/m/Y H:i') }}</dd>
                         </div>
                     </dl>
+
+                    {{-- Formulário de edição --}}
+                    <form x-show="editing" method="POST" action="{{ route('admin.inscricoes.update-participant', $inscription) }}" x-cloak>
+                        @csrf
+                        @method('PATCH')
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="sm:col-span-2">
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Nome Completo</label>
+                                <input type="text" name="full_name" value="{{ old('full_name', $inscription->full_name) }}" required
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">E-mail</label>
+                                <input type="email" name="email" value="{{ old('email', $inscription->email) }}" required
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">WhatsApp</label>
+                                <input type="text" name="whatsapp" value="{{ old('whatsapp', $inscription->whatsapp) }}" required
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Bairro / Cidade</label>
+                                <input type="text" name="city_neighborhood" value="{{ old('city_neighborhood', $inscription->city_neighborhood) }}" required
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Instagram</label>
+                                <input type="text" name="instagram" value="{{ old('instagram', $inscription->instagram) }}"
+                                       class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                            </div>
+                        </div>
+                        <div class="mt-4 flex gap-2">
+                            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                                Salvar alterações
+                            </button>
+                            <button type="button" @click="editing = false" class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
                 </div>
 
                 {{-- Motivação / História --}}

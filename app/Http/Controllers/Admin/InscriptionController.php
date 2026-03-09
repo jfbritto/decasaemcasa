@@ -595,6 +595,39 @@ class InscriptionController extends Controller
     }
 
     /**
+     * Editar dados do participante.
+     */
+    public function updateParticipant(Request $request, Inscription $inscription)
+    {
+        $request->validate([
+            'full_name'         => 'required|string|max:255',
+            'email'             => 'required|email|max:255',
+            'whatsapp'          => 'required|string|max:20',
+            'instagram'         => 'nullable|string|max:255',
+            'city_neighborhood' => 'required|string|max:255',
+        ]);
+
+        $changed = [];
+        $fields = ['full_name', 'email', 'whatsapp', 'instagram', 'city_neighborhood'];
+        foreach ($fields as $field) {
+            if ($inscription->$field !== $request->$field) {
+                $changed[] = $field;
+            }
+        }
+
+        $inscription->fill($request->only($fields));
+        $inscription->save();
+
+        try {
+            ActivityLog::log('editar_participante', "Editou dados do participante {$inscription->full_name} (".implode(', ', $changed).")", $inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Dados do participante atualizados.');
+    }
+
+    /**
      * Atualizar notas do admin.
      */
     public function updateNotes(Request $request, Inscription $inscription)
