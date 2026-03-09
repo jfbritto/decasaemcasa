@@ -289,20 +289,45 @@
                                 </button>
                             </form>
                         @elseif($inscription->isConfirmed())
-                            <div class="text-center py-3 bg-green-50 rounded-xl border border-green-200">
+                            <div class="text-center py-3 bg-green-50 rounded-xl border border-green-200 mb-3">
                                 <p class="text-sm text-green-700 font-medium">Participação confirmada!</p>
                                 @if($inscription->confirmed_at)
                                     <p class="text-xs text-green-600 mt-1">Confirmado em {{ $inscription->confirmed_at->format('d/m/Y H:i') }}</p>
                                 @endif
                             </div>
                         @elseif($inscription->isRejected())
-                            <div class="text-center py-3 bg-red-50 rounded-xl border border-red-200">
+                            <div class="text-center py-3 bg-red-50 rounded-xl border border-red-200 mb-3">
                                 <p class="text-sm text-red-700 font-medium">Inscrição rejeitada</p>
                             </div>
+                            <form method="POST" action="{{ route('admin.inscricoes.reverter-rejeicao', $inscription) }}">
+                                @csrf
+                                <button type="button" class="w-full py-2.5 bg-yellow-500 text-white font-medium rounded-xl hover:bg-yellow-600 transition-colors"
+                                        @click="Swal.fire({ title: 'Reverter para pendente?', text: 'A inscrição voltará para o status de Pendente de Análise.', icon: 'question', showCancelButton: true, confirmButtonColor: '#d97706', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, reverter', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
+                                    Reverter para Pendente
+                                </button>
+                            </form>
                         @elseif($inscription->isCancelled())
-                            <div class="text-center py-3 bg-gray-50 rounded-xl border border-gray-200">
-                                <p class="text-sm text-gray-700 font-medium">Inscrição cancelada pelo participante</p>
+                            <div class="text-center py-3 bg-gray-50 rounded-xl border border-gray-200 mb-3">
+                                <p class="text-sm text-gray-700 font-medium">Inscrição cancelada</p>
                             </div>
+                            <form method="POST" action="{{ route('admin.inscricoes.reverter', $inscription) }}">
+                                @csrf
+                                <button type="button" class="w-full py-2.5 bg-yellow-500 text-white font-medium rounded-xl hover:bg-yellow-600 transition-colors"
+                                        @click="Swal.fire({ title: 'Reverter para pendente?', text: 'A inscrição voltará para o status de Pendente de Análise.', icon: 'question', showCancelButton: true, confirmButtonColor: '#d97706', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, reverter', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
+                                    Reverter para Pendente
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Botão cancelar (para status que não sejam cancelado ou rejeitado) --}}
+                        @if(!$inscription->isCancelled() && !$inscription->isRejected())
+                            <form method="POST" action="{{ route('admin.inscricoes.cancelar', $inscription) }}" class="mt-2">
+                                @csrf
+                                <button type="button" class="w-full py-2 text-sm text-gray-500 border border-gray-300 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                                        @click="Swal.fire({ title: 'Cancelar inscrição?', text: 'A inscrição será marcada como cancelada.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#6b7280', cancelButtonColor: '#374151', confirmButtonText: 'Sim, cancelar', cancelButtonText: 'Voltar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
+                                    Cancelar Inscrição
+                                </button>
+                            </form>
                         @endif
                     </div>
                 </div>

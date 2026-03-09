@@ -13,13 +13,18 @@
     Olá <strong>{{ $inscription->full_name }}</strong>,
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Agradecemos muito o interesse em participar do encontro <strong>De Casa em Casa</strong>. Cada história que recebemos é lida com carinho.
+    Obrigado por se inscrever para o encontro <strong>De Casa em Casa</strong>.
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Infelizmente, não conseguimos incluir sua participação nesta edição. Os encontros acontecem em lares com lugares muito limitados, e a curadoria precisa ser cuidadosa.
+    Como os encontros acontecem dentro de casas e com um número bem pequeno de pessoas, algumas inscrições acabam não seguindo para esta edição. Desta vez, não conseguimos confirmar a sua participação no encontro de <strong>{{ $event->city }}</strong>.
+</p>
+<p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
+    Mas queremos que você saiba que ficamos muito felizes com o seu interesse em caminhar com a gente. Quem sabe em outra casa, em outra mesa, a gente consiga se encontrar.
 </p>
 <p style="margin:0; color:#4a4639; font-size:15px; line-height:1.7;">
-    Fique de olho nas próximas edições — esperamos te encontrar em breve!
+    Seguimos por aqui, na torcida para que nossos caminhos se cruzem em breve.<br><br>
+    Um abraço da<br>
+    <strong>Equipe De Casa em Casa</strong>
 </p>
 @endsection
 

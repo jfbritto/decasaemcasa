@@ -13,16 +13,16 @@
     Olá <strong>{{ $inscription->full_name }}</strong>,
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Recebemos sua solicitação de cancelamento da inscrição para o encontro <strong>De Casa em Casa</strong> em <strong>{{ $event->city }}</strong>.
+    Obrigado por se inscrever para o encontro <strong>De Casa em Casa</strong>.
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Obrigado por nos avisar e por ter caminhado com a gente até aqui no processo de inscrição.
+    Como os encontros acontecem dentro de casas e com um número bem pequeno de pessoas, algumas inscrições acabam não seguindo para esta edição. Desta vez, não conseguimos confirmar a sua participação no encontro de <strong>{{ $event->city }}</strong>.
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Esperamos que em outra oportunidade, em outra casa e ao redor de outra mesa, a gente consiga se encontrar.
+    Mas queremos que você saiba que ficamos muito felizes com o seu interesse em caminhar com a gente. Quem sabe em outra casa, em outra mesa, a gente consiga se encontrar.
 </p>
 <p style="margin:0; color:#4a4639; font-size:15px; line-height:1.7;">
-    Seguimos por aqui.<br><br>
+    Seguimos por aqui, na torcida para que nossos caminhos se cruzem em breve.<br><br>
     Um abraço da<br>
     <strong>Equipe De Casa em Casa</strong>
 </p>

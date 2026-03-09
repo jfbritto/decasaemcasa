@@ -56,7 +56,7 @@
                 @elseif($inscription->isCancelled())
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                        Cancelada por você
+                        Cancelada
                     </span>
                 @endif
             </div>
@@ -111,9 +111,35 @@
                     <p class="text-gray-700 leading-relaxed">
                         Agradecemos muito o interesse em participar do encontro De Casa em Casa. Infelizmente, não conseguimos incluir sua participação nesta edição. Fique de olho nas próximas edições!
                     </p>
-                @elseif($inscription->isCancelled())
+                @elseif($inscription->isCancelledByAdmin())
                     <p class="text-gray-700 leading-relaxed">
-                        Você cancelou sua inscrição. Esperamos te ver em uma próxima edição!
+                        Obrigado por se inscrever para o encontro <strong>De Casa em Casa</strong>.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Como os encontros acontecem dentro de casas e com um número bem pequeno de pessoas, algumas inscrições acabam não seguindo para esta edição. Desta vez, não conseguimos confirmar a sua participação no encontro de <strong>{{ $inscription->event->city ?? '' }}</strong>.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Mas queremos que você saiba que ficamos muito felizes com o seu interesse em caminhar com a gente. Quem sabe em outra casa, em outra mesa, a gente consiga se encontrar.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Seguimos por aqui, na torcida para que nossos caminhos se cruzem em breve.<br><br>
+                        Um abraço da<br>
+                        <strong>Equipe De Casa em Casa</strong>
+                    </p>
+                @elseif($inscription->isCancelledByParticipant())
+                    <p class="text-gray-700 leading-relaxed">
+                        Recebemos sua solicitação de cancelamento da inscrição para o encontro <strong>De Casa em Casa</strong> em <strong>{{ $inscription->event->city ?? '' }}</strong>.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Obrigado por nos avisar e por ter caminhado com a gente até aqui no processo de inscrição.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Esperamos que em outra oportunidade, em outra casa e ao redor de outra mesa, a gente consiga se encontrar.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Seguimos por aqui.<br><br>
+                        Um abraço da<br>
+                        <strong>Equipe De Casa em Casa</strong>
                     </p>
                 @endif
             </div>

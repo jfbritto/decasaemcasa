@@ -76,6 +76,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/inscricoes/{inscription}/fila-espera', [AdminInscriptionController::class, 'waitlist'])->name('inscricoes.fila-espera');
     Route::post('/inscricoes/{inscription}/confirmar', [AdminInscriptionController::class, 'confirm'])->name('inscricoes.confirmar');
     Route::post('/inscricoes/{inscription}/rejeitar', [AdminInscriptionController::class, 'reject'])->name('inscricoes.rejeitar');
+    Route::post('/inscricoes/{inscription}/cancelar', [AdminInscriptionController::class, 'cancel'])->name('inscricoes.cancelar');
+    Route::post('/inscricoes/{inscription}/reverter', [AdminInscriptionController::class, 'revertCancellation'])->name('inscricoes.reverter');
+    Route::post('/inscricoes/{inscription}/reverter-rejeicao', [AdminInscriptionController::class, 'revertRejection'])->name('inscricoes.reverter-rejeicao');
     Route::post('/inscricoes/{inscription}/send-reminder', [AdminInscriptionController::class, 'sendReminder'])->name('inscricoes.send-reminder');
     Route::patch('/inscricoes/{inscription}/notes', [AdminInscriptionController::class, 'updateNotes'])->name('inscricoes.update-notes');
     Route::patch('/inscricoes/{inscription}/contribution', [AdminInscriptionController::class, 'updateContribution'])->name('inscricoes.update-contribution');

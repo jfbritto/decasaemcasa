@@ -246,6 +246,36 @@ class NotificationService
     /**
      * Cancelamento pelo participante (status: cancelado)
      */
+    public function notifyInscriptionCancelledByAdmin(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+
+        $subject = 'Inscrição cancelada - De Casa em Casa';
+        $message = "Inscrição cancelada pelo admin para {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'inscription_cancelled_by_admin',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-cancelled-by-admin',
+            ['inscription' => $inscription, 'event' => $event]
+        );
+
+        $wa = "Olá {$inscription->full_name}! Sua inscrição para o encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) foi cancelada. ";
+        $wa .= 'Em caso de dúvidas, entre em contato conosco. Abraço da equipe De Casa em Casa.';
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'inscription_cancelled_by_admin',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
     public function notifyInscriptionCancelled(Inscription $inscription): void
     {
         $event = $inscription->event;

@@ -12,6 +12,17 @@
             </a>
         </div>
 
+        {{-- Total Geral Arrecadado --}}
+        <div class="mb-8 bg-white border border-green-200 rounded-xl p-5 flex items-center justify-between shadow-sm">
+            <div>
+                <p class="text-sm text-gray-500 font-medium uppercase tracking-wide">Total Geral Arrecadado</p>
+                <p class="text-xs text-gray-400 mt-0.5">Soma de todas as contribuições confirmadas</p>
+            </div>
+            <p class="text-2xl font-bold text-green-700">
+                R$ {{ number_format($totalArrecadadoGeral, 2, ',', '.') }}
+            </p>
+        </div>
+
         {{-- Próximos Encontros --}}
         <div class="mb-8">
             <h2 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
@@ -30,6 +41,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Data</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Capacidade</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Inscrições</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Arrecadado</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
@@ -60,6 +72,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                         {{ $event->inscriptions_count ?? 0 }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                        @if($event->total_arrecadado)
+                                            <span class="font-medium text-green-700">R$ {{ number_format($event->total_arrecadado, 2, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 py-1 text-xs rounded
@@ -111,6 +130,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Data</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Capacidade</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Inscrições</th>
+                                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Arrecadado</th>
                                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
@@ -139,6 +159,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $event->inscriptions_count ?? 0 }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        @if($event->total_arrecadado)
+                                            <span class="font-medium text-green-600">R$ {{ number_format($event->total_arrecadado, 2, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-600">

@@ -14,11 +14,13 @@ class EventController extends Controller
     public function index()
     {
         $upcoming = Event::withCount(['inscriptions'])
+            ->withSum(['inscriptions as total_arrecadado' => fn ($q) => $q->where('status', 'confirmado')], 'contribution_amount')
             ->where('date', '>=', now())
             ->orderBy('date', 'asc')
             ->get();
 
         $past = Event::withCount(['inscriptions'])
+            ->withSum(['inscriptions as total_arrecadado' => fn ($q) => $q->where('status', 'confirmado')], 'contribution_amount')
             ->where('date', '<', now())
             ->orderBy('date', 'desc')
             ->get();
@@ -28,7 +30,9 @@ class EventController extends Controller
             ->orderBy('deleted_at', 'desc')
             ->get();
 
-        return view('admin.events.index', compact('upcoming', 'past', 'deleted'));
+        $totalArrecadadoGeral = \App\Models\Inscription::where('status', 'confirmado')->sum('contribution_amount');
+
+        return view('admin.events.index', compact('upcoming', 'past', 'deleted', 'totalArrecadadoGeral'));
     }
 
     public function create()

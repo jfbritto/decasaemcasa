@@ -356,6 +356,102 @@ class InscriptionController extends Controller
     }
 
     /**
+     * Cancelar inscrição (pelo admin).
+     */
+    public function cancel(Inscription $inscription)
+    {
+        if ($inscription->isCancelled()) {
+            return redirect()
+                ->back()
+                ->with('error', 'A inscrição já está cancelada.');
+        }
+
+        try {
+            $inscription->cancel('admin');
+        } catch (\Throwable $e) {
+            Log::error('Falha ao cancelar inscrição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao cancelar inscrição. Verifique os logs.');
+        }
+
+        try {
+            ActivityLog::log('cancelar_inscricao', "Cancelou inscrição de {$inscription->full_name}", $inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
+
+        try {
+            $this->notificationService->notifyInscriptionCancelledByAdmin($inscription);
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar cancelamento: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Inscrição de {$inscription->full_name} cancelada. Participante notificado.");
+    }
+
+    /**
+     * Reverter inscrição cancelada para pendente.
+     */
+    public function revertCancellation(Inscription $inscription)
+    {
+        if (! $inscription->isCancelled()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Apenas inscrições canceladas podem ser revertidas.');
+        }
+
+        try {
+            $inscription->revertToPending();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao reverter inscrição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao reverter inscrição. Verifique os logs.');
+        }
+
+        try {
+            ActivityLog::log('reverter_inscricao', "Reverteu inscrição cancelada de {$inscription->full_name} para pendente", $inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Inscrição de {$inscription->full_name} revertida para pendente de análise.");
+    }
+
+    /**
+     * Reverter inscrição rejeitada para pendente.
+     */
+    public function revertRejection(Inscription $inscription)
+    {
+        if (! $inscription->isRejected()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Apenas inscrições rejeitadas podem ser revertidas.');
+        }
+
+        try {
+            $inscription->revertRejectionToPending();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao reverter rejeição: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao reverter inscrição. Verifique os logs.');
+        }
+
+        try {
+            ActivityLog::log('reverter_rejeicao', "Reverteu inscrição rejeitada de {$inscription->full_name} para pendente", $inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Inscrição de {$inscription->full_name} revertida para pendente de análise.");
+    }
+
+    /**
      * Ações em lote.
      */
     public function bulkAction(Request $request)

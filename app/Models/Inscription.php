@@ -26,6 +26,7 @@ class Inscription extends Model
         'payment_proof',
         'contribution_amount',
         'admin_notes',
+        'cancelled_by',
         'approved_at',
         'confirmed_at',
     ];
@@ -120,15 +121,39 @@ class Inscription extends Model
         $this->save();
     }
 
-    public function cancel(): void
+    public function cancel(string $cancelledBy = 'participant'): void
     {
         $previousStatus = $this->status;
         $this->status = 'cancelado';
+        $this->cancelled_by = $cancelledBy;
         $this->save();
 
         if ($previousStatus === 'confirmado' && $this->event) {
             $this->event->decrement('confirmed_count');
         }
+    }
+
+    public function isCancelledByAdmin(): bool
+    {
+        return $this->isCancelled() && $this->cancelled_by === 'admin';
+    }
+
+    public function isCancelledByParticipant(): bool
+    {
+        return $this->isCancelled() && $this->cancelled_by !== 'admin';
+    }
+
+    public function revertToPending(): void
+    {
+        $this->status = 'pendente';
+        $this->cancelled_by = null;
+        $this->save();
+    }
+
+    public function revertRejectionToPending(): void
+    {
+        $this->status = 'pendente';
+        $this->save();
     }
 
     // Helpers
