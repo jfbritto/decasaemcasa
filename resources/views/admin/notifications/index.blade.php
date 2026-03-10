@@ -261,9 +261,34 @@
                                                 <p class="text-sm text-gray-700 whitespace-pre-line mt-1">{{ Str::limit($notification->message, 500) }}</p>
                                             </div>
                                             @if($notification->error_message)
+                                                @php
+                                                    $errLower = strtolower($notification->error_message);
+                                                    $isInvalidMailbox = str_contains($errLower, 'mailbox does not exist')
+                                                        || str_contains($errLower, 'user unknown')
+                                                        || str_contains($errLower, 'no such user')
+                                                        || (str_contains($errLower, '550 5.4.6') && !str_contains($errLower, 'quota'))
+                                                        || str_contains($errLower, '550 5.1.1');
+                                                    $isQuotaExceeded = str_contains($errLower, 'daily quota exceeded')
+                                                        || str_contains($errLower, 'sender daily quota')
+                                                        || str_contains($errLower, 'daily sending limit')
+                                                        || str_contains($errLower, 'rate limit');
+                                                @endphp
                                                 <div>
                                                     <p class="text-xs font-semibold text-red-500 uppercase">Erro:</p>
-                                                    <p class="text-sm text-red-700 mt-1">{{ $notification->error_message }}</p>
+                                                    @if($isInvalidMailbox)
+                                                        <p class="text-sm text-red-700 mt-1 font-medium">
+                                                            O e-mail do destinatário não existe ou foi rejeitado pelo servidor de destino.
+                                                            Verifique se o endereço <strong>{{ $notification->recipient }}</strong> está correto.
+                                                        </p>
+                                                        <p class="text-xs text-red-400 mt-1">O processo de envio funcionou normalmente — o problema é no endereço de e-mail do participante.</p>
+                                                    @elseif($isQuotaExceeded)
+                                                        <p class="text-sm text-red-700 mt-1 font-medium">
+                                                            Limite diário de envios atingido no servidor de e-mail.
+                                                        </p>
+                                                        <p class="text-xs text-red-400 mt-1">O e-mail do participante está correto — o problema é na cota de envios da conta. Use o botão "Reenviar" quando o limite for renovado.</p>
+                                                    @else
+                                                        <p class="text-sm text-red-700 mt-1">{{ $notification->error_message }}</p>
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
