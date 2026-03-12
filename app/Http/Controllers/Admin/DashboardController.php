@@ -11,14 +11,15 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Cards de ação rápida
+        // Cards de ação rápida (apenas eventos ativos: published ou draft)
+        $activeEventScope = fn ($query) => $query->whereHas('event', fn ($e) => $e->whereIn('status', ['published', 'draft']));
         $stats = [
-            'pending' => Inscription::where('status', 'pendente')->count(),
-            'awaiting_proof' => Inscription::where('status', 'aprovado')->whereNull('payment_proof')->count(),
-            'proof_sent' => Inscription::where('status', 'aprovado')->whereNotNull('payment_proof')->count(),
-            'confirmed' => Inscription::where('status', 'confirmado')->count(),
-            'waitlisted' => Inscription::where('status', 'fila_de_espera')->count(),
-            'total_inscriptions' => Inscription::count(),
+            'pending' => Inscription::where('status', 'pendente')->where($activeEventScope)->count(),
+            'awaiting_proof' => Inscription::where('status', 'aprovado')->whereNull('payment_proof')->where($activeEventScope)->count(),
+            'proof_sent' => Inscription::where('status', 'aprovado')->whereNotNull('payment_proof')->where($activeEventScope)->count(),
+            'confirmed' => Inscription::where('status', 'confirmado')->where($activeEventScope)->count(),
+            'waitlisted' => Inscription::where('status', 'fila_de_espera')->where($activeEventScope)->count(),
+            'total_inscriptions' => Inscription::where($activeEventScope)->count(),
         ];
 
         // Próximo encontro (destaque)

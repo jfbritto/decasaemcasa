@@ -151,7 +151,7 @@ class EventController extends Controller
     public function exportPdf(Event $event)
     {
         $event->load(['inscriptions' => function ($query) {
-            $query->orderByRaw("FIELD(status, 'confirmado', 'aprovado', 'fila_de_espera', 'pendente')")
+            $query->where('status', 'confirmado')
                 ->orderBy('full_name');
         }]);
 
