@@ -121,14 +121,7 @@
 <body>
     <div class="header">
         <h1>Lista de Presença - {{ $event->city ?? $event->title }}</h1>
-        <p>{{ $event->date->format('d/m/Y') }} | Capacidade: {{ $event->capacity ?: 'Ilimitada' }} | Total de inscritos: {{ $event->inscriptions->count() }}</p>
-    </div>
-
-    <div class="stats">
-        <span><strong>{{ $event->inscriptions->where('status', 'confirmado')->count() }}</strong> Confirmados</span>
-        <span><strong>{{ $event->inscriptions->where('status', 'aprovado')->count() }}</strong> Aprovados</span>
-        <span><strong>{{ $event->inscriptions->where('status', 'fila_de_espera')->count() }}</strong> Fila de Espera</span>
-        <span><strong>{{ $event->inscriptions->where('status', 'pendente')->count() }}</strong> Pendentes</span>
+        <p>{{ $event->date->format('d/m/Y') }} | {{ $event->inscriptions->count() }} confirmados | Capacidade: {{ $event->capacity ?: 'Ilimitada' }}</p>
     </div>
 
     @if($event->inscriptions->count() > 0)
@@ -141,7 +134,6 @@
                     <th>WhatsApp</th>
                     <th>Email</th>
                     <th>Cidade/Bairro</th>
-                    <th>Status</th>
                     <th class="checkbox">Presente</th>
                 </tr>
             </thead>
@@ -154,11 +146,6 @@
                         <td>{{ $inscription->whatsapp }}</td>
                         <td>{{ $inscription->email }}</td>
                         <td>{{ $inscription->city_neighborhood }}</td>
-                        <td>
-                            <span class="status status-{{ $inscription->status }}">
-                                {{ $inscription->status_label }}
-                            </span>
-                        </td>
                         <td class="checkbox"><span class="checkbox-box"></span></td>
                     </tr>
                 @endforeach
