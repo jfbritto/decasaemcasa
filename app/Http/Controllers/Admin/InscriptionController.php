@@ -44,7 +44,7 @@ class InscriptionController extends Controller
         // Ordenação
         $sortField = $request->get('sort', 'created_at');
         $sortDirection = $request->get('direction', 'desc');
-        $allowedSorts = ['full_name', 'created_at', 'status', 'email'];
+        $allowedSorts = ['full_name', 'created_at', 'status', 'email', 'contribution_amount'];
 
         if (in_array($sortField, $allowedSorts)) {
             $query->orderBy($sortField, $sortDirection === 'asc' ? 'asc' : 'desc');

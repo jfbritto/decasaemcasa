@@ -85,7 +85,8 @@ class EventController extends Controller
         ];
 
         $inscriptions = $event->inscriptions()
-            ->orderBy('created_at', 'desc')
+            ->orderByRaw("FIELD(status, 'confirmado', 'aprovado', 'pendente', 'fila_de_espera', 'rejeitado', 'cancelado')")
+            ->orderBy('full_name', 'asc')
             ->paginate(20);
 
         return view('admin.events.show', compact('event', 'inscriptionStats', 'inscriptions'));

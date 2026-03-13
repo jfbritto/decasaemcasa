@@ -259,6 +259,15 @@
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Comprovante</th>
                                 <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                                    <a href="{{ route('admin.inscricoes.index', array_merge(request()->query(), ['sort' => 'contribution_amount', 'direction' => request('sort') === 'contribution_amount' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
+                                       class="hover:text-indigo-600 flex items-center gap-1">
+                                        Contribuição
+                                        @if(request('sort') === 'contribution_amount')
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="{{ request('direction') === 'asc' ? 'M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z' : 'M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' }}" clip-rule="evenodd"/></svg>
+                                        @endif
+                                    </a>
+                                </th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
                                     <a href="{{ route('admin.inscricoes.index', array_merge(request()->query(), ['sort' => 'created_at', 'direction' => request('sort') === 'created_at' && request('direction') === 'asc' ? 'desc' : 'asc'])) }}"
                                        class="hover:text-indigo-600 flex items-center gap-1">
                                         Data
@@ -322,6 +331,13 @@
                                             <span class="text-gray-400">-</span>
                                         @endif
                                     </td>
+                                    <td class="px-4 py-3 text-sm">
+                                        @if($inscription->contribution_amount)
+                                            <span class="font-medium text-green-700">R$ {{ number_format($inscription->contribution_amount, 2, ',', '.') }}</span>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-500">
                                         {{ $inscription->created_at->format('d/m/Y H:i') }}
                                     </td>
@@ -364,7 +380,7 @@
 
                                 {{-- Motivação expandível --}}
                                 <tr x-data="{ showMotivation: false }">
-                                    <td colspan="8" class="px-4 py-0">
+                                    <td colspan="9" class="px-4 py-0">
                                         <button @click="showMotivation = !showMotivation"
                                                 class="text-xs text-indigo-500 hover:text-indigo-700 py-1 flex items-center">
                                             <svg class="w-3 h-3 mr-1 transition-transform" :class="showMotivation ? 'rotate-90' : ''" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
