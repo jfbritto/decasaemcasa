@@ -38,6 +38,11 @@
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
                         Pendente - Em Curadoria
                     </span>
+                @elseif($inscription->isApproved() && $inscription->event && $inscription->event->isFull())
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                        Vagas Esgotadas
+                    </span>
                 @elseif($inscription->isApproved())
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -90,6 +95,7 @@
             <div class="rounded-xl p-5 mb-6
                 @if($inscription->isPending() && $inscription->event && $inscription->event->isFull()) bg-orange-50 border border-orange-200
                 @elseif($inscription->isPending()) bg-yellow-50 border border-yellow-200
+                @elseif($inscription->isApproved() && $inscription->event && $inscription->event->isFull()) bg-orange-50 border border-orange-200
                 @elseif($inscription->isApproved()) bg-blue-50 border border-blue-200
                 @elseif($inscription->isConfirmed()) bg-green-50 border border-green-200
                 @elseif($inscription->isWaitlisted()) bg-orange-50 border border-orange-200
@@ -110,6 +116,16 @@
                 @elseif($inscription->isPending())
                     <p class="text-gray-700 leading-relaxed">
                         Recebemos sua história! Aqui do nosso lado, pessoas reais estão conferindo seus dados e logo logo responderemos. Calma, que esse processo é manual. Assim que sua inscrição for aprovada, você poderá fazer sua contribuição. Obrigado pelo interesse em participar desse encontro especial!
+                    </p>
+                @elseif($inscription->isApproved() && $inscription->event && $inscription->event->isFull())
+                    <p class="text-gray-700 leading-relaxed">
+                        Recebemos sua história e ficamos muito felizes com o seu interesse!
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        No momento, as vagas para este encontro foram preenchidas. Caso haja alguma desistência, entraremos em contato.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Fique de olho nas próximas edições do <strong>De Casa em Casa</strong>!
                     </p>
                 @elseif($inscription->isApproved())
                     <p class="text-gray-700 leading-relaxed">
@@ -160,8 +176,8 @@
                 @endif
             </div>
 
-            {{-- Upload de Comprovante (só se aprovado) --}}
-            @if($inscription->isApproved())
+            {{-- Upload de Comprovante (só se aprovado e evento não esgotado) --}}
+            @if($inscription->isApproved() && !($inscription->event && $inscription->event->isFull()))
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-6 mb-6">
                     <h3 class="font-semibold text-gray-900 mb-3">Enviar Comprovante de Pagamento</h3>
 
