@@ -273,6 +273,56 @@
                     @endif
                 </div>
 
+                {{-- Migrar de Evento --}}
+                @if($availableEvents->count() > 0)
+                <div class="bg-white rounded-xl shadow p-6" x-data="{ showMigrate: false }">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-3">Migrar de Evento</h2>
+                    <div x-show="!showMigrate">
+                        <button @click="showMigrate = true" class="w-full py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                            Migrar Participante
+                        </button>
+                    </div>
+                    <form x-show="showMigrate" x-transition method="POST" action="{{ route('admin.inscricoes.migrar', $inscription) }}" x-cloak>
+                        @csrf
+                        <div class="mb-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Evento de destino</label>
+                            <select name="destination_event_id" required class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                <option value="">Selecione...</option>
+                                @foreach($availableEvents as $evt)
+                                    <option value="{{ $evt->id }}">{{ $evt->city ?? $evt->title }} - {{ $evt->date->format('d/m/Y') }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">O participante será movido com o mesmo status e pagamento.</p>
+                        <div class="flex gap-2">
+                            <button type="button"
+                                    @click="
+                                        const select = $el.closest('form').querySelector('select');
+                                        if (!select.value) { Swal.fire('Atenção', 'Selecione o evento de destino.', 'warning'); return; }
+                                        const destino = select.options[select.selectedIndex].text;
+                                        Swal.fire({
+                                            title: 'Confirmar migração?',
+                                            html: 'Migrar <strong>{{ $inscription->full_name }}</strong> para <strong>' + destino + '</strong>?<br><small>Status e pagamento serão mantidos.</small>',
+                                            icon: 'question',
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#4f46e5',
+                                            cancelButtonColor: '#6b7280',
+                                            confirmButtonText: 'Sim, migrar',
+                                            cancelButtonText: 'Cancelar'
+                                        }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })
+                                    "
+                                    class="flex-1 py-2.5 bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors text-sm">
+                                Confirmar Migração
+                            </button>
+                            <button type="button" @click="showMigrate = false" class="px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                @endif
+
                 {{-- Ações --}}
                 <div class="bg-white rounded-xl shadow p-6" x-data>
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Ações</h2>

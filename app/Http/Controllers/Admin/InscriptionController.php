@@ -153,7 +153,12 @@ class InscriptionController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.inscriptions.show', compact('inscription', 'activityLogs'));
+        $availableEvents = Event::where('id', '!=', $inscription->event_id)
+            ->whereIn('status', ['published', 'draft'])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('admin.inscriptions.show', compact('inscription', 'activityLogs', 'availableEvents'));
     }
 
     /**
@@ -625,6 +630,56 @@ class InscriptionController extends Controller
         }
 
         return redirect()->back()->with('success', 'Dados do participante atualizados.');
+    }
+
+    /**
+     * Migrar participante para outro evento.
+     */
+    public function migrate(Request $request, Inscription $inscription)
+    {
+        $request->validate([
+            'destination_event_id' => 'required|exists:events,id',
+        ]);
+
+        $destinationEvent = Event::findOrFail($request->destination_event_id);
+        $originEvent = $inscription->event;
+
+        if ($destinationEvent->id === $inscription->event_id) {
+            return redirect()->back()->with('error', 'O participante já está neste evento.');
+        }
+
+        $wasConfirmed = $inscription->isConfirmed();
+
+        // Decrementa confirmed_count do evento de origem se estava confirmado
+        if ($wasConfirmed && $originEvent) {
+            $originEvent->decrement('confirmed_count');
+        }
+
+        // Move para o novo evento
+        $inscription->event_id = $destinationEvent->id;
+        $inscription->save();
+
+        // Incrementa confirmed_count do evento de destino se estava confirmado
+        if ($wasConfirmed) {
+            $destinationEvent->increment('confirmed_count');
+        }
+
+        $originName = $originEvent->city ?? $originEvent->title;
+        $destName = $destinationEvent->city ?? $destinationEvent->title;
+
+        try {
+            ActivityLog::log(
+                'migrar_participante',
+                "Migrou {$inscription->full_name} de {$originName} para {$destName} (status: {$inscription->status_label}, contribuição: R$ " . number_format($inscription->contribution_amount ?? 0, 2, ',', '.') . ")",
+                $inscription
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: ' . $e->getMessage());
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "{$inscription->full_name} migrado(a) de {$originName} para {$destName} com sucesso!");
     }
 
     /**
