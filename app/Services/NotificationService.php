@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Event;
 use App\Models\Inscription;
 use App\Models\Notification;
 use App\Models\User;
@@ -352,6 +353,28 @@ class NotificationService
             null,
             'inscription_confirmed',
             ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Notificar migração de evento
+     */
+    public function notifyInscriptionMigrated(Inscription $inscription, Event $destinationEvent, string $originEventName): void
+    {
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        $subject = 'Sua inscrição foi transferida - De Casa em Casa';
+        $message = "Transferência de {$inscription->full_name} de {$originEventName} para {$destinationEvent->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'inscription_migrated',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-migrated',
+            ['inscription' => $inscription, 'destinationEvent' => $destinationEvent, 'originEventName' => $originEventName, 'statusUrl' => $statusUrl]
         );
     }
 

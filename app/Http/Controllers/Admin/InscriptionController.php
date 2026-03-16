@@ -677,9 +677,15 @@ class InscriptionController extends Controller
             Log::warning('Falha ao registrar log de atividade: ' . $e->getMessage());
         }
 
+        try {
+            $this->notificationService->notifyInscriptionMigrated($inscription, $destinationEvent, $originName);
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar migração: ' . $e->getMessage());
+        }
+
         return redirect()
             ->back()
-            ->with('success', "{$inscription->full_name} migrado(a) de {$originName} para {$destName} com sucesso!");
+            ->with('success', "{$inscription->full_name} migrado(a) de {$originName} para {$destName} com sucesso! Participante notificado por email.");
     }
 
     /**
