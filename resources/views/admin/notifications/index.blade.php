@@ -59,6 +59,8 @@
                             <option value="inscription_confirmed" {{ request('channel') === 'inscription_confirmed' ? 'selected' : '' }}>Confirmação</option>
                             <option value="inscription_rejected" {{ request('channel') === 'inscription_rejected' ? 'selected' : '' }}>Rejeição</option>
                             <option value="inscription_cancelled" {{ request('channel') === 'inscription_cancelled' ? 'selected' : '' }}>Cancelamento</option>
+                            <option value="inscription_cancelled_by_admin" {{ request('channel') === 'inscription_cancelled_by_admin' ? 'selected' : '' }}>Cancelamento pelo Admin</option>
+                            <option value="event_full" {{ request('channel') === 'event_full' ? 'selected' : '' }}>Vagas Esgotadas</option>
                         </select>
                     </div>
                 </div>
@@ -174,6 +176,8 @@
                                                 'inscription_confirmed' => 'Confirmação',
                                                 'inscription_rejected' => 'Rejeição',
                                                 'inscription_cancelled' => 'Cancelamento',
+                                                'inscription_cancelled_by_admin' => 'Cancelamento pelo Admin',
+                                                'event_full' => 'Vagas Esgotadas',
                                                 'general' => 'Geral',
                                             ];
                                         @endphp
