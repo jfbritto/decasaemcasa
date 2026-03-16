@@ -86,6 +86,11 @@ class InscriptionController extends Controller
             return redirect()->back()->with('error', 'Este encontro não está disponível para inscrições.');
         }
 
+        // Verificar se o evento está esgotado
+        if ($event->isFull()) {
+            return redirect()->back()->with('error', 'As vagas para este encontro estão esgotadas.');
+        }
+
         // Verificar inscrição duplicada por CPF + evento
         $cpfClean = preg_replace('/\D/', '', $request->cpf);
         $existingInscription = Inscription::where('event_id', $request->event_id)

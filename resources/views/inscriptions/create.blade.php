@@ -52,7 +52,7 @@
                     @if($events->count() > 0)
                         <div class="space-y-3">
                             @foreach($events as $event)
-                                <label class="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-indigo-300 hover:bg-indigo-50"
+                                <label class="flex items-center p-4 border-2 rounded-xl transition-all duration-200 {{ $event->isFull() ? 'opacity-60 cursor-not-allowed bg-gray-50' : 'cursor-pointer hover:border-indigo-300 hover:bg-indigo-50' }}"
                                        :class="formData.event_id == '{{ $event->id }}' ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200' : 'border-gray-200'">
                                     {{-- Ícone casinha --}}
                                     <div class="w-14 h-14 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -62,6 +62,7 @@
                                     </div>
                                     <input type="radio" name="event_id" value="{{ $event->id }}"
                                            x-model="formData.event_id"
+                                           {{ $event->isFull() ? 'disabled' : '' }}
                                            class="h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500 ml-4 flex-shrink-0">
                                     <div class="ml-4 flex-1">
                                         <div class="flex items-center justify-between">
