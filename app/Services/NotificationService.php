@@ -355,6 +355,41 @@ class NotificationService
         );
     }
 
+    /**
+     * Notificar que o evento está esgotado
+     */
+    public function notifyEventFull(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        $subject = 'Vagas esgotadas - De Casa em Casa';
+        $message = "Vagas esgotadas para {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'event_full',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-event-full',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+        );
+
+        $wa = "Olá {$inscription->full_name}! Recebemos sua inscrição para o encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}). ";
+        $wa .= "No momento, as vagas foram preenchidas. Caso haja alguma desistência, entraremos em contato. ";
+        $wa .= "Fique de olho nas próximas edições! Acompanhe: {$statusUrl}";
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'event_full',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
     private function logNotification(string $type, string $channel, string $recipient, ?string $subject, string $message, ?User $user, array $metadata, string $status, ?string $errorMessage = null): void
     {
         try {

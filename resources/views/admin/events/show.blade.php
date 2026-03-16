@@ -36,12 +36,35 @@
                             Duplicar
                         </button>
                     </form>
+                    @if($event->isFull() && ($inscriptionStats['pendente'] + $inscriptionStats['aprovado']) > 0)
+                        <form method="POST" action="{{ route('admin.events.notify-event-full', $event) }}" class="inline" x-data>
+                            @csrf
+                            <button type="button" style="background-color:#ea580c;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center"
+                                    @click="Swal.fire({ title: 'Notificar vagas esgotadas?', html: '{{ $inscriptionStats['pendente'] + $inscriptionStats['aprovado'] }} inscritos serão <strong>movidos para Fila de Espera</strong> e notificados por email.', icon: 'question', showCancelButton: true, confirmButtonColor: '#ea580c', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, notificar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
+                                Notificar Esgotado
+                            </button>
+                        </form>
+                    @endif
                 @endunless
                 <a href="{{ route('admin.events.index') }}" class="bg-gray-600 text-white px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:bg-gray-700 text-center">
                     Voltar
                 </a>
             </div>
         </div>
+
+        {{-- Indicador de emails na fila --}}
+        @if($pendingEmailsCount > 0)
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+                <svg class="w-5 h-5 text-amber-500 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-sm text-amber-800">
+                    <strong>{{ $pendingEmailsCount }}</strong> {{ $pendingEmailsCount === 1 ? 'email aguardando envio' : 'emails aguardando envio' }} na fila.
+                    <span class="text-amber-600">Atualize a página para acompanhar.</span>
+                </p>
+            </div>
+        @endif
 
         {{-- Grid: Info (esquerda) + Stats (direita) --}}
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">

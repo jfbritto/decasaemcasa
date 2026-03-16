@@ -97,6 +97,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Duplicar evento
     Route::post('events/{event}/duplicate', [AdminEventController::class, 'duplicate'])->name('events.duplicate');
 
+    // Notificar pendentes sobre evento esgotado
+    Route::post('events/{event}/notify-event-full', [AdminEventController::class, 'notifyEventFull'])->name('events.notify-event-full');
+
     // Perfil do Admin
     Route::get('/profile', [AdminUserController::class, 'profile'])->name('profile');
     Route::put('/profile', [AdminUserController::class, 'updateProfile'])->name('profile.update');

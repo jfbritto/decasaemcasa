@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendEventFullNotification;
 use App\Models\ActivityLog;
 use App\Models\Event;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
@@ -89,7 +91,11 @@ class EventController extends Controller
             ->orderBy('full_name', 'asc')
             ->paginate(20);
 
-        return view('admin.events.show', compact('event', 'inscriptionStats', 'inscriptions'));
+        $pendingEmailsCount = \DB::table('jobs')
+            ->where('payload', 'like', '%SendEventFullNotification%')
+            ->count();
+
+        return view('admin.events.show', compact('event', 'inscriptionStats', 'inscriptions', 'pendingEmailsCount'));
     }
 
     public function edit(Event $event)
@@ -147,6 +153,40 @@ class EventController extends Controller
 
         return redirect()->route('admin.events.edit', $newEvent)
             ->with('success', 'Encontro duplicado com sucesso! Edite os dados conforme necessário.');
+    }
+
+    public function notifyEventFull(Event $event)
+    {
+        if (! $event->isFull()) {
+            return redirect()->back()->with('error', 'O evento ainda possui vagas disponíveis.');
+        }
+
+        $inscriptions = $event->inscriptions()
+            ->whereIn('status', ['pendente', 'aprovado'])
+            ->get();
+
+        if ($inscriptions->isEmpty()) {
+            return redirect()->back()->with('error', 'Não há inscrições pendentes ou aprovadas para notificar.');
+        }
+
+        $count = 0;
+        foreach ($inscriptions as $inscription) {
+            try {
+                $inscription->waitlist();
+                SendEventFullNotification::dispatch($inscription)->delay(now()->addSeconds($count * 20));
+                $count++;
+            } catch (\Throwable $e) {
+                Log::error("Falha ao enfileirar notificação de evento esgotado para inscrição #{$inscription->id}: " . $e->getMessage());
+            }
+        }
+
+        try {
+            ActivityLog::log('notificar_evento_esgotado', "Moveu {$count} inscritos para fila de espera e enfileirou notificações sobre vagas esgotadas em {$event->city}", $event);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', "{$count} participantes movidos para fila de espera. Emails sendo enviados em segundo plano.");
     }
 
     public function exportPdf(Event $event)
