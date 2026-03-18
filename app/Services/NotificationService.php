@@ -413,6 +413,25 @@ class NotificationService
         );
     }
 
+    /**
+     * Mensagem personalizada para confirmados
+     */
+    public function notifyCustomMessage(Inscription $inscription, string $subject, string $body): void
+    {
+        $event = $inscription->event;
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $body,
+            null,
+            'custom_message',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-custom-message',
+            ['inscription' => $inscription, 'event' => $event, 'body' => $body, 'subject' => $subject]
+        );
+    }
+
     private function logNotification(string $type, string $channel, string $recipient, ?string $subject, string $message, ?User $user, array $metadata, string $status, ?string $errorMessage = null): void
     {
         try {

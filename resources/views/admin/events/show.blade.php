@@ -24,6 +24,11 @@
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 {{ $event->trashed() ? 'line-through text-gray-500' : '' }}">{{ $event->city ?? $event->title }}</h1>
             <div class="flex flex-wrap gap-2">
                 @unless($event->trashed())
+                    @if($inscriptionStats['confirmado'] > 0)
+                        <button type="button" onclick="document.getElementById('modal-custom-message').style.display='flex'" style="background-color:#7c3aed;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
+                            Enviar Mensagem
+                        </button>
+                    @endif
                     <a target="_blank" href="{{ route('admin.events.participantes-pdf', $event) }}" style="background-color:#dc2626;color:#fff;" class="px-3 py-2 text-sm sm:text-base sm:px-4 rounded-md hover:opacity-80 text-center">
                         Lista de Presença
                     </a>
@@ -52,7 +57,7 @@
             </div>
         </div>
 
-        {{-- Indicador de emails na fila --}}
+        {{-- Indicador de emails na fila (evento esgotado) --}}
         @if($pendingEmailsCount > 0)
             <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
                 <svg class="w-5 h-5 text-amber-500 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
@@ -60,8 +65,22 @@
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 <p class="text-sm text-amber-800">
-                    <strong>{{ $pendingEmailsCount }}</strong> {{ $pendingEmailsCount === 1 ? 'email aguardando envio' : 'emails aguardando envio' }} na fila.
+                    <strong>{{ $pendingEmailsCount }}</strong> {{ $pendingEmailsCount === 1 ? 'email de vagas esgotadas aguardando envio' : 'emails de vagas esgotadas aguardando envio' }} na fila.
                     <span class="text-amber-600">Atualize a página para acompanhar.</span>
+                </p>
+            </div>
+        @endif
+
+        {{-- Indicador de mensagens customizadas na fila --}}
+        @if($pendingCustomMessageCount > 0)
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+                <svg class="w-5 h-5 text-purple-500 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-sm text-purple-800">
+                    <strong>{{ $pendingCustomMessageCount }}</strong> {{ $pendingCustomMessageCount === 1 ? 'mensagem customizada aguardando envio' : 'mensagens customizadas aguardando envio' }} na fila.
+                    <span class="text-purple-600">Atualize a página para acompanhar.</span>
                 </p>
             </div>
         @endif
@@ -317,4 +336,53 @@
 
     </div>
 </div>
+
 @endsection
+
+@push('modals')
+{{-- Modal: Enviar Mensagem para Confirmados --}}
+<div id="modal-custom-message" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.55); align-items:center; justify-content:center; padding:1rem;">
+    <div style="background:#fff; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.3); width:100%; max-width:520px; overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #e5e7eb;">
+            <div>
+                <h3 style="margin:0; font-size:15px; font-weight:700; color:#111827;">Enviar Mensagem</h3>
+                <p style="margin:2px 0 0; font-size:12px; color:#6b7280;">{{ $inscriptionStats['confirmado'] }} confirmado(s) · {{ $event->city }}</p>
+            </div>
+            <button type="button" onclick="document.getElementById('modal-custom-message').style.display='none'" style="background:none; border:none; cursor:pointer; color:#9ca3af; padding:4px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('admin.events.send-custom-message', $event) }}">
+            @csrf
+            <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px;">Assunto</label>
+                    <input type="text" name="subject" required maxlength="255"
+                           placeholder="Ex: Informações importantes sobre o encontro"
+                           style="width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:8px; padding:8px 12px; font-size:13px; outline:none;"
+                           onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#d1d5db'">
+                </div>
+                <div>
+                    <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px;">Mensagem</label>
+                    <textarea name="body" required maxlength="5000" rows="7"
+                              placeholder="Digite a mensagem para os participantes..."
+                              style="width:100%; box-sizing:border-box; border:1px solid #d1d5db; border-radius:8px; padding:8px 12px; font-size:13px; outline:none; resize:vertical; font-family:inherit;"
+                              onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#d1d5db'"></textarea>
+                    <p style="margin:4px 0 0; font-size:11px; color:#9ca3af;">Cada parágrafo separado por linha em branco será um bloco no email.</p>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; padding:14px 20px; border-top:1px solid #e5e7eb; background:#f9fafb;">
+                <button type="button" onclick="document.getElementById('modal-custom-message').style.display='none'"
+                        style="padding:8px 16px; font-size:13px; color:#374151; background:#e5e7eb; border:none; border-radius:8px; cursor:pointer;">
+                    Cancelar
+                </button>
+                <button type="button"
+                        onclick="Swal.fire({ title: 'Enviar mensagem?', html: 'A mensagem será enviada para <strong>{{ $inscriptionStats['confirmado'] }} participante(s) confirmado(s)</strong>.', icon: 'question', showCancelButton: true, confirmButtonColor: '#7c3aed', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, enviar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) this.closest('form').submit() })"
+                        style="padding:8px 16px; font-size:13px; color:#fff; background:#7c3aed; border:none; border-radius:8px; cursor:pointer;">
+                    Enviar Mensagem
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endpush

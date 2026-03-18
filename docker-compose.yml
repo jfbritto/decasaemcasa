@@ -54,8 +54,8 @@ services:
     platform: linux/amd64
     restart: unless-stopped
     ports:
-      - "1027:1025"
-      - "8027:8025"
+      - "1028:1025"
+      - "8028:8025"
     networks:
       - decasaemcasa
 

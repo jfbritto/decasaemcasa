@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SendCustomMessageNotification;
 use App\Jobs\SendEventFullNotification;
 use App\Models\ActivityLog;
 use App\Models\Event;
@@ -95,7 +96,11 @@ class EventController extends Controller
             ->where('payload', 'like', '%SendEventFullNotification%')
             ->count();
 
-        return view('admin.events.show', compact('event', 'inscriptionStats', 'inscriptions', 'pendingEmailsCount'));
+        $pendingCustomMessageCount = \DB::table('jobs')
+            ->where('payload', 'like', '%SendCustomMessageNotification%')
+            ->count();
+
+        return view('admin.events.show', compact('event', 'inscriptionStats', 'inscriptions', 'pendingEmailsCount', 'pendingCustomMessageCount'));
     }
 
     public function edit(Event $event)
@@ -187,6 +192,41 @@ class EventController extends Controller
         }
 
         return redirect()->back()->with('success', "{$count} participantes movidos para fila de espera. Emails sendo enviados em segundo plano.");
+    }
+
+    public function sendCustomMessage(Request $request, Event $event)
+    {
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'body'    => 'required|string|max:5000',
+        ]);
+
+        $inscriptions = $event->inscriptions()
+            ->where('status', 'confirmado')
+            ->get();
+
+        if ($inscriptions->isEmpty()) {
+            return redirect()->back()->with('error', 'Não há inscrições confirmadas para enviar mensagem.');
+        }
+
+        $count = 0;
+        foreach ($inscriptions as $inscription) {
+            try {
+                SendCustomMessageNotification::dispatch($inscription, $request->subject, $request->body)
+                    ->delay(now()->addSeconds($count * 20));
+                $count++;
+            } catch (\Throwable $e) {
+                Log::error("Falha ao enfileirar mensagem customizada para inscrição #{$inscription->id}: " . $e->getMessage());
+            }
+        }
+
+        try {
+            ActivityLog::log('enviar_mensagem_customizada', "Enfileirou mensagem '{$request->subject}' para {$count} confirmados em {$event->city}", $event);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: ' . $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', "Mensagem sendo enviada para {$count} participantes confirmados.");
     }
 
     public function exportPdf(Event $event)

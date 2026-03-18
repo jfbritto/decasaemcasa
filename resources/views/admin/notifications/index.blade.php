@@ -62,6 +62,7 @@
                             <option value="inscription_cancelled_by_admin" {{ request('channel') === 'inscription_cancelled_by_admin' ? 'selected' : '' }}>Cancelamento pelo Admin</option>
                             <option value="event_full" {{ request('channel') === 'event_full' ? 'selected' : '' }}>Vagas Esgotadas</option>
                             <option value="inscription_migrated" {{ request('channel') === 'inscription_migrated' ? 'selected' : '' }}>Migração de Evento</option>
+                            <option value="custom_message" {{ request('channel') === 'custom_message' ? 'selected' : '' }}>Mensagem Personalizada</option>
                         </select>
                     </div>
                 </div>
@@ -180,6 +181,7 @@
                                                 'inscription_cancelled_by_admin' => 'Cancelamento pelo Admin',
                                                 'event_full' => 'Vagas Esgotadas',
                                                 'inscription_migrated' => 'Migração de Evento',
+                                                'custom_message' => 'Mensagem Personalizada',
                                                 'general' => 'Geral',
                                             ];
                                         @endphp

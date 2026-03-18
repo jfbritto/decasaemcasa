@@ -101,6 +101,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Notificar pendentes sobre evento esgotado
     Route::post('events/{event}/notify-event-full', [AdminEventController::class, 'notifyEventFull'])->name('events.notify-event-full');
 
+    // Enviar mensagem customizada para confirmados
+    Route::post('events/{event}/send-custom-message', [AdminEventController::class, 'sendCustomMessage'])->name('events.send-custom-message');
+
     // Perfil do Admin
     Route::get('/profile', [AdminUserController::class, 'profile'])->name('profile');
     Route::put('/profile', [AdminUserController::class, 'updateProfile'])->name('profile.update');
