@@ -55,6 +55,10 @@
                 <p class="text-2xl font-bold text-gray-700">{{ $counts['cancelado'] }}</p>
                 <p class="text-xs text-gray-500">Cancelados</p>
             </a>
+            <a href="{{ route('admin.inscricoes.index', array_merge($filterBase, ['social_request' => 'pendente'])) }}" class="bg-purple-50 rounded-xl shadow p-3 text-center border border-purple-200 hover:ring-2 hover:ring-purple-400 transition {{ request('social_request') === 'pendente' ? 'ring-2 ring-purple-400' : '' }}">
+                <p class="text-2xl font-bold text-purple-700">{{ $counts['social_pendente'] ?? 0 }}</p>
+                <p class="text-xs text-purple-600">Pedido Social Pendente</p>
+            </a>
         </div>
 
         {{-- Filtros --}}
@@ -93,10 +97,18 @@
                         <option value="cancelado" {{ request('status') === 'cancelado' ? 'selected' : '' }}>Cancelado</option>
                     </select>
                 </div>
+                <div class="sm:w-44">
+                    <select name="social_request" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="">Todas as solicitações</option>
+                        <option value="pendente" {{ request('social_request') === 'pendente' ? 'selected' : '' }}>Pedido social pendente</option>
+                        <option value="aprovado" {{ request('social_request') === 'aprovado' ? 'selected' : '' }}>Pedido social aprovado</option>
+                        <option value="rejeitado" {{ request('social_request') === 'rejeitado' ? 'selected' : '' }}>Pedido social rejeitado</option>
+                    </select>
+                </div>
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                     Filtrar
                 </button>
-                @if(request()->hasAny(['search', 'status', 'event_id', 'event_status']) && !(request()->only(['event_status']) == ['event_status' => 'active'] && !request()->hasAny(['search', 'status', 'event_id'])))
+                @if(request()->hasAny(['search', 'status', 'event_id', 'event_status', 'social_request', 'comprovante']) && !(request()->only(['event_status']) == ['event_status' => 'active'] && !request()->hasAny(['search', 'status', 'event_id', 'social_request', 'comprovante'])))
                     <a href="{{ route('admin.inscricoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
                         Limpar
                     </a>
@@ -289,9 +301,20 @@
                                     </td>
                                     <td class="px-4 py-3">
                                         <div>
-                                            <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="font-medium text-indigo-600 hover:text-indigo-800">
-                                                {{ $inscription->full_name }}
-                                            </a>
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <a href="{{ route('admin.inscricoes.show', $inscription) }}" class="font-medium text-indigo-600 hover:text-indigo-800">
+                                                    {{ $inscription->full_name }}
+                                                </a>
+                                                @if($inscription->isSocialRequestPending())
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700" title="Solicitação de contribuição social pendente">
+                                                        Social
+                                                    </span>
+                                                @elseif($inscription->isSocialRequestApproved())
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600" title="Contribuição social aprovada">
+                                                        Social ✓
+                                                    </span>
+                                                @endif
+                                            </div>
                                             <p class="text-xs text-gray-500">{{ $inscription->email }}</p>
                                         </div>
                                     </td>

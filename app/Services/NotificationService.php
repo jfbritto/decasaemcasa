@@ -156,10 +156,12 @@ class NotificationService
         $pixKey = config('services.pix.key');
         if ($pixKey) {
             $pixHolder = config('services.pix.holder', 'Marcos Almeida');
-            $wa .= "Chave Pix: *{$pixKey}*\nTitular: {$pixHolder}\nVocê define o valor que faz sentido pra você.\n\n";
+            $wa .= "Chave Pix: *{$pixKey}*\nTitular: {$pixHolder}\nValor de referência: *R$ 100,00*\n\n";
         }
 
-        $wa .= "Envie seu comprovante de pagamento pelo link para garantir sua vaga: {$statusUrl}";
+        $wa .= "Não consegue contribuir com o valor de referência neste momento? Antes de fazer o Pix, você pode solicitar uma *contribuição social* no link de status, contando brevemente sua situação e o valor que consegue. Nossa equipe analisa e retorna. A vaga só é confirmada após aprovação e envio do comprovante.\n\n";
+
+        $wa .= "Envie seu comprovante (ou solicite a contribuição social) pelo link: {$statusUrl}";
 
         $this->sendWhatsApp(
             $inscription->whatsapp,
@@ -352,6 +354,128 @@ class NotificationService
             $wa,
             null,
             'inscription_confirmed',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Solicitação de contribuição social — recebida (confirmação para o participante)
+     */
+    public function notifySocialRequestSubmitted(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        $subject = 'Recebemos sua solicitação - De Casa em Casa';
+        $message = "Solicitação de contribuição social recebida de {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'social_request_submitted',
+            ['inscription_id' => $inscription->id],
+            'emails.social-request-submitted',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+        );
+
+        $wa = "Olá {$inscription->full_name}! Recebemos sua *solicitação de contribuição social* para o encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}).\n\n";
+        $wa .= "Nossa equipe vai analisar e logo retornaremos. Lembre-se: a vaga só é confirmada após a aprovação da solicitação *e* o envio do comprovante.\n\n";
+        $wa .= "Acompanhe aqui: {$statusUrl}";
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'social_request_submitted',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Solicitação de contribuição social — aprovada
+     */
+    public function notifySocialRequestApproved(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+        $amountFormatted = 'R$ '.number_format((float) $inscription->social_request_amount, 2, ',', '.');
+
+        $subject = 'Solicitação de contribuição social aprovada - De Casa em Casa';
+        $message = "Solicitação social aprovada para {$inscription->full_name} - {$event->city} - {$amountFormatted}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'social_request_approved',
+            ['inscription_id' => $inscription->id],
+            'emails.social-request-approved',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl, 'amountFormatted' => $amountFormatted]
+        );
+
+        $wa = "Olá {$inscription->full_name}! Sua *solicitação de contribuição social* para o encontro *De Casa em Casa* em *{$event->city}* foi *aprovada*!\n\n";
+        $wa .= "Valor combinado: *{$amountFormatted}*\n\n";
+
+        $pixKey = config('services.pix.key');
+        if ($pixKey) {
+            $pixHolder = config('services.pix.holder', 'Marcos Almeida');
+            $wa .= "Chave Pix: *{$pixKey}*\nTitular: {$pixHolder}\n\n";
+        }
+
+        if ($inscription->social_request_admin_message) {
+            $wa .= "Mensagem da equipe: {$inscription->social_request_admin_message}\n\n";
+        }
+
+        $wa .= "Após o pagamento, envie o comprovante pelo link para garantir sua vaga: {$statusUrl}";
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'social_request_approved',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Solicitação de contribuição social — rejeitada
+     */
+    public function notifySocialRequestRejected(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        $subject = 'Sobre sua solicitação - De Casa em Casa';
+        $message = "Solicitação social não aprovada para {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'social_request_rejected',
+            ['inscription_id' => $inscription->id],
+            'emails.social-request-rejected',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+        );
+
+        $wa = "Olá {$inscription->full_name}! Sobre sua solicitação de contribuição social para o encontro *De Casa em Casa* em *{$event->city}*: ";
+        $wa .= "infelizmente não conseguimos aprová-la nesta edição.\n\n";
+
+        if ($inscription->social_request_admin_message) {
+            $wa .= "Mensagem da equipe: {$inscription->social_request_admin_message}\n\n";
+        }
+
+        $wa .= "Se ainda quiser participar, contribua com o valor que conseguir dentro da referência de R$ 100,00 e envie o comprovante: {$statusUrl}";
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'social_request_rejected',
             ['inscription_id' => $inscription->id]
         );
     }

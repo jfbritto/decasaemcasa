@@ -30,6 +30,16 @@
     </tr>
 </table>
 @endif
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f7f3ed; border-left:3px solid #e88a2d; border-radius:6px; margin-top:16px;">
+    <tr>
+        <td style="padding:14px 16px;">
+            <p style="margin:0 0 6px; color:#1a2e6e; font-size:13px; font-weight:700;">Não consegue contribuir com o valor de referência neste momento?</p>
+            <p style="margin:0; color:#4a4639; font-size:13px; line-height:1.6;">
+                Antes de fazer o Pix, você pode solicitar uma <strong>contribuição social</strong> no link de status. Conte brevemente sua situação e o valor que consegue contribuir — nossa equipe analisa e retorna com a resposta. <em>A vaga só é confirmada após aprovação da solicitação e envio do comprovante.</em>
+            </p>
+        </td>
+    </tr>
+</table>
 @endsection
 
 @section('event_info')

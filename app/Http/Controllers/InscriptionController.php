@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\Inscription;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class InscriptionController extends Controller
@@ -170,6 +171,56 @@ class InscriptionController extends Controller
         return redirect()
             ->route('inscricao.status', $token)
             ->with('success', 'Comprovante enviado com sucesso! Aguarde a confirmação da equipe.');
+    }
+
+    /**
+     * Submeter solicitação de contribuição social.
+     */
+    public function submitSocialRequest(Request $request, string $token)
+    {
+        $inscription = Inscription::where('token', $token)->with('event')->firstOrFail();
+
+        if (! $inscription->isApproved()) {
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'Solicitação disponível apenas para inscrições aprovadas.');
+        }
+
+        if ($inscription->event && $inscription->event->isFull()) {
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'Vagas esgotadas para este encontro.');
+        }
+
+        if ($inscription->isSocialRequestPending() || $inscription->isSocialRequestApproved()) {
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'Você já possui uma solicitação de contribuição social registrada.');
+        }
+
+        $request->validate([
+            'reason' => 'required|string|min:20|max:1000',
+            'amount' => 'required|numeric|min:0|max:99999.99',
+        ], [
+            'reason.required' => 'Conte brevemente sua situação.',
+            'reason.min' => 'Sua justificativa deve ter pelo menos 20 caracteres.',
+            'reason.max' => 'Sua justificativa não pode passar de 1000 caracteres.',
+            'amount.required' => 'Informe o valor que você consegue contribuir.',
+            'amount.numeric' => 'Informe um valor numérico.',
+            'amount.min' => 'O valor não pode ser negativo.',
+        ]);
+
+        $inscription->submitSocialRequest($request->input('reason'), (float) $request->input('amount'));
+
+        try {
+            $this->notificationService->notifySocialRequestSubmitted($inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao notificar solicitação social: '.$e->getMessage());
+        }
+
+        return redirect()
+            ->route('inscricao.status', $token)
+            ->with('success', 'Solicitação enviada! A equipe vai analisar e logo retornaremos.');
     }
 
     /**

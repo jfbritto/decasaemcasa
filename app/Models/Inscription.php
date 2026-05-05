@@ -29,6 +29,13 @@ class Inscription extends Model
         'cancelled_by',
         'approved_at',
         'confirmed_at',
+        'social_request_status',
+        'social_request_reason',
+        'social_request_amount',
+        'social_request_admin_message',
+        'social_request_submitted_at',
+        'social_request_reviewed_at',
+        'social_request_reviewed_by',
     ];
 
     protected $casts = [
@@ -37,6 +44,9 @@ class Inscription extends Model
         'approved_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'contribution_amount' => 'decimal:2',
+        'social_request_amount' => 'decimal:2',
+        'social_request_submitted_at' => 'datetime',
+        'social_request_reviewed_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -55,6 +65,11 @@ class Inscription extends Model
     public function event()
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function socialRequestReviewer()
+    {
+        return $this->belongsTo(User::class, 'social_request_reviewed_by');
     }
 
     // Status checks
@@ -153,6 +168,61 @@ class Inscription extends Model
     public function revertRejectionToPending(): void
     {
         $this->status = 'pendente';
+        $this->save();
+    }
+
+    // Social Request
+
+    public function hasSocialRequest(): bool
+    {
+        return $this->social_request_status !== null;
+    }
+
+    public function isSocialRequestPending(): bool
+    {
+        return $this->social_request_status === 'pendente';
+    }
+
+    public function isSocialRequestApproved(): bool
+    {
+        return $this->social_request_status === 'aprovado';
+    }
+
+    public function isSocialRequestRejected(): bool
+    {
+        return $this->social_request_status === 'rejeitado';
+    }
+
+    public function submitSocialRequest(string $reason, float $amount): void
+    {
+        $this->social_request_status = 'pendente';
+        $this->social_request_reason = $reason;
+        $this->social_request_amount = $amount;
+        $this->social_request_admin_message = null;
+        $this->social_request_submitted_at = now();
+        $this->social_request_reviewed_at = null;
+        $this->social_request_reviewed_by = null;
+        $this->save();
+    }
+
+    public function approveSocialRequest(?float $amount = null, ?string $message = null, ?int $userId = null): void
+    {
+        $this->social_request_status = 'aprovado';
+        if ($amount !== null) {
+            $this->social_request_amount = $amount;
+        }
+        $this->social_request_admin_message = $message;
+        $this->social_request_reviewed_at = now();
+        $this->social_request_reviewed_by = $userId;
+        $this->save();
+    }
+
+    public function rejectSocialRequest(?string $message = null, ?int $userId = null): void
+    {
+        $this->social_request_status = 'rejeitado';
+        $this->social_request_admin_message = $message;
+        $this->social_request_reviewed_at = now();
+        $this->social_request_reviewed_by = $userId;
         $this->save();
     }
 

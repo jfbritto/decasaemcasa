@@ -21,12 +21,13 @@ Route::get('/inscricao', [InscriptionController::class, 'create'])->name('inscri
 Route::post('/inscricao', [InscriptionController::class, 'store'])->name('inscricao.store');
 Route::get('/inscricao/{token}', [InscriptionController::class, 'status'])->name('inscricao.status');
 Route::post('/inscricao/{token}/comprovante', [InscriptionController::class, 'uploadPaymentProof'])->name('inscricao.upload-comprovante');
+Route::post('/inscricao/{token}/solicitacao-social', [InscriptionController::class, 'submitSocialRequest'])->name('inscricao.solicitacao-social');
 Route::post('/inscricao/{token}/cancelar', [InscriptionController::class, 'cancel'])->name('inscricao.cancel');
 
 // Preview de Emails (apenas em ambiente local)
 if (app()->environment('local')) {
     Route::get('/email-preview/{template}', function (string $template) {
-        $allowed = ['inscription-received', 'inscription-approved', 'inscription-waitlisted', 'inscription-confirmed', 'inscription-rejected', 'inscription-cancelled', 'payment-reminder'];
+        $allowed = ['inscription-received', 'inscription-approved', 'inscription-waitlisted', 'inscription-confirmed', 'inscription-rejected', 'inscription-cancelled', 'payment-reminder', 'social-request-submitted', 'social-request-approved', 'social-request-rejected'];
         if (! in_array($template, $allowed)) {
             abort(404, 'Template não encontrado. Disponíveis: '.implode(', ', $allowed));
         }
@@ -50,11 +51,31 @@ if (app()->environment('local')) {
 
         $statusUrl = route('inscricao.status', $inscription->token ?? 'preview-token');
 
-        return view("emails.{$template}", [
+        // Preencher dados de preview para templates de solicitação social
+        if (str_starts_with($template, 'social-request')) {
+            $inscription->social_request_status = match ($template) {
+                'social-request-submitted' => 'pendente',
+                'social-request-approved' => 'aprovado',
+                'social-request-rejected' => 'rejeitado',
+            };
+            $inscription->social_request_reason = $inscription->social_request_reason ?: 'Estou desempregada no momento e não consigo arcar com o valor de referência, mas tenho muito interesse em participar.';
+            $inscription->social_request_amount = $inscription->social_request_amount ?: 30.00;
+            $inscription->social_request_admin_message = $template === 'social-request-rejected'
+                ? 'Agradecemos a transparência. Nesta edição, todas as bolsas sociais já foram preenchidas.'
+                : ($template === 'social-request-approved' ? 'Combinado! Obrigado por compartilhar sua situação com a gente.' : null);
+        }
+
+        $viewData = [
             'inscription' => $inscription,
             'event' => $event,
             'statusUrl' => $statusUrl,
-        ]);
+        ];
+
+        if ($template === 'social-request-approved') {
+            $viewData['amountFormatted'] = 'R$ '.number_format((float) $inscription->social_request_amount, 2, ',', '.');
+        }
+
+        return view("emails.{$template}", $viewData);
     })->name('email.preview');
 }
 
@@ -84,6 +105,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/inscricoes/{inscription}/contribution', [AdminInscriptionController::class, 'updateContribution'])->name('inscricoes.update-contribution');
     Route::patch('/inscricoes/{inscription}/participant', [AdminInscriptionController::class, 'updateParticipant'])->name('inscricoes.update-participant');
     Route::post('/inscricoes/{inscription}/migrar', [AdminInscriptionController::class, 'migrate'])->name('inscricoes.migrar');
+    Route::post('/inscricoes/{inscription}/social/aprovar', [AdminInscriptionController::class, 'approveSocialRequest'])->name('inscricoes.social-aprovar');
+    Route::post('/inscricoes/{inscription}/social/rejeitar', [AdminInscriptionController::class, 'rejectSocialRequest'])->name('inscricoes.social-rejeitar');
 
     // Notificações
     Route::get('/notificacoes', [AdminNotificationController::class, 'index'])->name('notificacoes.index');

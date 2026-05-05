@@ -206,6 +206,102 @@
                     @endif
                 </div>
 
+                {{-- Solicitação de Contribuição Social --}}
+                @if($inscription->hasSocialRequest())
+                <div class="bg-white rounded-xl shadow p-6 border-l-4
+                    @if($inscription->isSocialRequestPending()) border-yellow-400
+                    @elseif($inscription->isSocialRequestApproved()) border-green-500
+                    @else border-gray-400
+                    @endif" x-data>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-gray-900">Solicitação de Contribuição Social</h2>
+                        @if($inscription->isSocialRequestPending())
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pendente</span>
+                        @elseif($inscription->isSocialRequestApproved())
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Aprovada</span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Rejeitada</span>
+                        @endif
+                    </div>
+
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Justificativa do participante</p>
+                            <p class="text-sm text-gray-800 bg-gray-50 rounded-lg p-3" style="white-space:pre-line">{{ $inscription->social_request_reason }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-4 text-sm">
+                            <div>
+                                <span class="text-xs font-semibold text-gray-500 uppercase">Valor solicitado:</span>
+                                <span class="text-gray-900 font-medium ml-1">R$ {{ number_format((float) $inscription->social_request_amount, 2, ',', '.') }}</span>
+                            </div>
+                            @if($inscription->social_request_submitted_at)
+                                <div>
+                                    <span class="text-xs font-semibold text-gray-500 uppercase">Enviada em:</span>
+                                    <span class="text-gray-700 ml-1">{{ $inscription->social_request_submitted_at->format('d/m/Y H:i') }}</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($inscription->isSocialRequestPending())
+                        <div class="border-t border-gray-200 pt-4 mt-4 space-y-4">
+                            <form method="POST" action="{{ route('admin.inscricoes.social-aprovar', $inscription) }}">
+                                @csrf
+                                <p class="text-sm font-semibold text-gray-700 mb-3">Aprovar com valor combinado:</p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                                    <div>
+                                        <label for="social_amount" class="block text-xs font-medium text-gray-600 mb-1">Valor combinado (R$)</label>
+                                        <input type="number" name="amount" id="social_amount" step="0.01" min="0" required
+                                               value="{{ old('amount', $inscription->social_request_amount) }}"
+                                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="admin_message_approve" class="block text-xs font-medium text-gray-600 mb-1">Mensagem ao participante (opcional)</label>
+                                    <textarea name="admin_message" id="admin_message_approve" rows="2" maxlength="1000"
+                                              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+                                              placeholder="Ex: Combinado! Obrigado por compartilhar sua situação.">{{ old('admin_message') }}</textarea>
+                                </div>
+                                <button type="submit" class="w-full py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors">
+                                    Aprovar Solicitação
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{{ route('admin.inscricoes.social-rejeitar', $inscription) }}">
+                                @csrf
+                                <div class="mb-3">
+                                    <label for="admin_message_reject" class="block text-xs font-medium text-gray-600 mb-1">Mensagem ao participante (opcional)</label>
+                                    <textarea name="admin_message" id="admin_message_reject" rows="2" maxlength="1000"
+                                              class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                                              placeholder="Ex: Agradecemos a transparência. Nesta edição, todas as bolsas já foram preenchidas."></textarea>
+                                </div>
+                                <button type="button" style="background-color:#dc2626;color:#fff;" class="w-full py-2.5 font-medium rounded-xl hover:opacity-80 transition-colors"
+                                        @click="Swal.fire({ title: 'Rejeitar solicitação social?', text: 'O participante será notificado.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#6b7280', confirmButtonText: 'Sim, rejeitar', cancelButtonText: 'Cancelar' }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })">
+                                    Rejeitar Solicitação
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <div class="border-t border-gray-200 pt-4 mt-4 space-y-2">
+                            @if($inscription->social_request_admin_message)
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase mb-1">Mensagem registrada para o participante</p>
+                                    <p class="text-sm text-gray-800 bg-gray-50 rounded-lg p-3" style="white-space:pre-line">{{ $inscription->social_request_admin_message }}</p>
+                                </div>
+                            @endif
+                            <p class="text-xs text-gray-500">
+                                @if($inscription->social_request_reviewed_at)
+                                    Decidida em {{ $inscription->social_request_reviewed_at->format('d/m/Y H:i') }}
+                                @endif
+                                @if($inscription->socialRequestReviewer)
+                                    por <strong>{{ $inscription->socialRequestReviewer->name }}</strong>
+                                @endif
+                            </p>
+                        </div>
+                    @endif
+                </div>
+                @endif
+
                 {{-- Comprovante de Pagamento --}}
                 @if($inscription->payment_proof)
                 <div class="bg-white rounded-xl shadow p-6" x-data="{ lightbox: false }">

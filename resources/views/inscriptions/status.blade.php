@@ -244,6 +244,134 @@
                         </button>
                     </form>
                 </div>
+
+                {{-- Solicitação de Contribuição Social --}}
+                <div class="rounded-xl p-6 mb-6
+                    @if($inscription->isSocialRequestPending()) bg-yellow-50 border border-yellow-200
+                    @elseif($inscription->isSocialRequestApproved()) bg-green-50 border border-green-200
+                    @elseif($inscription->isSocialRequestRejected()) bg-gray-50 border border-gray-200
+                    @else bg-gray-50 border border-gray-200 @endif">
+
+                    @if(! $inscription->hasSocialRequest() || $inscription->isSocialRequestRejected())
+                        @if($inscription->isSocialRequestRejected())
+                            <div class="mb-4 pb-4 border-b border-gray-200">
+                                <h4 class="font-semibold text-gray-800 mb-2 text-sm">Sua solicitação anterior</h4>
+                                @if($inscription->social_request_admin_message)
+                                    <p class="text-sm text-gray-700 leading-relaxed bg-white border border-gray-200 rounded-lg p-3 mb-2">
+                                        <strong class="text-gray-600">Mensagem da equipe:</strong><br>
+                                        <span style="white-space:pre-line">{{ $inscription->social_request_admin_message }}</span>
+                                    </p>
+                                @endif
+                                <p class="text-sm text-gray-600">
+                                    Não conseguimos aprovar sua solicitação desta vez. Se ainda quiser participar, contribua com o valor que conseguir dentro da referência de R$ 100,00 e envie o comprovante acima — ou envie uma nova solicitação abaixo.
+                                </p>
+                            </div>
+                        @endif
+
+                        <div x-data="{ open: false }">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 mt-0.5 text-gray-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-800 mb-1">Não consegue contribuir com o valor de referência neste momento?</h3>
+                                    <p class="text-sm text-gray-600 mb-3">
+                                        Você pode solicitar uma <strong>contribuição social</strong>. Sua história será analisada pela equipe.
+                                    </p>
+                                    <button type="button" @click="open = !open" x-show="!open"
+                                            class="text-sm font-semibold text-indigo-700 hover:text-indigo-900 underline">
+                                        {{ $inscription->isSocialRequestRejected() ? 'Enviar nova solicitação' : 'Solicitar contribuição social' }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div x-show="open" x-transition class="mt-4">
+                                <form method="POST" action="{{ route('inscricao.solicitacao-social', $inscription->token) }}"
+                                      x-data="{ submitting: false }" @submit="submitting = true">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="reason" class="block text-sm font-medium text-gray-700 mb-1">
+                                            Explique brevemente por que você precisa da contribuição social.
+                                        </label>
+                                        <textarea name="reason" id="reason" rows="4" required minlength="20" maxlength="1000"
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                  placeholder="Conte sua situação para nossa equipe analisar.">{{ old('reason') }}</textarea>
+                                        @error('reason')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">
+                                            Qual valor você consegue contribuir? (R$)
+                                        </label>
+                                        <input type="number" name="amount" id="amount" step="0.01" min="0" max="99999.99" required
+                                               value="{{ old('amount') }}"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                               placeholder="Ex: 30,00">
+                                        @error('amount')
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <p class="text-xs text-gray-500 mb-4">
+                                        ⚠️ Esta solicitação será analisada pela equipe. A vaga só fica confirmada após a <strong>aprovação</strong> e o <strong>envio do comprovante</strong>.
+                                    </p>
+                                    <div class="flex gap-2">
+                                        <button type="button" @click="open = false"
+                                                class="flex-1 py-2 px-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors text-sm">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" :disabled="submitting"
+                                                class="flex-1 py-2 px-4 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-70 transition-colors text-sm">
+                                            <span x-show="!submitting">Enviar solicitação</span>
+                                            <span x-show="submitting">Enviando...</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    @elseif($inscription->isSocialRequestPending())
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 mt-0.5 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-yellow-900 mb-2">Solicitação de contribuição social em análise</h3>
+                                <p class="text-sm text-yellow-900 leading-relaxed mb-3">
+                                    Recebemos sua solicitação e nossa equipe está analisando. Logo retornaremos com a resposta. A vaga só é confirmada após a <strong>aprovação</strong> e o <strong>envio do comprovante</strong>.
+                                </p>
+                                <div class="bg-white border border-yellow-200 rounded-lg p-3 text-sm text-gray-700">
+                                    <p class="text-xs text-yellow-700 font-semibold uppercase mb-1">Sua solicitação</p>
+                                    <p class="mb-2" style="white-space:pre-line">{{ $inscription->social_request_reason }}</p>
+                                    <p class="text-xs text-gray-500">Valor proposto: <strong>R$ {{ number_format((float) $inscription->social_request_amount, 2, ',', '.') }}</strong></p>
+                                    @if($inscription->social_request_submitted_at)
+                                        <p class="text-xs text-gray-400 mt-1">Enviado em {{ $inscription->social_request_submitted_at->format('d/m/Y H:i') }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @elseif($inscription->isSocialRequestApproved())
+                        <div class="flex items-start gap-3">
+                            <svg class="w-5 h-5 mt-0.5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-green-900 mb-2">Solicitação aprovada!</h3>
+                                <p class="text-sm text-green-900 leading-relaxed mb-3">
+                                    Combinamos o valor de <strong>R$ {{ number_format((float) $inscription->social_request_amount, 2, ',', '.') }}</strong>. Faça o Pix com esse valor e envie o comprovante no campo acima.
+                                </p>
+                                @if($inscription->social_request_admin_message)
+                                    <div class="bg-white border border-green-200 rounded-lg p-3 text-sm text-gray-700 mb-2">
+                                        <p class="text-xs text-green-700 font-semibold uppercase mb-1">Mensagem da equipe</p>
+                                        <p style="white-space:pre-line">{{ $inscription->social_request_admin_message }}</p>
+                                    </div>
+                                @endif
+                                <p class="text-xs text-gray-500">
+                                    Sua solicitação: <em style="white-space:pre-line">"{{ $inscription->social_request_reason }}"</em>
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
             @endif
 
             {{-- Endereço (só se confirmado) --}}

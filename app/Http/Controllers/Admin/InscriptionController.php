@@ -71,6 +71,13 @@ class InscriptionController extends Controller
             }
         }
 
+        // Filtro por solicitação social
+        if ($request->filled('social_request')) {
+            if (in_array($request->social_request, ['pendente', 'aprovado', 'rejeitado'], true)) {
+                $query->where('social_request_status', $request->social_request);
+            }
+        }
+
         // Busca por nome
         if ($request->filled('search')) {
             $search = $request->search;
@@ -135,6 +142,7 @@ class InscriptionController extends Controller
             'fila_de_espera' => (clone $countsQuery)->where('status', 'fila_de_espera')->count(),
             'rejeitado' => (clone $countsQuery)->where('status', 'rejeitado')->count(),
             'cancelado' => (clone $countsQuery)->where('status', 'cancelado')->count(),
+            'social_pendente' => (clone $countsQuery)->where('social_request_status', 'pendente')->count(),
         ];
 
         return view('admin.inscriptions.index', compact('inscriptions', 'events', 'counts'));
@@ -720,5 +728,93 @@ class InscriptionController extends Controller
         return redirect()
             ->back()
             ->with('success', 'Valor da contribuição atualizado.');
+    }
+
+    /**
+     * Aprovar solicitação de contribuição social.
+     */
+    public function approveSocialRequest(Request $request, Inscription $inscription)
+    {
+        if (! $inscription->isSocialRequestPending()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Apenas solicitações pendentes podem ser aprovadas.');
+        }
+
+        $request->validate([
+            'amount' => 'required|numeric|min:0',
+            'admin_message' => 'nullable|string|max:1000',
+        ], [
+            'amount.required' => 'Informe o valor combinado.',
+            'amount.numeric' => 'O valor deve ser numérico.',
+            'amount.min' => 'O valor não pode ser negativo.',
+        ]);
+
+        try {
+            $amount = (float) $request->input('amount');
+            $inscription->approveSocialRequest($amount, $request->input('admin_message'), auth()->id());
+            $inscription->contribution_amount = $amount;
+            $inscription->save();
+        } catch (\Throwable $e) {
+            Log::error('Falha ao aprovar solicitação social: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao aprovar solicitação. Verifique os logs.');
+        }
+
+        try {
+            ActivityLog::log('aprovar_solicitacao_social', "Aprovou solicitação social de {$inscription->full_name} (R$ ".number_format((float) $inscription->social_request_amount, 2, ',', '.').')', $inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
+
+        try {
+            $this->notificationService->notifySocialRequestApproved($inscription);
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar aprovação social: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Solicitação social de {$inscription->full_name} aprovada! Participante notificado.");
+    }
+
+    /**
+     * Rejeitar solicitação de contribuição social.
+     */
+    public function rejectSocialRequest(Request $request, Inscription $inscription)
+    {
+        if (! $inscription->isSocialRequestPending()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Apenas solicitações pendentes podem ser rejeitadas.');
+        }
+
+        $request->validate([
+            'admin_message' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $inscription->rejectSocialRequest($request->input('admin_message'), auth()->id());
+        } catch (\Throwable $e) {
+            Log::error('Falha ao rejeitar solicitação social: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+            return redirect()->back()->with('error', 'Erro ao rejeitar solicitação. Verifique os logs.');
+        }
+
+        try {
+            ActivityLog::log('rejeitar_solicitacao_social', "Rejeitou solicitação social de {$inscription->full_name}", $inscription);
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao registrar log de atividade: '.$e->getMessage());
+        }
+
+        try {
+            $this->notificationService->notifySocialRequestRejected($inscription);
+        } catch (\Throwable $e) {
+            Log::error('Falha ao notificar rejeição social: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', "Solicitação social de {$inscription->full_name} rejeitada. Participante notificado.");
     }
 }
