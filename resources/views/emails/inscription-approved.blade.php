@@ -13,7 +13,7 @@
     Olá <strong>{{ $inscription->full_name }}</strong>,
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Tudo pronto! Sua participação foi <strong style="color:#1a2e6e;">aprovada</strong>. Para garantir sua cadeira na sala, conclua sua contribuição no link abaixo.
+    Tudo pronto! Sua participação foi <strong style="color:#1a2e6e;">aprovada</strong>. Para garantir seu lugar na sala, conclua sua contribuição no link abaixo.
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Acesse o link para enviar o comprovante de pagamento e finalizar sua confirmação.

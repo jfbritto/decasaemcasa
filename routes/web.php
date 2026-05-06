@@ -21,6 +21,7 @@ Route::get('/inscricao', [InscriptionController::class, 'create'])->name('inscri
 Route::post('/inscricao', [InscriptionController::class, 'store'])->name('inscricao.store');
 Route::get('/inscricao/{token}', [InscriptionController::class, 'status'])->name('inscricao.status');
 Route::post('/inscricao/{token}/comprovante', [InscriptionController::class, 'uploadPaymentProof'])->name('inscricao.upload-comprovante');
+Route::get('/inscricao/{token}/comprovante-enviado', [InscriptionController::class, 'uploadSuccess'])->name('inscricao.upload-sucesso');
 Route::post('/inscricao/{token}/solicitacao-social', [InscriptionController::class, 'submitSocialRequest'])->name('inscricao.solicitacao-social');
 Route::post('/inscricao/{token}/cancelar', [InscriptionController::class, 'cancel'])->name('inscricao.cancel');
 

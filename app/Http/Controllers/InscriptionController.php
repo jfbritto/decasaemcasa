@@ -168,9 +168,23 @@ class InscriptionController extends Controller
         $inscription->payment_proof = $path;
         $inscription->save();
 
-        return redirect()
-            ->route('inscricao.status', $token)
-            ->with('success', 'Comprovante enviado com sucesso! Aguarde a confirmação da equipe.');
+        return redirect()->route('inscricao.upload-sucesso', $token);
+    }
+
+    /**
+     * Página de confirmação após upload de comprovante.
+     */
+    public function uploadSuccess(string $token)
+    {
+        $inscription = Inscription::where('token', $token)
+            ->with('event')
+            ->firstOrFail();
+
+        if (! $inscription->payment_proof) {
+            return redirect()->route('inscricao.status', $token);
+        }
+
+        return view('inscriptions.upload-success', compact('inscription'));
     }
 
     /**

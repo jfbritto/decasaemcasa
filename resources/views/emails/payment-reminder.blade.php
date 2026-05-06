@@ -13,7 +13,7 @@
     Olá <strong>{{ $inscription->full_name }}</strong>,
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Sua participação no encontro <strong>De Casa em Casa</strong> foi aprovada! Para garantir sua cadeira na sala, envie o comprovante de pagamento.
+    Sua participação no encontro <strong>De Casa em Casa</strong> foi aprovada! Para garantir seu lugar na sala, envie o comprovante de pagamento.
 </p>
 
 @if(config('services.pix.key'))
