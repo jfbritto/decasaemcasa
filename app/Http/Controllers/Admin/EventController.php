@@ -7,33 +7,47 @@ use App\Jobs\SendCustomMessageNotification;
 use App\Jobs\SendEventFullNotification;
 use App\Models\ActivityLog;
 use App\Models\Event;
+use App\Services\AdminPeriodFilter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
-    public function index()
+    public function index(AdminPeriodFilter $periodFilter)
     {
-        $upcoming = Event::withCount(['inscriptions'])
+        $upcomingQuery = Event::withCount(['inscriptions'])
             ->withSum(['inscriptions as total_arrecadado' => fn ($q) => $q->where('status', 'confirmado')], 'contribution_amount')
             ->where('date', '>=', now())
-            ->orderBy('date', 'asc')
-            ->get();
+            ->orderBy('date', 'asc');
+        if ($periodFilter->getEnd()) {
+            $upcomingQuery->where('date', '<=', $periodFilter->getEnd());
+        }
+        $upcoming = $upcomingQuery->get();
 
-        $past = Event::withCount(['inscriptions'])
+        $pastQuery = Event::withCount(['inscriptions'])
             ->withSum(['inscriptions as total_arrecadado' => fn ($q) => $q->where('status', 'confirmado')], 'contribution_amount')
             ->where('date', '<', now())
-            ->orderBy('date', 'desc')
-            ->get();
+            ->orderBy('date', 'desc');
+        $periodFilter->applyToDate($pastQuery, 'date');
+        $past = $pastQuery->get();
 
-        $deleted = Event::onlyTrashed()
+        $deletedQuery = Event::onlyTrashed()
             ->withCount(['inscriptions'])
-            ->orderBy('deleted_at', 'desc')
-            ->get();
+            ->orderBy('deleted_at', 'desc');
+        $periodFilter->applyToDate($deletedQuery, 'date');
+        $deleted = $deletedQuery->get();
 
-        $totalArrecadadoGeral = \App\Models\Inscription::where('status', 'confirmado')->sum('contribution_amount');
+        // Total arrecadado: respeita o período (somente eventos no range)
+        $totalArrecadadoQuery = \App\Models\Inscription::where('status', 'confirmado');
+        if ($periodFilter->isFiltering()) {
+            $totalArrecadadoQuery->whereHas('event', function ($e) use ($periodFilter) {
+                $periodFilter->applyToDate($e, 'date');
+            });
+        }
+        $totalArrecadadoGeral = $totalArrecadadoQuery->sum('contribution_amount');
 
         return view('admin.events.index', compact('upcoming', 'past', 'deleted', 'totalArrecadadoGeral'));
     }
@@ -92,11 +106,11 @@ class EventController extends Controller
             ->orderBy('full_name', 'asc')
             ->paginate(20);
 
-        $pendingEmailsCount = \DB::table('jobs')
+        $pendingEmailsCount = DB::table('jobs')
             ->where('payload', 'like', '%SendEventFullNotification%')
             ->count();
 
-        $pendingCustomMessageCount = \DB::table('jobs')
+        $pendingCustomMessageCount = DB::table('jobs')
             ->where('payload', 'like', '%SendCustomMessageNotification%')
             ->count();
 

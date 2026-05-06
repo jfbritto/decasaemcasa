@@ -243,6 +243,10 @@
         </div>
     </nav>
 
+    @isset($adminPeriodFilter)
+        @include('admin._period_filter')
+    @endisset
+
     <main class="flex-1">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="px-4 sm:px-0">

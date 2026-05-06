@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\InscriptionController as AdminInscriptionController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Admin\PeriodController as AdminPeriodController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\InscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -83,6 +84,7 @@ if (app()->environment('local')) {
 // Área Administrativa
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/filtro-periodo', [AdminPeriodController::class, 'update'])->name('filtro-periodo');
 
     // Eventos / Encontros
     Route::resource('events', AdminEventController::class)->except(['show']);

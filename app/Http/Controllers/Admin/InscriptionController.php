@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Event;
 use App\Models\Inscription;
+use App\Services\AdminPeriodFilter;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,7 @@ class InscriptionController extends Controller
     /**
      * Lista de inscrições com filtros por encontro, cidade e status.
      */
-    public function index(Request $request)
+    public function index(Request $request, AdminPeriodFilter $periodFilter)
     {
         $eventStatus = $request->get('event_status', 'active');
         $needsTrashed = in_array($eventStatus, ['deleted', 'all']);
@@ -30,15 +31,30 @@ class InscriptionController extends Controller
         $query = Inscription::with($needsTrashed ? ['event' => fn ($q) => $q->withTrashed()] : 'event');
 
         if ($eventStatus === 'active') {
-            $query->whereHas('event', fn ($q) => $q->whereIn('status', ['published', 'draft']));
+            $query->whereHas('event', function ($q) use ($periodFilter) {
+                $q->whereIn('status', ['published', 'draft']);
+                $periodFilter->applyToDate($q, 'date');
+            });
         } elseif ($eventStatus === 'finished') {
-            $query->whereHas('event', fn ($q) => $q->where('status', 'finished'));
+            $query->whereHas('event', function ($q) use ($periodFilter) {
+                $q->where('status', 'finished');
+                $periodFilter->applyToDate($q, 'date');
+            });
         } elseif ($eventStatus === 'cancelled') {
-            $query->whereHas('event', fn ($q) => $q->where('status', 'cancelled'));
+            $query->whereHas('event', function ($q) use ($periodFilter) {
+                $q->where('status', 'cancelled');
+                $periodFilter->applyToDate($q, 'date');
+            });
         } elseif ($eventStatus === 'deleted') {
-            $query->whereHas('event', fn ($q) => $q->onlyTrashed());
+            $query->whereHas('event', function ($q) use ($periodFilter) {
+                $q->onlyTrashed();
+                $periodFilter->applyToDate($q, 'date');
+            });
         } else {
-            $query->whereHas('event', fn ($q) => $q->withTrashed());
+            $query->whereHas('event', function ($q) use ($periodFilter) {
+                $q->withTrashed();
+                $periodFilter->applyToDate($q, 'date');
+            });
         }
 
         // Ordenação
@@ -95,7 +111,7 @@ class InscriptionController extends Controller
             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
         ];
 
-        // Encontros para o filtro (respeitando o filtro de status do evento)
+        // Encontros para o filtro (respeitando o filtro de status do evento + período)
         $eventsQuery = Event::query();
         if ($eventStatus === 'active') {
             $eventsQuery->whereIn('status', ['published', 'draft']);
@@ -108,24 +124,40 @@ class InscriptionController extends Controller
         } else {
             $eventsQuery->withTrashed();
         }
+        $periodFilter->applyToDate($eventsQuery, 'date');
 
         $events = $eventsQuery->orderBy('date', 'desc')->get()->map(fn ($e) => [
             'id' => $e->id,
             'label' => ($e->city ?? $e->title).' - '.$meses[$e->date->month - 1].'/'.$e->date->year,
         ]);
 
-        // Contadores sensíveis aos filtros (evento + status do evento)
+        // Contadores sensíveis aos filtros (evento + status do evento + período)
         $countsQuery = Inscription::query();
         if ($eventStatus === 'active') {
-            $countsQuery->whereHas('event', fn ($q) => $q->whereIn('status', ['published', 'draft']));
+            $countsQuery->whereHas('event', function ($q) use ($periodFilter) {
+                $q->whereIn('status', ['published', 'draft']);
+                $periodFilter->applyToDate($q, 'date');
+            });
         } elseif ($eventStatus === 'finished') {
-            $countsQuery->whereHas('event', fn ($q) => $q->where('status', 'finished'));
+            $countsQuery->whereHas('event', function ($q) use ($periodFilter) {
+                $q->where('status', 'finished');
+                $periodFilter->applyToDate($q, 'date');
+            });
         } elseif ($eventStatus === 'cancelled') {
-            $countsQuery->whereHas('event', fn ($q) => $q->where('status', 'cancelled'));
+            $countsQuery->whereHas('event', function ($q) use ($periodFilter) {
+                $q->where('status', 'cancelled');
+                $periodFilter->applyToDate($q, 'date');
+            });
         } elseif ($eventStatus === 'deleted') {
-            $countsQuery->whereHas('event', fn ($q) => $q->onlyTrashed());
+            $countsQuery->whereHas('event', function ($q) use ($periodFilter) {
+                $q->onlyTrashed();
+                $periodFilter->applyToDate($q, 'date');
+            });
         } else {
-            $countsQuery->whereHas('event', fn ($q) => $q->withTrashed());
+            $countsQuery->whereHas('event', function ($q) use ($periodFilter) {
+                $q->withTrashed();
+                $periodFilter->applyToDate($q, 'date');
+            });
         }
 
         if ($request->filled('event_id')) {

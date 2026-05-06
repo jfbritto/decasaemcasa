@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Inscription;
 use App\Models\Notification;
+use App\Services\AdminPeriodFilter;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -21,9 +23,9 @@ class NotificationController extends Controller
     /**
      * Lista de notificações enviadas com filtros.
      */
-    public function index(Request $request)
+    public function index(Request $request, AdminPeriodFilter $periodFilter)
     {
-        $baseFilter = function ($q) use ($request) {
+        $baseFilter = function ($q) use ($request, $periodFilter) {
             if ($request->filled('type')) {
                 $q->where('type', $request->type);
             }
@@ -54,6 +56,8 @@ class NotificationController extends Controller
                     $q->whereRaw('1 = 0');
                 }
             }
+            // Período global: filtra por created_at da notificação
+            $periodFilter->applyToDate($q, 'created_at');
         };
 
         $countBase = Notification::where(function ($q) use ($baseFilter) { $baseFilter($q); });
@@ -79,7 +83,9 @@ class NotificationController extends Controller
             ->values()
             ->toArray();
 
-        $events = Event::orderBy('date', 'desc')->get(['id', 'title', 'city', 'date']);
+        $eventsQuery = Event::orderBy('date', 'desc');
+        $periodFilter->applyToDate($eventsQuery, 'date');
+        $events = $eventsQuery->get(['id', 'title', 'city', 'date']);
 
         $inscriptionIds = $notifications->pluck('metadata.inscription_id')->filter()->unique()->toArray();
         $inscriptions = Inscription::with(['event' => fn ($q) => $q->withTrashed()])
@@ -130,7 +136,7 @@ class NotificationController extends Controller
                     'statusUrl' => route('inscricao.status', $inscription->token),
                 ];
             } elseif ($notification->channel !== 'general') {
-                \Log::warning('Reenvio sem template HTML', [
+                Log::warning('Reenvio sem template HTML', [
                     'notification_id' => $notification->id,
                     'channel' => $notification->channel,
                     'inscription_exists' => (bool) $inscription,
