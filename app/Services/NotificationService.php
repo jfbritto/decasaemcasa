@@ -29,14 +29,20 @@ class NotificationService
                 return true;
             }
 
+            $unsubscribeAddress = config('mail.from.address') ?? 'naoresponda@decasaemcasa.omarcosalmeida.com.br';
+            $applyHeaders = function ($mail) use ($to, $subject, $unsubscribeAddress) {
+                $mail->to($to)->subject($subject);
+                $headers = $mail->getHeaders();
+                $headers->addTextHeader('List-Unsubscribe', "<mailto:{$unsubscribeAddress}?subject=unsubscribe>");
+                $headers->addTextHeader('List-Unsubscribe-Post', 'List-Unsubscribe=One-Click');
+                $headers->addTextHeader('Auto-Submitted', 'auto-generated');
+                $headers->addTextHeader('Precedence', 'bulk');
+            };
+
             if ($view) {
-                Mail::mailer($mailer)->send($view, $viewData, function ($mail) use ($to, $subject) {
-                    $mail->to($to)->subject($subject);
-                });
+                Mail::mailer($mailer)->send($view, $viewData, $applyHeaders);
             } else {
-                Mail::mailer($mailer)->raw($message, function ($mail) use ($to, $subject) {
-                    $mail->to($to)->subject($subject);
-                });
+                Mail::mailer($mailer)->raw($message, $applyHeaders);
             }
 
             $this->logNotification('email', $channel ?? 'general', $to, $subject, $message, $user, $metadata, 'sent');
