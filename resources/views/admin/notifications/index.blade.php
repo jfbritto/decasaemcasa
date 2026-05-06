@@ -62,6 +62,10 @@
                             <option value="inscription_cancelled_by_admin" {{ request('channel') === 'inscription_cancelled_by_admin' ? 'selected' : '' }}>Cancelamento pelo Admin</option>
                             <option value="event_full" {{ request('channel') === 'event_full' ? 'selected' : '' }}>Vagas Esgotadas</option>
                             <option value="inscription_migrated" {{ request('channel') === 'inscription_migrated' ? 'selected' : '' }}>Migração de Evento</option>
+                            <option value="social_request_submitted" {{ request('channel') === 'social_request_submitted' ? 'selected' : '' }}>Solicitação Social Recebida</option>
+                            <option value="social_request_approved" {{ request('channel') === 'social_request_approved' ? 'selected' : '' }}>Solicitação Social Aprovada</option>
+                            <option value="social_request_rejected" {{ request('channel') === 'social_request_rejected' ? 'selected' : '' }}>Solicitação Social Rejeitada</option>
+                            <option value="payment_reminder" {{ request('channel') === 'payment_reminder' ? 'selected' : '' }}>Lembrete de Pagamento</option>
                             <option value="custom_message" {{ request('channel') === 'custom_message' ? 'selected' : '' }}>Mensagem Personalizada</option>
                         </select>
                     </div>
@@ -181,6 +185,10 @@
                                                 'inscription_cancelled_by_admin' => 'Cancelamento pelo Admin',
                                                 'event_full' => 'Vagas Esgotadas',
                                                 'inscription_migrated' => 'Migração de Evento',
+                                                'social_request_submitted' => 'Solicitação Social Recebida',
+                                                'social_request_approved' => 'Solicitação Social Aprovada',
+                                                'social_request_rejected' => 'Solicitação Social Rejeitada',
+                                                'payment_reminder' => 'Lembrete de Pagamento',
                                                 'custom_message' => 'Mensagem Personalizada',
                                                 'general' => 'Geral',
                                             ];

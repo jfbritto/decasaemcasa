@@ -123,6 +123,9 @@ class NotificationController extends Controller
                 'inscription_rejected' => 'emails.inscription-rejected',
                 'inscription_cancelled' => 'emails.inscription-cancelled',
                 'payment_reminder' => 'emails.payment-reminder',
+                'social_request_submitted' => 'emails.social-request-submitted',
+                'social_request_approved' => 'emails.social-request-approved',
+                'social_request_rejected' => 'emails.social-request-rejected',
             ];
 
             $view = null;
@@ -135,6 +138,9 @@ class NotificationController extends Controller
                     'event' => $inscription->event,
                     'statusUrl' => route('inscricao.status', $inscription->token),
                 ];
+                if ($notification->channel === 'social_request_approved') {
+                    $viewData['amountFormatted'] = 'R$ '.number_format((float) $inscription->social_request_amount, 2, ',', '.');
+                }
             } elseif ($notification->channel !== 'general') {
                 Log::warning('Reenvio sem template HTML', [
                     'notification_id' => $notification->id,
