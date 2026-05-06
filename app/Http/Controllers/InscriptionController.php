@@ -53,7 +53,17 @@ class InscriptionController extends Controller
             'birth_date' => 'required|date|before:today',
             'city_neighborhood' => 'required|string|max:255',
             'whatsapp' => 'required|string|max:20',
-            'email' => 'required|email|max:255',
+            'email' => ['required', 'email', 'max:255', function ($attribute, $value, $fail) {
+                $suggestion = $this->detectEmailTypo($value);
+                if ($suggestion) {
+                    $fail("Verifique seu e-mail. Você quis dizer {$suggestion}?");
+
+                    return;
+                }
+                if (! $this->emailDomainAcceptsMail($value)) {
+                    $fail('O domínio deste e-mail não recebe mensagens. Verifique se digitou corretamente.');
+                }
+            }],
             'instagram' => 'nullable|string|max:255',
             'motivation' => 'required|string|min:10',
             'terms_accepted' => 'required|accepted',
@@ -259,6 +269,106 @@ class InscriptionController extends Controller
         return redirect()
             ->route('inscricao.status', $token)
             ->with('success', 'Sua inscrição foi cancelada com sucesso.');
+    }
+
+    /**
+     * Detecta typos comuns no domínio do e-mail e retorna a sugestão de correção.
+     * Retorna null se não houver typo detectado.
+     */
+    private function detectEmailTypo(?string $email): ?string
+    {
+        if (! $email || ! str_contains($email, '@')) {
+            return null;
+        }
+
+        [$local, $domain] = explode('@', strtolower(trim($email)), 2);
+        if (! $local || ! $domain) {
+            return null;
+        }
+
+        $typoMap = [
+            'gmail.com.br' => 'gmail.com',
+            'gmail.con' => 'gmail.com',
+            'gmail.cm' => 'gmail.com',
+            'gmial.com' => 'gmail.com',
+            'gmal.com' => 'gmail.com',
+            'gmaill.com' => 'gmail.com',
+            'gnail.com' => 'gmail.com',
+            'gemail.com' => 'gmail.com',
+            'hotmail.com.br' => 'hotmail.com',
+            'hotmail.con' => 'hotmail.com',
+            'hotmial.com' => 'hotmail.com',
+            'hotmal.com' => 'hotmail.com',
+            'hotmai.com' => 'hotmail.com',
+            'hormail.com' => 'hotmail.com',
+            'yahoo.con' => 'yahoo.com.br',
+            'yhoo.com' => 'yahoo.com',
+            'yhaoo.com' => 'yahoo.com',
+            'outlook.con' => 'outlook.com',
+            'outlok.com' => 'outlook.com',
+            'outloook.com' => 'outlook.com',
+            'icloud.con' => 'icloud.com',
+            'iclound.com' => 'icloud.com',
+        ];
+
+        if (isset($typoMap[$domain])) {
+            return $local.'@'.$typoMap[$domain];
+        }
+
+        // Heurística: terminação .con (no lugar de .com)
+        if (str_ends_with($domain, '.con')) {
+            return $local.'@'.substr($domain, 0, -4).'.com';
+        }
+
+        // Heurística: terminação .cm (no lugar de .com)
+        if (str_ends_with($domain, '.cm') && ! str_ends_with($domain, '.com')) {
+            return $local.'@'.substr($domain, 0, -3).'.com';
+        }
+
+        return null;
+    }
+
+    /**
+     * Verifica se o domínio do e-mail aceita mensagens.
+     * Detecta NULL MX (RFC 7505) e domínios sem registros DNS.
+     * Em caso de erro de DNS retorna true (fail-open) para não barrar usuários legítimos.
+     */
+    private function emailDomainAcceptsMail(?string $email): bool
+    {
+        if (! $email || ! str_contains($email, '@')) {
+            return true;
+        }
+
+        [, $domain] = explode('@', strtolower(trim($email)), 2);
+        if (! $domain) {
+            return true;
+        }
+
+        try {
+            $mxRecords = @dns_get_record($domain, DNS_MX);
+
+            if ($mxRecords === false) {
+                return true;
+            }
+
+            if (! empty($mxRecords)) {
+                // Detecta NULL MX (RFC 7505): único registro com target "." e prioridade 0
+                if (count($mxRecords) === 1
+                    && ($mxRecords[0]['target'] ?? '') === ''
+                    && (int) ($mxRecords[0]['pri'] ?? -1) === 0) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            // Sem MX: e-mail ainda pode ser entregue se houver registro A (fallback)
+            $aRecords = @dns_get_record($domain, DNS_A);
+
+            return ! empty($aRecords);
+        } catch (\Throwable $e) {
+            return true;
+        }
     }
 
     /**

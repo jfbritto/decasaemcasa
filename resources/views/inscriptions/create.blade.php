@@ -220,8 +220,15 @@
                             <div>
                                 <label for="email" class="block text-sm font-semibold text-gray-700 mb-1">E-mail *</label>
                                 <input type="email" name="email" id="email" x-model="formData.email"
+                                       @blur="checkEmailTypo()"
                                        class="w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-3"
                                        placeholder="seu@email.com" value="{{ old('email') }}">
+                                <p x-show="emailSuggestion" x-cloak class="mt-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 flex items-start gap-2">
+                                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                    <span class="flex-1">
+                                        Você quis dizer <button type="button" @click="formData.email = emailSuggestion; emailSuggestion = ''" class="font-semibold underline text-amber-900 hover:text-amber-950" x-text="emailSuggestion"></button>?
+                                    </span>
+                                </p>
                                 @error('email')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -343,6 +350,60 @@ function inscriptionForm() {
             instagram: '{{ old("instagram", "") }}',
             motivation: `{!! addslashes(old("motivation", "")) !!}`,
             terms_accepted: {{ old("terms_accepted") ? 'true' : 'false' }},
+        },
+
+        emailSuggestion: '',
+
+        emailTypoMap: {
+            'gmail.com.br': 'gmail.com',
+            'gmail.con': 'gmail.com',
+            'gmail.cm': 'gmail.com',
+            'gmial.com': 'gmail.com',
+            'gmal.com': 'gmail.com',
+            'gmaill.com': 'gmail.com',
+            'gnail.com': 'gmail.com',
+            'gemail.com': 'gmail.com',
+            'hotmail.com.br': 'hotmail.com',
+            'hotmail.con': 'hotmail.com',
+            'hotmial.com': 'hotmail.com',
+            'hotmal.com': 'hotmail.com',
+            'hotmai.com': 'hotmail.com',
+            'hormail.com': 'hotmail.com',
+            'yahoo.con': 'yahoo.com.br',
+            'yhoo.com': 'yahoo.com',
+            'yhaoo.com': 'yahoo.com',
+            'outlook.con': 'outlook.com',
+            'outlok.com': 'outlook.com',
+            'outloook.com': 'outlook.com',
+            'icloud.con': 'icloud.com',
+            'iclound.com': 'icloud.com',
+        },
+
+        checkEmailTypo() {
+            this.emailSuggestion = '';
+            const email = this.formData.email.trim().toLowerCase();
+            if (! email.includes('@')) return;
+
+            const [local, domain] = email.split('@');
+            if (! domain || ! local) return;
+
+            // 1. Lookup direto na tabela de typos conhecidos
+            if (this.emailTypoMap[domain]) {
+                this.emailSuggestion = local + '@' + this.emailTypoMap[domain];
+                return;
+            }
+
+            // 2. Heurística: terminação .con (no lugar de .com) em qualquer domínio
+            if (domain.endsWith('.con')) {
+                this.emailSuggestion = local + '@' + domain.slice(0, -4) + '.com';
+                return;
+            }
+
+            // 3. Heurística: terminação .cm em qualquer domínio
+            if (domain.endsWith('.cm') && ! domain.endsWith('.com')) {
+                this.emailSuggestion = local + '@' + domain.slice(0, -3) + '.com';
+                return;
+            }
         },
 
         nextStep() {
