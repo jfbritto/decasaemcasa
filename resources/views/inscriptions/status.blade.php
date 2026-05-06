@@ -307,7 +307,7 @@
                                         <input type="number" name="amount" id="amount" step="0.01" min="0" max="99999.99" required
                                                value="{{ old('amount') }}"
                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                               placeholder="Ex: 65,00">
+                                               placeholder="Ex: 100,00">
                                         @error('amount')
                                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                         @enderror
