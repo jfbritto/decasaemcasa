@@ -441,7 +441,7 @@
         @endif
 
         {{-- Link para salvar --}}
-        <div class="text-center">
+        <div class="text-center mb-6">
             <p class="text-sm text-gray-500 mb-2">Salve este link para acompanhar o status da sua inscrição:</p>
             <div class="bg-white rounded-xl border border-gray-200 p-3 flex items-center justify-between">
                 <input type="text" value="{{ route('inscricao.status', $inscription->token) }}" readonly
@@ -452,6 +452,27 @@
                 </button>
             </div>
         </div>
+
+        {{-- Suporte / Atendimento --}}
+        @if(config('services.support.whatsapp_link'))
+        <div class="bg-white rounded-2xl shadow p-6 text-center">
+            <h3 class="font-semibold text-gray-900 mb-1">Precisa de ajuda?</h3>
+            <p class="text-sm text-gray-600 mb-4">Fale direto com a equipe pelo WhatsApp.</p>
+            <a href="{{ config('services.support.whatsapp_link') }}" target="_blank" rel="noopener"
+               class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20.52 3.48A12 12 0 0 0 3.48 20.52L2 22l1.55-.4A12 12 0 1 0 20.52 3.48Zm-8.5 18.05a9.55 9.55 0 0 1-4.85-1.32l-.35-.2-3.43.9.92-3.34-.23-.36a9.55 9.55 0 1 1 7.94 4.32Zm5.27-7.16c-.29-.14-1.7-.84-1.96-.93-.26-.1-.45-.14-.64.14s-.74.93-.9 1.12c-.17.2-.33.22-.62.07a7.84 7.84 0 0 1-2.3-1.42 8.66 8.66 0 0 1-1.6-2c-.16-.28 0-.43.13-.57.13-.13.29-.33.43-.5.15-.16.2-.28.29-.47.1-.2.05-.36-.02-.5-.07-.14-.64-1.55-.88-2.13-.23-.55-.46-.48-.64-.49h-.55a1.05 1.05 0 0 0-.76.36 3.2 3.2 0 0 0-1 2.39c0 1.41 1.03 2.78 1.17 2.98.14.2 2.03 3.1 4.93 4.34a16.5 16.5 0 0 0 1.65.6 3.97 3.97 0 0 0 1.81.12 2.95 2.95 0 0 0 1.94-1.37 2.4 2.4 0 0 0 .17-1.37c-.07-.12-.26-.19-.55-.33Z"/>
+                </svg>
+                <span>Falar no WhatsApp</span>
+            </a>
+            <p class="text-xs text-gray-500 mt-3">
+                Atendimento: <strong>{{ config('services.support.whatsapp_number') }}</strong>
+            </p>
+            <p class="text-xs text-gray-400 mt-3">
+                Não responda os e-mails recebidos — eles são enviados de uma caixa que não recebe mensagens.
+            </p>
+        </div>
+        @endif
 
     </div>
 </div>
