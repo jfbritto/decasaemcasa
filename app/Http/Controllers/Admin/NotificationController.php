@@ -103,9 +103,9 @@ class NotificationController extends Controller
             ->unique()
             ->toArray();
 
-        $rateLimitPendingCount = $this->rateLimitPendingQuery()->count();
-        $rateLimitInFlightCount = $this->rateLimitInFlightQuery()->count();
-        $rateLimitCompletedRecentlyCount = $this->rateLimitCompletedRecentlyCount();
+        $rateLimitPendingCount = $this->rateLimitPendingQuery($periodFilter)->count();
+        $rateLimitInFlightCount = $this->rateLimitInFlightQuery($periodFilter)->count();
+        $rateLimitCompletedRecentlyCount = $this->rateLimitCompletedRecentlyCount($periodFilter);
 
         return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events', 'inscriptions', 'failedKeys', 'rateLimitPendingCount', 'rateLimitInFlightCount', 'rateLimitCompletedRecentlyCount'));
     }
@@ -135,9 +135,9 @@ class NotificationController extends Controller
      * Cada job é despachado com delay incremental de 20 segundos — espalhando
      * cerca de 180 envios/hora, abaixo do limite de 200/hora do Titan.
      */
-    public function bulkResendRateLimit()
+    public function bulkResendRateLimit(AdminPeriodFilter $periodFilter)
     {
-        $candidates = $this->rateLimitPendingQuery()
+        $candidates = $this->rateLimitPendingQuery($periodFilter)
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -184,7 +184,7 @@ class NotificationController extends Controller
      * Notificações que foram enfileiradas para reenvio nas últimas 2h
      * mas ainda não tiveram o reenvio bem-sucedido (estão "em vôo").
      */
-    private function rateLimitInFlightQuery()
+    private function rateLimitInFlightQuery(?AdminPeriodFilter $periodFilter = null)
     {
         $resentIds = Notification::where('status', 'sent')
             ->whereNotNull('metadata->resent_from')
@@ -198,26 +198,37 @@ class NotificationController extends Controller
 
         $inFlightCutoff = now()->subHours(2)->toIso8601String();
 
-        return Notification::where('status', 'failed')
+        $query = Notification::where('status', 'failed')
             ->where('error_message', 'like', '%Hourly Quota Exceeded%')
             ->whereNotNull('metadata->resend_queued_at')
             ->where('metadata->resend_queued_at', '>=', $inFlightCutoff)
             ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds));
+
+        if ($periodFilter) {
+            $periodFilter->applyToDate($query, 'created_at');
+        }
+
+        return $query;
     }
 
     /**
      * Quantos reenvios foram concluídos com sucesso nas últimas 2 horas.
      * Usado para mostrar "X de Y já processados" no card de progresso.
      */
-    private function rateLimitCompletedRecentlyCount(): int
+    private function rateLimitCompletedRecentlyCount(?AdminPeriodFilter $periodFilter = null): int
     {
-        return Notification::where('status', 'sent')
+        $query = Notification::where('status', 'sent')
             ->whereNotNull('metadata->resent_from')
-            ->where('created_at', '>=', now()->subHours(2))
-            ->count();
+            ->where('created_at', '>=', now()->subHours(2));
+
+        if ($periodFilter) {
+            $periodFilter->applyToDate($query, 'created_at');
+        }
+
+        return $query->count();
     }
 
-    private function rateLimitPendingQuery()
+    private function rateLimitPendingQuery(?AdminPeriodFilter $periodFilter = null)
     {
         $resentIds = Notification::where('status', 'sent')
             ->whereNotNull('metadata->resent_from')
@@ -233,13 +244,19 @@ class NotificationController extends Controller
         // são consideradas em processamento. Após 2h sem sucesso, voltam para fila de pendentes.
         $inFlightCutoff = now()->subHours(2)->toIso8601String();
 
-        return Notification::where('status', 'failed')
+        $query = Notification::where('status', 'failed')
             ->where('error_message', 'like', '%Hourly Quota Exceeded%')
             ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds))
             ->where(function ($q) use ($inFlightCutoff) {
                 $q->whereNull('metadata->resend_queued_at')
                     ->orWhere('metadata->resend_queued_at', '<', $inFlightCutoff);
             });
+
+        if ($periodFilter) {
+            $periodFilter->applyToDate($query, 'created_at');
+        }
+
+        return $query;
     }
 
 }
