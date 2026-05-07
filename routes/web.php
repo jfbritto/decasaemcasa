@@ -114,6 +114,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Notificações
     Route::get('/notificacoes', [AdminNotificationController::class, 'index'])->name('notificacoes.index');
     Route::post('/notificacoes/{notification}/resend', [AdminNotificationController::class, 'resend'])->name('notificacoes.resend');
+    Route::post('/notificacoes/bulk-resend-rate-limit', [AdminNotificationController::class, 'bulkResendRateLimit'])->name('notificacoes.bulk-resend-rate-limit');
 
     // Gestão de Admins
     Route::get('/usuarios', [AdminUserController::class, 'index'])->name('usuarios.index');

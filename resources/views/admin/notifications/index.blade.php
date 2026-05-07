@@ -10,6 +10,75 @@
             <h1 class="text-2xl font-bold text-gray-900">Histórico de Notificações</h1>
         </div>
 
+        {{-- Progresso de reenvio em curso --}}
+        @if(($rateLimitInFlightCount ?? 0) > 0)
+        <div class="bg-blue-50 border border-blue-300 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3"
+             x-data="{ countdown: 30 }"
+             x-init="setInterval(() => { if (countdown > 0) countdown--; else window.location.reload(); }, 1000)">
+            <div class="flex items-start gap-3 flex-1">
+                <svg class="w-5 h-5 mt-0.5 text-blue-600 flex-shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-blue-900">
+                        {{ $rateLimitInFlightCount }} {{ $rateLimitInFlightCount === 1 ? 'reenvio em andamento' : 'reenvios em andamento' }}
+                        @if(($rateLimitCompletedRecentlyCount ?? 0) > 0)
+                            · <span class="text-blue-700">{{ $rateLimitCompletedRecentlyCount }} já {{ $rateLimitCompletedRecentlyCount === 1 ? 'concluído' : 'concluídos' }} nas últimas 2h</span>
+                        @endif
+                    </p>
+                    <p class="text-sm text-blue-800 mt-1">
+                        Os e-mails estão sendo disparados em segundo plano (1 a cada 20s). A página atualiza sozinha em <span x-text="countdown"></span>s.
+                    </p>
+                </div>
+            </div>
+            <button type="button" @click="window.location.reload()"
+                    class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-sm whitespace-nowrap">
+                Atualizar agora
+            </button>
+        </div>
+        @endif
+
+        {{-- Alerta de rate-limit pendentes --}}
+        @if(($rateLimitPendingCount ?? 0) > 0)
+        <div class="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-3" x-data>
+            <div class="flex items-start gap-3 flex-1">
+                <svg class="w-5 h-5 mt-0.5 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <div class="flex-1">
+                    <p class="font-semibold text-amber-900">
+                        {{ $rateLimitPendingCount }} {{ $rateLimitPendingCount === 1 ? 'notificação falhou' : 'notificações falharam' }} por limite de envio do Titan e ainda não foram reenviadas
+                    </p>
+                    <p class="text-sm text-amber-800 mt-1">
+                        O reenvio é processado em segundo plano com 1 envio a cada 20 segundos (~180/hora) para respeitar o limite do Titan.
+                    </p>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('admin.notificacoes.bulk-resend-rate-limit') }}">
+                @csrf
+                <button type="button"
+                    @click="
+                        const total = {{ $rateLimitPendingCount }};
+                        const minutes = Math.ceil((total * 20) / 60);
+                        Swal.fire({
+                            title: 'Enfileirar ' + total + ' reenvios?',
+                            html: 'Os reenvios serão processados em segundo plano com intervalo de 20s entre cada um.<br><strong>Tempo estimado: ~' + minutes + ' min</strong>.',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d97706',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Sim, enfileirar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => { if (result.isConfirmed) $el.closest('form').submit() })
+                    "
+                    class="px-4 py-2 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors text-sm whitespace-nowrap">
+                    Reenviar pendentes
+                </button>
+            </form>
+        </div>
+        @endif
+
         {{-- Contadores --}}
         @php
             $notifBase = array_filter(request()->only(['search', 'channel', 'event_id', 'inscription_status']));

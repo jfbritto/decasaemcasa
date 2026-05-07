@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ResendFailedNotification;
 use App\Models\Event;
 use App\Models\Inscription;
 use App\Models\Notification;
 use App\Services\AdminPeriodFilter;
+use App\Services\NotificationResendService;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -101,79 +103,19 @@ class NotificationController extends Controller
             ->unique()
             ->toArray();
 
-        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events', 'inscriptions', 'failedKeys'));
+        $rateLimitPendingCount = $this->rateLimitPendingQuery()->count();
+        $rateLimitInFlightCount = $this->rateLimitInFlightQuery()->count();
+        $rateLimitCompletedRecentlyCount = $this->rateLimitCompletedRecentlyCount();
+
+        return view('admin.notifications.index', compact('notifications', 'counts', 'resentKeys', 'events', 'inscriptions', 'failedKeys', 'rateLimitPendingCount', 'rateLimitInFlightCount', 'rateLimitCompletedRecentlyCount'));
     }
 
     /**
      * Reenviar notificação que falhou.
      */
-    public function resend(Notification $notification)
+    public function resend(Notification $notification, NotificationResendService $resender)
     {
-        $success = false;
-
-        if ($notification->type === 'email') {
-            $inscriptionId = $notification->metadata['inscription_id'] ?? null;
-            $inscription = $inscriptionId ? Inscription::with(['event' => fn ($q) => $q->withTrashed()])->find($inscriptionId) : null;
-
-            $viewMap = [
-                'inscription_received' => 'emails.inscription-received',
-                'inscription_approved' => 'emails.inscription-approved',
-                'inscription_waitlisted' => 'emails.inscription-waitlisted',
-                'inscription_confirmed' => 'emails.inscription-confirmed',
-                'inscription_rejected' => 'emails.inscription-rejected',
-                'inscription_cancelled' => 'emails.inscription-cancelled',
-                'payment_reminder' => 'emails.payment-reminder',
-                'social_request_submitted' => 'emails.social-request-submitted',
-                'social_request_approved' => 'emails.social-request-approved',
-                'social_request_rejected' => 'emails.social-request-rejected',
-            ];
-
-            $view = null;
-            $viewData = [];
-
-            if ($inscription && $inscription->event && isset($viewMap[$notification->channel])) {
-                $view = $viewMap[$notification->channel];
-                $viewData = [
-                    'inscription' => $inscription,
-                    'event' => $inscription->event,
-                    'statusUrl' => route('inscricao.status', $inscription->token),
-                ];
-                if ($notification->channel === 'social_request_approved') {
-                    $viewData['amountFormatted'] = 'R$ '.number_format((float) $inscription->social_request_amount, 2, ',', '.');
-                }
-            } elseif ($notification->channel !== 'general') {
-                Log::warning('Reenvio sem template HTML', [
-                    'notification_id' => $notification->id,
-                    'channel' => $notification->channel,
-                    'inscription_exists' => (bool) $inscription,
-                    'event_exists' => $inscription ? (bool) $inscription->event : false,
-                ]);
-            }
-
-            $resendMetadata = array_merge($notification->metadata ?? [], [
-                'resent_from' => $notification->id,
-                'template_used' => $view !== null,
-            ]);
-
-            $success = $this->notificationService->sendEmail(
-                $notification->recipient,
-                $notification->subject ?? 'De Casa em Casa',
-                $notification->message,
-                null,
-                $notification->channel,
-                $resendMetadata,
-                $view,
-                $viewData
-            );
-        } elseif ($notification->type === 'whatsapp') {
-            $success = $this->notificationService->sendWhatsApp(
-                $notification->recipient,
-                $notification->message,
-                null,
-                $notification->channel,
-                $notification->metadata ?? []
-            );
-        }
+        $success = $resender->resend($notification);
 
         if ($success) {
             return redirect()
@@ -185,4 +127,119 @@ class NotificationController extends Controller
             ->back()
             ->with('error', 'Falha ao reenviar a notificação. Verifique os logs.');
     }
+
+    /**
+     * Enfileira reenvio em lote de notificações que falharam por limite de envio
+     * do Titan (Hourly Quota Exceeded) e ainda não foram reenviadas com sucesso.
+     *
+     * Cada job é despachado com delay incremental de 20 segundos — espalhando
+     * cerca de 180 envios/hora, abaixo do limite de 200/hora do Titan.
+     */
+    public function bulkResendRateLimit()
+    {
+        $candidates = $this->rateLimitPendingQuery()
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($candidates->isEmpty()) {
+            return redirect()
+                ->back()
+                ->with('info', 'Nenhuma notificação pendente de reenvio por limite de envio.');
+        }
+
+        $count = 0;
+        foreach ($candidates as $notification) {
+            try {
+                $metadata = $notification->metadata ?? [];
+                $metadata['resend_queued_at'] = now()->toIso8601String();
+                $notification->metadata = $metadata;
+                $notification->save();
+
+                ResendFailedNotification::dispatch($notification)
+                    ->delay(now()->addSeconds($count * 20));
+                $count++;
+            } catch (\Throwable $e) {
+                Log::error('Falha ao enfileirar reenvio', [
+                    'notification_id' => $notification->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $estimatedMinutes = (int) ceil(($count * 20) / 60);
+        $msg = "{$count} reenvios enfileirados em segundo plano.";
+        if ($estimatedMinutes >= 1) {
+            $msg .= " Tempo estimado para concluir: ~{$estimatedMinutes} min (1 envio a cada 20s para respeitar o limite do Titan).";
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', $msg);
+    }
+
+    /**
+     * Query base: notificações com falha por rate limit do Titan, ainda não reenviadas com sucesso.
+     */
+    /**
+     * Notificações que foram enfileiradas para reenvio nas últimas 2h
+     * mas ainda não tiveram o reenvio bem-sucedido (estão "em vôo").
+     */
+    private function rateLimitInFlightQuery()
+    {
+        $resentIds = Notification::where('status', 'sent')
+            ->whereNotNull('metadata->resent_from')
+            ->get(['metadata'])
+            ->pluck('metadata.resent_from')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $inFlightCutoff = now()->subHours(2)->toIso8601String();
+
+        return Notification::where('status', 'failed')
+            ->where('error_message', 'like', '%Hourly Quota Exceeded%')
+            ->whereNotNull('metadata->resend_queued_at')
+            ->where('metadata->resend_queued_at', '>=', $inFlightCutoff)
+            ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds));
+    }
+
+    /**
+     * Quantos reenvios foram concluídos com sucesso nas últimas 2 horas.
+     * Usado para mostrar "X de Y já processados" no card de progresso.
+     */
+    private function rateLimitCompletedRecentlyCount(): int
+    {
+        return Notification::where('status', 'sent')
+            ->whereNotNull('metadata->resent_from')
+            ->where('created_at', '>=', now()->subHours(2))
+            ->count();
+    }
+
+    private function rateLimitPendingQuery()
+    {
+        $resentIds = Notification::where('status', 'sent')
+            ->whereNotNull('metadata->resent_from')
+            ->get(['metadata'])
+            ->pluck('metadata.resent_from')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        // Janela de "em vôo": notificações enfileiradas nas últimas 2 horas
+        // são consideradas em processamento. Após 2h sem sucesso, voltam para fila de pendentes.
+        $inFlightCutoff = now()->subHours(2)->toIso8601String();
+
+        return Notification::where('status', 'failed')
+            ->where('error_message', 'like', '%Hourly Quota Exceeded%')
+            ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds))
+            ->where(function ($q) use ($inFlightCutoff) {
+                $q->whereNull('metadata->resend_queued_at')
+                    ->orWhere('metadata->resend_queued_at', '<', $inFlightCutoff);
+            });
+    }
+
 }
