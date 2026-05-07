@@ -469,7 +469,7 @@
                 Atendimento: <strong>{{ config('services.support.whatsapp_number') }}</strong>
             </p>
             <p class="text-xs text-gray-400 mt-3">
-                Não responda os e-mails que receber. Para falar com a equipe, use o WhatsApp acima.
+                Os e-mails que você recebe são automáticos — não respondemos por lá.
             </p>
         </div>
         @endif
