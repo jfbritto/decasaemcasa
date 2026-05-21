@@ -156,7 +156,7 @@ class NotificationController extends Controller
                 $notification->save();
 
                 ResendFailedNotification::dispatch($notification)
-                    ->delay(now()->addSeconds($count * 20));
+                    ->delay(now()->addSeconds($count * 2));
                 $count++;
             } catch (\Throwable $e) {
                 Log::error('Falha ao enfileirar reenvio', [
@@ -166,10 +166,10 @@ class NotificationController extends Controller
             }
         }
 
-        $estimatedMinutes = (int) ceil(($count * 20) / 60);
+        $estimatedMinutes = (int) ceil(($count * 2) / 60);
         $msg = "{$count} reenvios enfileirados em segundo plano.";
         if ($estimatedMinutes >= 1) {
-            $msg .= " Tempo estimado para concluir: ~{$estimatedMinutes} min (1 envio a cada 20s para respeitar o limite do Titan).";
+            $msg .= " Tempo estimado para concluir: ~{$estimatedMinutes} min (1 envio a cada 2s).";
         }
 
         return redirect()

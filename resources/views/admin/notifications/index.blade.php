@@ -28,7 +28,7 @@
                         @endif
                     </p>
                     <p class="text-sm text-blue-800 mt-1">
-                        Os e-mails estão sendo disparados em segundo plano (1 a cada 20s). A página atualiza sozinha em <span x-text="countdown"></span>s.
+                        Os e-mails estão sendo disparados em segundo plano (1 a cada 2s). A página atualiza sozinha em <span x-text="countdown"></span>s.
                     </p>
                 </div>
             </div>
@@ -51,7 +51,7 @@
                         {{ $rateLimitPendingCount }} {{ $rateLimitPendingCount === 1 ? 'notificação falhou' : 'notificações falharam' }} por erros temporários (limite de envio, autenticação ou configuração) e ainda não foram reenviadas
                     </p>
                     <p class="text-sm text-amber-800 mt-1">
-                        O reenvio é processado em segundo plano com 1 envio a cada 20 segundos (~180/hora) para evitar bater novamente em qualquer limite.
+                        O reenvio é processado em segundo plano com 1 envio a cada 2 segundos (~1.800/hora).
                     </p>
                 </div>
             </div>
@@ -60,10 +60,10 @@
                 <button type="button"
                     @click="
                         const total = {{ $rateLimitPendingCount }};
-                        const minutes = Math.ceil((total * 20) / 60);
+                        const minutes = Math.ceil((total * 2) / 60);
                         Swal.fire({
                             title: 'Enfileirar ' + total + ' reenvios?',
-                            html: 'Os reenvios serão processados em segundo plano com intervalo de 20s entre cada um.<br><strong>Tempo estimado: ~' + minutes + ' min</strong>.',
+                            html: 'Os reenvios serão processados em segundo plano com intervalo de 2s entre cada um.<br><strong>Tempo estimado: ~' + minutes + ' min</strong>.',
                             icon: 'question',
                             showCancelButton: true,
                             confirmButtonColor: '#d97706',
