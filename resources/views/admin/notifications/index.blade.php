@@ -48,10 +48,10 @@
                 </svg>
                 <div class="flex-1">
                     <p class="font-semibold text-amber-900">
-                        {{ $rateLimitPendingCount }} {{ $rateLimitPendingCount === 1 ? 'notificação falhou' : 'notificações falharam' }} por limite de envio do Titan e ainda não foram reenviadas
+                        {{ $rateLimitPendingCount }} {{ $rateLimitPendingCount === 1 ? 'notificação falhou' : 'notificações falharam' }} por erros temporários (limite de envio, autenticação ou configuração) e ainda não foram reenviadas
                     </p>
                     <p class="text-sm text-amber-800 mt-1">
-                        O reenvio é processado em segundo plano com 1 envio a cada 20 segundos (~180/hora) para respeitar o limite do Titan.
+                        O reenvio é processado em segundo plano com 1 envio a cada 20 segundos (~180/hora) para evitar bater novamente em qualquer limite.
                     </p>
                 </div>
             </div>

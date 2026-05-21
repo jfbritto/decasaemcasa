@@ -184,6 +184,31 @@ class NotificationController extends Controller
      * Notificações que foram enfileiradas para reenvio nas últimas 2h
      * mas ainda não tiveram o reenvio bem-sucedido (estão "em vôo").
      */
+    /**
+     * Padrões de erro considerados "recuperáveis" — falhas de infraestrutura
+     * (rate limit, auth, mailer mal configurado) que podem ser corrigidas
+     * e reenviadas em massa. Não inclui erros do destinatário (mailbox inexistente,
+     * caixa cheia, etc.) que não adianta reenviar.
+     */
+    private const RECOVERABLE_ERROR_PATTERNS = [
+        '%Hourly Quota Exceeded%',
+        '%Failed to authenticate%',
+        '%authentication failed%',
+        '%Mailer [%] is not defined%',
+        '%Connection could not be established%',
+        '%Connection refused%',
+        '%Connection timed out%',
+    ];
+
+    private function applyRecoverableErrorFilter($query)
+    {
+        return $query->where(function ($q) {
+            foreach (self::RECOVERABLE_ERROR_PATTERNS as $pattern) {
+                $q->orWhere('error_message', 'like', $pattern);
+            }
+        });
+    }
+
     private function rateLimitInFlightQuery(?AdminPeriodFilter $periodFilter = null)
     {
         $resentIds = Notification::where('status', 'sent')
@@ -199,10 +224,11 @@ class NotificationController extends Controller
         $inFlightCutoff = now()->subHours(2)->toIso8601String();
 
         $query = Notification::where('status', 'failed')
-            ->where('error_message', 'like', '%Hourly Quota Exceeded%')
             ->whereNotNull('metadata->resend_queued_at')
             ->where('metadata->resend_queued_at', '>=', $inFlightCutoff)
             ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds));
+
+        $this->applyRecoverableErrorFilter($query);
 
         if ($periodFilter) {
             $periodFilter->applyToDate($query, 'created_at');
@@ -245,12 +271,13 @@ class NotificationController extends Controller
         $inFlightCutoff = now()->subHours(2)->toIso8601String();
 
         $query = Notification::where('status', 'failed')
-            ->where('error_message', 'like', '%Hourly Quota Exceeded%')
             ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds))
             ->where(function ($q) use ($inFlightCutoff) {
                 $q->whereNull('metadata->resend_queued_at')
                     ->orWhere('metadata->resend_queued_at', '<', $inFlightCutoff);
             });
+
+        $this->applyRecoverableErrorFilter($query);
 
         if ($periodFilter) {
             $periodFilter->applyToDate($query, 'created_at');
