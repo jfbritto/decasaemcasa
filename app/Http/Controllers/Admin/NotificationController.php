@@ -191,13 +191,21 @@ class NotificationController extends Controller
      * caixa cheia, etc.) que não adianta reenviar.
      */
     private const RECOVERABLE_ERROR_PATTERNS = [
-        '%Hourly Quota Exceeded%',
+        // Sender-side limits do Titan (qualquer 5.4.6 é limite/quota/abuse do remetente)
+        '%5.4.6%',
+        // Falhas temporárias SMTP (4xx por definição são retryable)
+        '%421 %',
+        '%Expected response code "220"%',
+        // Autenticação (Titan suspenso, senha errada, etc.)
         '%Failed to authenticate%',
         '%authentication failed%',
-        '%Mailer [%] is not defined%',
+        // Conexão/rede
         '%Connection could not be established%',
         '%Connection refused%',
         '%Connection timed out%',
+        '%has been closed unexpectedly%',
+        // Configuração de mailer (caso da migração Resend)
+        '%Mailer [%] is not defined%',
     ];
 
     private function applyRecoverableErrorFilter($query)
