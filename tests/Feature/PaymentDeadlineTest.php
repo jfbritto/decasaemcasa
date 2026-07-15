@@ -334,4 +334,35 @@ class PaymentDeadlineTest extends TestCase
 
         $this->assertFalse($result);
     }
+
+    public function test_upload_apos_expiracao_e_bloqueado(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'status' => 'fila_de_espera',
+        ]);
+        $inscription->forceFill(['payment_expired_at' => now()])->save();
+
+        $response = $this->post(route('inscricao.upload-comprovante', $inscription->token), [
+            'payment_proof' => \Illuminate\Http\UploadedFile::fake()->create('comprovante.pdf', 100, 'application/pdf'),
+        ]);
+
+        $response->assertRedirect(route('inscricao.status', $inscription->token));
+        $response->assertSessionHas('error', 'O prazo para envio do comprovante terminou e sua inscrição voltou para a fila de espera.');
+        $this->assertNull($inscription->fresh()->payment_proof);
+    }
+
+    public function test_upload_dentro_do_prazo_e_aceito(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_deadline_at' => now()->addMinutes(30),
+        ]);
+
+        $response = $this->post(route('inscricao.upload-comprovante', $inscription->token), [
+            'payment_proof' => \Illuminate\Http\UploadedFile::fake()->create('comprovante.pdf', 100, 'application/pdf'),
+        ]);
+
+        $response->assertRedirect(route('inscricao.upload-sucesso', $inscription->token));
+        $this->assertNotNull($inscription->fresh()->payment_proof);
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
 }
