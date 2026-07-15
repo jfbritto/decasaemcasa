@@ -1,6 +1,6 @@
 @extends('emails.layout')
 
-@section('subject', 'Fila de Espera - De Casa em Casa')
+@section('subject', 'Sua inscrição voltou para a fila de espera - De Casa em Casa')
 
 @section('badge')
 <span style="display:inline-block; background-color:#ffedd5; color:#9a3412; padding:6px 20px; border-radius:20px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
@@ -13,10 +13,13 @@
     Olá <strong>{{ $inscription->full_name }}</strong>,
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Recebemos sua história e ficamos muito felizes! No momento, os lugares para este encontro já foram preenchidos.
+    Não identificamos o envio do seu comprovante dentro do prazo de <strong>{{ $inscription->payment_deadline_label }}</strong> e, conforme avisamos no e-mail de aprovação, sua vaga foi liberada para a próxima pessoa da fila.
 </p>
-<p style="margin:0; color:#4a4639; font-size:15px; line-height:1.7;">
-    Vamos manter seu contato em nossa <strong style="color:#e88a2d;">Fila de Espera</strong>. Caso haja alguma desistência ou uma nova data por perto, avisaremos você.
+<p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
+    Sua inscrição <strong>não foi cancelada</strong>: ela voltou para a nossa <strong>fila de espera</strong>. Se um lugar na sala se abrir, sua participação poderá ser aprovada novamente e você receberá um novo aviso, com um novo prazo.
+</p>
+<p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
+    Já fez o Pix e não conseguiu anexar o comprovante a tempo? Fique tranquilo(a): nossa equipe pode reativar sua aprovação. Acompanhe sua inscrição pelo link abaixo.
 </p>
 @endsection
 
@@ -37,4 +40,4 @@
 @endsection
 
 @section('cta_url', $statusUrl)
-@section('cta_text', 'Acompanhar Minha Inscrição')
+@section('cta_text', 'Acompanhar Inscrição')

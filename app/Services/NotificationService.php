@@ -142,7 +142,7 @@ class NotificationService
         $statusUrl = route('inscricao.status', $inscription->token);
 
         // Email
-        $subject = 'Sua participação foi aprovada! - De Casa em Casa';
+        $subject = "Aprovado(a)! Você tem {$inscription->payment_deadline_label} para garantir seu lugar - De Casa em Casa";
         $message = "Participação aprovada para {$inscription->full_name} - {$event->city}";
 
         $this->sendEmail(
@@ -158,6 +158,10 @@ class NotificationService
 
         // WhatsApp
         $wa = "Olá {$inscription->full_name}! Sua participação no encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) foi *aprovada*!\n\n";
+
+        $deadlineTime = $inscription->payment_deadline_at?->format('H\hi');
+        $deadlineDate = $inscription->payment_deadline_at?->format('d/m');
+        $wa .= "⏳ *Atenção:* sua vaga fica reservada por *{$inscription->payment_deadline_label}*".($deadlineTime ? " (até às {$deadlineTime} de {$deadlineDate})" : '').". Se não recebermos seu comprovante nesse prazo, sua inscrição volta automaticamente para a fila de espera e seu lugar é liberado para a próxima pessoa.\n\n";
 
         $pixKey = config('services.pix.key');
         if ($pixKey) {
@@ -211,6 +215,43 @@ class NotificationService
             $wa,
             null,
             'inscription_waitlisted',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
+     * Prazo de pagamento vencido (aprovado -> fila_de_espera)
+     */
+    public function notifyInscriptionExpired(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        // Email
+        $subject = 'Sua inscrição voltou para a fila de espera - De Casa em Casa';
+        $message = "Prazo de pagamento vencido para {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'inscription_expired',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-expired',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+        );
+
+        // WhatsApp
+        $wa = "Olá {$inscription->full_name}! O prazo de {$inscription->payment_deadline_label} para envio do comprovante do encontro *De Casa em Casa* em *{$event->city}* terminou e sua vaga foi liberada para a próxima pessoa da fila. ";
+        $wa .= "Sua inscrição voltou para a *fila de espera*. Se um lugar na sala se abrir, sua participação poderá ser aprovada novamente.\n\n";
+        $wa .= "Já fez o Pix e não conseguiu enviar o comprovante a tempo? Nossa equipe pode reativar sua aprovação. Acompanhe aqui: {$statusUrl}";
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'inscription_expired',
             ['inscription_id' => $inscription->id]
         );
     }

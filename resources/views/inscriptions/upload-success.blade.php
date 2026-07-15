@@ -30,7 +30,7 @@
                     Agora é aguardar as <strong>coordenadas da nossa equipe</strong> para você chegar no endereço certinho e aproveitar esse encontro histórico.
                 </p>
                 <p class="text-gray-700 leading-relaxed mt-3 text-sm">
-                    Assim que validarmos seu comprovante, você vai receber o endereço do encontro por e-mail — e também ficará disponível na sua página de status.
+                    Assim que validarmos seu comprovante, você vai receber o endereço do encontro por e-mail, e ele também ficará disponível na sua página de status.
                 </p>
             </div>
 

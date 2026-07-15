@@ -7,6 +7,7 @@ use App\Models\Inscription;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class InscriptionController extends Controller
@@ -160,9 +161,13 @@ class InscriptionController extends Controller
         $inscription = Inscription::where('token', $token)->firstOrFail();
 
         if (! $inscription->isApproved()) {
+            $message = $inscription->isWaitlisted() && $inscription->payment_expired_at
+                ? 'O prazo para envio do comprovante terminou e sua inscrição voltou para a fila de espera.'
+                : 'Sua inscrição não está em status de aprovação para envio de comprovante.';
+
             return redirect()
                 ->route('inscricao.status', $token)
-                ->with('error', 'Sua inscrição não está em status de aprovação para envio de comprovante.');
+                ->with('error', $message);
         }
 
         $request->validate([
@@ -173,10 +178,34 @@ class InscriptionController extends Controller
             'payment_proof.max' => 'O arquivo deve ter no máximo 5MB.',
         ]);
 
-        // Salvar arquivo
+        $previousProof = $inscription->payment_proof;
+
         $path = $request->file('payment_proof')->store('payment_proofs', 'public');
-        $inscription->payment_proof = $path;
-        $inscription->save();
+
+        if ($path === false) {
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'Não foi possível salvar o comprovante. Tente novamente.');
+        }
+
+        // Update condicional: aceita o comprovante apenas enquanto o status ainda é
+        // "aprovado" (evita corrida com o cron de expiração)
+        $accepted = Inscription::whereKey($inscription->id)
+            ->where('status', 'aprovado')
+            ->update(['payment_proof' => $path, 'updated_at' => now()]);
+
+        if (! $accepted) {
+            Storage::disk('public')->delete($path);
+
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'O prazo para envio do comprovante terminou e sua inscrição voltou para a fila de espera.');
+        }
+
+        // Higiene: remove o comprovante anterior substituído (evita arquivo órfão)
+        if ($previousProof && $previousProof !== $path) {
+            Storage::disk('public')->delete($previousProof);
+        }
 
         return redirect()->route('inscricao.upload-sucesso', $token);
     }

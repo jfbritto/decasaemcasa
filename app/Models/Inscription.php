@@ -28,6 +28,7 @@ class Inscription extends Model
         'admin_notes',
         'cancelled_by',
         'approved_at',
+        'payment_deadline_at',
         'confirmed_at',
         'social_request_status',
         'social_request_reason',
@@ -42,6 +43,8 @@ class Inscription extends Model
         'birth_date' => 'date',
         'terms_accepted' => 'boolean',
         'approved_at' => 'datetime',
+        'payment_deadline_at' => 'datetime',
+        'payment_expired_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'contribution_amount' => 'decimal:2',
         'social_request_amount' => 'decimal:2',
@@ -110,7 +113,17 @@ class Inscription extends Model
     {
         $this->status = 'aprovado';
         $this->approved_at = now();
+        $this->startPaymentDeadline();
         $this->save();
+    }
+
+    public function startPaymentDeadline(): void
+    {
+        $this->payment_deadline_at = now()->addMinutes(
+            (int) config('inscriptions.payment_deadline_minutes', 60)
+        );
+        // Prazo novo invalida qualquer expiração anterior
+        $this->payment_expired_at = null;
     }
 
     public function waitlist(): void
@@ -171,6 +184,38 @@ class Inscription extends Model
         $this->save();
     }
 
+    /**
+     * Expira a inscrição para a fila de espera de forma atômica.
+     * Retorna false se o comprovante chegou, o status mudou ou o prazo foi
+     * reiniciado (ex.: reenvio de aprovação) entre a busca e o update.
+     */
+    public function expireToWaitlist(): bool
+    {
+        $updated = static::whereKey($this->id)
+            ->where('status', 'aprovado')
+            ->whereNull('payment_proof')
+            // Re-checa o prazo: um reenvio pode tê-lo reiniciado entre a
+            // busca de candidatos do cron e este update
+            ->where('payment_deadline_at', '<=', now())
+            ->where(function ($query) {
+                // Pausa da solicitação social também no UPDATE: fecha a janela entre a
+                // busca de candidatos do cron e este update
+                $query->whereNull('social_request_status')
+                    ->orWhere('social_request_status', '!=', 'pendente');
+            })
+            ->update([
+                'status' => 'fila_de_espera',
+                'payment_expired_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+        if ($updated) {
+            $this->refresh();
+        }
+
+        return (bool) $updated;
+    }
+
     // Social Request
 
     public function hasSocialRequest(): bool
@@ -214,6 +259,11 @@ class Inscription extends Model
         $this->social_request_admin_message = $message;
         $this->social_request_reviewed_at = now();
         $this->social_request_reviewed_by = $userId;
+
+        if ($this->isApproved()) {
+            $this->startPaymentDeadline();
+        }
+
         $this->save();
     }
 
@@ -223,6 +273,11 @@ class Inscription extends Model
         $this->social_request_admin_message = $message;
         $this->social_request_reviewed_at = now();
         $this->social_request_reviewed_by = $userId;
+
+        if ($this->isApproved()) {
+            $this->startPaymentDeadline();
+        }
+
         $this->save();
     }
 
@@ -239,6 +294,19 @@ class Inscription extends Model
             'cancelado' => 'Cancelado',
             default => $this->status,
         };
+    }
+
+    public function getPaymentDeadlineLabelAttribute(): string
+    {
+        $minutes = (int) config('inscriptions.payment_deadline_minutes', 60);
+
+        if ($minutes % 60 === 0) {
+            $hours = intdiv($minutes, 60);
+
+            return $hours === 1 ? '1 hora' : "{$hours} horas";
+        }
+
+        return "{$minutes} minutos";
     }
 
     public function getStatusColorAttribute(): string

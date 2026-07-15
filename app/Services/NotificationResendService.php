@@ -35,10 +35,32 @@ class NotificationResendService
             ? Inscription::with(['event' => fn ($q) => $q->withTrashed()])->find($inscriptionId)
             : null;
 
+        if ($notification->channel === 'inscription_approved' && $inscription) {
+            // Reenviar aprovação só faz sentido para quem ainda aguarda pagamento;
+            // para os demais o copy de urgência seria falso
+            if (! $inscription->isApproved() || $inscription->payment_proof) {
+                Log::warning('Reenvio de aprovação ignorado: inscrição não está mais aguardando pagamento', [
+                    'notification_id' => $notification->id,
+                    'inscription_id' => $inscription->id,
+                    'status' => $inscription->status,
+                ]);
+
+                return false;
+            }
+
+            // Prazo venceu sem a pessoa ter sido avisada (envio original falhou):
+            // reinicia para que o e-mail reenviado carregue um prazo real
+            if (! $inscription->payment_deadline_at || $inscription->payment_deadline_at->isPast()) {
+                $inscription->startPaymentDeadline();
+                $inscription->save();
+            }
+        }
+
         $viewMap = [
             'inscription_received' => 'emails.inscription-received',
             'inscription_approved' => 'emails.inscription-approved',
             'inscription_waitlisted' => 'emails.inscription-waitlisted',
+            'inscription_expired' => 'emails.inscription-expired',
             'inscription_confirmed' => 'emails.inscription-confirmed',
             'inscription_rejected' => 'emails.inscription-rejected',
             'inscription_cancelled' => 'emails.inscription-cancelled',
@@ -89,6 +111,28 @@ class NotificationResendService
 
     private function resendWhatsApp(Notification $notification): bool
     {
+        if ($notification->channel === 'inscription_approved') {
+            $inscription = Inscription::find($notification->metadata['inscription_id'] ?? null);
+
+            // Texto do WhatsApp é reenviado verbatim: com prazo vencido/ausente ele
+            // avisaria "errado" e ainda armaria o guard do cron, expirando a pessoa
+            // no minuto seguinte sem janela real
+            if ($inscription && (
+                ! $inscription->isApproved()
+                || $inscription->payment_proof
+                || ! $inscription->payment_deadline_at
+                || $inscription->payment_deadline_at->isPast()
+            )) {
+                Log::warning('Reenvio de aprovação via WhatsApp ignorado: mensagem com prazo obsoleto', [
+                    'notification_id' => $notification->id,
+                    'inscription_id' => $inscription->id,
+                    'status' => $inscription->status,
+                ]);
+
+                return false;
+            }
+        }
+
         return $this->notificationService->sendWhatsApp(
             $notification->recipient,
             $notification->message,

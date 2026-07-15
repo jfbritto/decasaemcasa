@@ -98,7 +98,7 @@
                                             Não responda este e-mail
                                         </p>
                                         <p style="margin:0 0 12px; color:#4a4639; font-size:13px; line-height:1.5;">
-                                            Para falar com a equipe, use o WhatsApp:
+                                            Este é um envio automático. Para dúvidas, fale com a equipe pelo WhatsApp:
                                         </p>
                                         <a href="{{ config('services.support.whatsapp_link') }}" target="_blank" style="display:inline-block; background-color:#25d366; color:#ffffff; text-decoration:none; padding:10px 22px; border-radius:8px; font-size:14px; font-weight:700;">
                                             Falar no WhatsApp

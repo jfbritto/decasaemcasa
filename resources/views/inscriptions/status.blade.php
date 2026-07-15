@@ -53,6 +53,11 @@
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                         Confirmado
                     </span>
+                @elseif($inscription->isWaitlisted() && $inscription->payment_expired_at)
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                        Fila de Espera
+                    </span>
                 @elseif($inscription->isWaitlisted())
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-orange-100 text-orange-800">
                         <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
@@ -135,6 +140,16 @@
                     <p class="text-gray-700 leading-relaxed">
                         Que alegria ter você conosco! Prepare o coração!
                     </p>
+                @elseif($inscription->isWaitlisted() && $inscription->payment_expired_at)
+                    <p class="text-gray-700 leading-relaxed">
+                        Não recebemos seu comprovante dentro do prazo e sua inscrição voltou para a <strong>fila de espera</strong>. Seu lugar na sala foi liberado para a próxima pessoa.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Se um lugar se abrir, sua participação poderá ser aprovada novamente e você receberá um novo aviso por e-mail, com um novo prazo.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed mt-3">
+                        Já fez o Pix e não conseguiu enviar o comprovante a tempo? Fique tranquilo(a): nossa equipe pode reativar sua aprovação.
+                    </p>
                 @elseif($inscription->isWaitlisted())
                     <p class="text-gray-700 leading-relaxed">
                         Recebemos sua história e ficamos muito felizes com o seu interesse!
@@ -185,6 +200,52 @@
             {{-- Upload de Comprovante (só se aprovado e evento não esgotado) --}}
             @if($inscription->isApproved() && !($inscription->event && $inscription->event->isFull()))
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-6 mb-6">
+                    @if($inscription->payment_deadline_at && !$inscription->payment_proof && !$inscription->isSocialRequestPending())
+                    <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4"
+                         x-data="{
+                            deadline: {{ $inscription->payment_deadline_at->getTimestamp() * 1000 }},
+                            remaining: 1,
+                            display: '',
+                            reloadScheduled: false,
+                            tick() {
+                                this.remaining = this.deadline - Date.now();
+                                if (this.remaining <= 0) {
+                                    if (!this.reloadScheduled) {
+                                        this.reloadScheduled = true;
+                                        setTimeout(() => window.location.reload(), 75000);
+                                    }
+                                    return;
+                                }
+                                const totalSec = Math.floor(this.remaining / 1000);
+                                const m = Math.floor(totalSec / 60);
+                                const s = totalSec % 60;
+                                this.display = m + 'min ' + String(s).padStart(2, '0') + 's';
+                            }
+                         }"
+                         x-init="tick(); setInterval(() => tick(), 1000)">
+                        <p class="text-sm font-bold text-amber-900">
+                            ⏳ Prazo para envio do comprovante: até às {{ $inscription->payment_deadline_at->format('H\hi \d\e d/m') }}
+                        </p>
+                        <p class="text-sm text-amber-800 mt-1" x-show="remaining > 0" x-cloak>
+                            Tempo restante: <strong x-text="display"></strong>
+                        </p>
+                        <p class="text-sm text-amber-800 mt-1" x-show="remaining <= 0" x-cloak>
+                            O prazo terminou. Se você não enviou o comprovante, sua inscrição voltará para a fila de espera em instantes.
+                        </p>
+                        <p class="text-xs text-amber-700 mt-2">
+                            Após o prazo, sua inscrição volta automaticamente para a fila de espera e seu lugar na sala é liberado para a próxima pessoa.
+                        </p>
+                    </div>
+                    @elseif($inscription->payment_deadline_at && !$inscription->payment_proof && $inscription->isSocialRequestPending())
+                    <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
+                        <p class="text-sm font-bold text-amber-900">
+                            ⏸ Prazo pausado
+                        </p>
+                        <p class="text-sm text-amber-800 mt-1">
+                            Enquanto sua solicitação de contribuição social estiver em análise, o prazo para envio do comprovante fica suspenso. Quando a equipe responder, ele será reiniciado e avisaremos você.
+                        </p>
+                    </div>
+                    @endif
                     <h3 class="font-semibold text-gray-900 mb-3">Enviar Comprovante de Pagamento</h3>
 
                     @if(config('services.pix.key'))
@@ -263,7 +324,7 @@
                                     </p>
                                 @endif
                                 <p class="text-sm text-gray-600">
-                                    Não conseguimos aprovar sua solicitação desta vez. Se ainda quiser participar, contribua com o valor que conseguir dentro da referência de R$ 100,00 e envie o comprovante acima — ou envie uma nova solicitação abaixo.
+                                    Não conseguimos aprovar sua solicitação desta vez. Se ainda quiser participar, contribua com o valor que conseguir dentro da referência de R$ 100,00 e envie o comprovante acima, ou envie uma nova solicitação abaixo.
                                 </p>
                             </div>
                         @endif
@@ -468,8 +529,11 @@
             <p class="text-xs text-gray-500 mt-3">
                 Atendimento: <strong>{{ config('services.support.whatsapp_number') }}</strong>
             </p>
+            <p class="text-xs text-gray-500 mt-2">
+                O WhatsApp é só para dúvidas: as atualizações da sua inscrição chegam por e-mail e nesta página.
+            </p>
             <p class="text-xs text-gray-400 mt-3">
-                Os e-mails que você recebe são automáticos — não respondemos por lá.
+                Os e-mails que você recebe são automáticos e não respondemos por lá.
             </p>
         </div>
         @endif

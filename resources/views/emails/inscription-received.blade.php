@@ -16,7 +16,7 @@
     Recebemos sua história! Aqui do nosso lado, pessoas reais estão conferindo seus dados e logo logo responderemos. Calma, que esse processo é manual. Assim que sua inscrição for aprovada, você poderá fazer sua contribuição. Obrigado pelo interesse em participar desse encontro especial!
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Aguarde nosso retorno — avisaremos assim que tivermos novidades.
+    Aguarde nosso retorno: avisaremos assim que tivermos novidades.
 </p>
 <p style="margin:0; padding:12px 16px; background-color:#fef3c7; border-radius:8px; color:#92400e; font-size:13px; line-height:1.6;">
     <strong>Lembrete:</strong> Cada pessoa deve fazer sua própria inscrição, incluindo crianças e acompanhantes. Caso alguém queira te acompanhar, essa pessoa precisa preencher a própria inscrição.

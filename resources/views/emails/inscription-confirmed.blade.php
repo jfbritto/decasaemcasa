@@ -70,7 +70,7 @@
                     </td>
                     <td valign="top">
                         <p style="margin:0 0 2px; color:#9a9384; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Data</p>
-                        <p style="margin:0; color:#1a2e6e; font-size:14px; font-weight:500;">{{ $event->date->format('d/m/Y') }} — {{ $event->city }}</p>
+                        <p style="margin:0; color:#1a2e6e; font-size:14px; font-weight:500;">{{ $event->date->format('d/m/Y') }} &middot; {{ $event->city }}</p>
                     </td>
                 </tr>
             </table>
