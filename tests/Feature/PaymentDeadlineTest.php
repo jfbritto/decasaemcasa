@@ -317,4 +317,21 @@ class PaymentDeadlineTest extends TestCase
         $this->assertFalse($result);
         $this->assertTrue($inscription->fresh()->payment_deadline_at->isPast());
     }
+
+    public function test_reenvio_de_aprovacao_via_whatsapp_e_ignorado_com_prazo_vencido(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent()); // prazo no passado (helper)
+        $notification = Notification::create([
+            'type' => 'whatsapp',
+            'channel' => 'inscription_approved',
+            'recipient' => $inscription->whatsapp,
+            'message' => 'Aprovado! Prazo até às 10h00',
+            'status' => 'failed',
+            'metadata' => ['inscription_id' => $inscription->id],
+        ]);
+
+        $result = app(\App\Services\NotificationResendService::class)->resend($notification);
+
+        $this->assertFalse($result);
+    }
 }
