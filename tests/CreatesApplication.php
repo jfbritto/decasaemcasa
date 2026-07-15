@@ -13,6 +13,14 @@ trait CreatesApplication
 
         $app->make(Kernel::class)->bootstrap();
 
+        $database = $app->make('config')->get('database.connections.mysql.database');
+
+        if ($database !== 'testing') {
+            fwrite(STDERR, "\nABORTADO: os testes apontam para o banco '{$database}' em vez de 'testing'.\n".
+                "Provável config em cache. Rode: docker-compose exec -T app php artisan config:clear\n\n");
+            exit(1);
+        }
+
         return $app;
     }
 }

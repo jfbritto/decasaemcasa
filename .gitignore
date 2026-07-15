@@ -16,6 +16,7 @@ yarn-error.log
 .DS_Store
 
 # Cache do Laravel
+/bootstrap/cache/config.php
 /bootstrap/cache/packages.php
 /bootstrap/cache/services.php
 
