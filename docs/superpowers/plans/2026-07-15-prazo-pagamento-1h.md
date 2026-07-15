@@ -1117,6 +1117,19 @@ Usar superpowers:finishing-a-development-branch.
 
 ---
 
+## As built — desvios deliberados do texto original (pós-review)
+
+Este plano foi executado integralmente; as revisões de código introduziram melhorias que tornam alguns trechos acima desatualizados. O código é a fonte da verdade. Desvios principais:
+
+- `payment_expired_at` **não** está em `$fillable` (campo é escrito só pelo cron/atribuição direta; nos testes use `forceFill`). `startPaymentDeadline()` centraliza o reinício do prazo e a limpeza de `payment_expired_at`.
+- `expireToWaitlist()` também re-checa `payment_deadline_at <= now()` no UPDATE (o reenvio de aprovação pode reiniciar o prazo no meio do loop do cron).
+- O comando eager-loada `event` com `withTrashed()`, processa no máximo **25 candidatos por execução** (logando o excedente) e é agendado com `withoutOverlapping(5)`.
+- `NotificationResendService`: reenvio de aprovação por e-mail **reinicia prazo vencido** e é ignorado para quem não aguarda mais pagamento; reenvio por WhatsApp com prazo obsoleto é **bloqueado** (texto verbatim não pode ser re-renderizado).
+- Índice composto `(channel, status)` em `notifications` (migration `2026_07_15_000002`).
+- Página de status: contador **não aparece** com solicitação social pendente (mostra "⏸ Prazo pausado") e agenda um `location.reload()` único ~75s após o prazo zerar.
+- Upload: guard para `store() === false` e deleção do comprovante antigo ao substituir.
+- Infra dev: `pcre.jit=0` em `docker/php/local.ini` (segfault do PHPUnit em ARM64); guard fail-fast em `tests/CreatesApplication.php` aborta se o banco resolvido não for `testing` (proteção contra `config:cache`).
+
 ## Apêndice: respostas às dúvidas do cliente
 
 - **"Confirmação do pagamento"** — o relógio para quando o comprovante é enviado (não exige confirmação do admin dentro da 1h; a conferência manual continua depois, como hoje).
