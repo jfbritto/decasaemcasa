@@ -29,7 +29,6 @@ class Inscription extends Model
         'cancelled_by',
         'approved_at',
         'payment_deadline_at',
-        'payment_expired_at',
         'confirmed_at',
         'social_request_status',
         'social_request_reason',
@@ -115,7 +114,6 @@ class Inscription extends Model
         $this->status = 'aprovado';
         $this->approved_at = now();
         $this->startPaymentDeadline();
-        $this->payment_expired_at = null;
         $this->save();
     }
 
@@ -124,6 +122,8 @@ class Inscription extends Model
         $this->payment_deadline_at = now()->addMinutes(
             (int) config('inscriptions.payment_deadline_minutes', 60)
         );
+        // Prazo novo invalida qualquer expiração anterior
+        $this->payment_expired_at = null;
     }
 
     public function waitlist(): void

@@ -89,4 +89,58 @@ class PaymentDeadlineTest extends TestCase
 
         $this->assertTrue($inscription->payment_deadline_at->isFuture());
     }
+
+    public function test_expire_to_waitlist_expira_inscricao_elegivel(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+
+        $this->assertTrue($inscription->expireToWaitlist());
+        $this->assertSame('fila_de_espera', $inscription->status);
+        $this->assertNotNull($inscription->payment_expired_at);
+    }
+
+    public function test_expire_to_waitlist_nao_expira_com_comprovante(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_proof' => 'payment_proofs/teste.jpg',
+        ]);
+
+        $this->assertFalse($inscription->expireToWaitlist());
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_expire_to_waitlist_nao_expira_com_solicitacao_social_pendente(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'social_request_status' => 'pendente',
+            'social_request_reason' => 'Situação financeira difícil no momento.',
+            'social_request_amount' => 30.00,
+        ]);
+
+        $this->assertFalse($inscription->expireToWaitlist());
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_expire_to_waitlist_e_idempotente(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+
+        $this->assertTrue($inscription->expireToWaitlist());
+        $this->assertFalse($inscription->expireToWaitlist());
+    }
+
+    public function test_decisao_social_nao_define_prazo_para_nao_aprovado(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'status' => 'fila_de_espera',
+            'payment_deadline_at' => null,
+            'social_request_status' => 'pendente',
+            'social_request_reason' => 'Situação financeira difícil no momento.',
+            'social_request_amount' => 30.00,
+        ]);
+
+        $inscription->rejectSocialRequest('Não foi possível desta vez.', null);
+
+        $this->assertNull($inscription->payment_deadline_at);
+    }
 }
