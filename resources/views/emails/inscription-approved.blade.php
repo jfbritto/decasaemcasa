@@ -1,6 +1,6 @@
 @extends('emails.layout')
 
-@section('subject', 'Sua participação foi aprovada! - De Casa em Casa')
+@section('subject', 'Aprovado(a)! Garanta seu lugar na sala - De Casa em Casa')
 
 @section('badge')
 <span style="display:inline-block; background-color:#dbeafe; color:#1e40af; padding:6px 20px; border-radius:20px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
@@ -56,7 +56,7 @@
         <td style="padding:14px 16px;">
             <p style="margin:0 0 6px; color:#1a2e6e; font-size:13px; font-weight:700;">Não consegue contribuir com o valor de referência neste momento?</p>
             <p style="margin:0; color:#4a4639; font-size:13px; line-height:1.6;">
-                Antes de fazer o Pix, você pode solicitar uma <strong>contribuição social</strong> no link de status. Conte brevemente sua situação e o valor que consegue contribuir — nossa equipe analisa e retorna com a resposta. <em>Enquanto sua solicitação estiver em análise, o prazo fica pausado. A vaga só é confirmada após aprovação da solicitação e envio do comprovante.</em>
+                Antes de fazer o Pix, você pode solicitar uma <strong>contribuição social</strong> — é na mesma página do botão abaixo. Conte brevemente sua situação e o valor que consegue contribuir — nossa equipe analisa e retorna com a resposta. <em>Enquanto sua solicitação estiver em análise, o prazo fica pausado. A vaga só é confirmada após aprovação da solicitação e envio do comprovante.</em>
             </p>
         </td>
     </tr>

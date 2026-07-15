@@ -35,6 +35,27 @@ class NotificationResendService
             ? Inscription::with(['event' => fn ($q) => $q->withTrashed()])->find($inscriptionId)
             : null;
 
+        if ($notification->channel === 'inscription_approved' && $inscription) {
+            // Reenviar aprovação só faz sentido para quem ainda aguarda pagamento;
+            // para os demais o copy de urgência seria falso
+            if (! $inscription->isApproved() || $inscription->payment_proof) {
+                Log::warning('Reenvio de aprovação ignorado: inscrição não está mais aguardando pagamento', [
+                    'notification_id' => $notification->id,
+                    'inscription_id' => $inscription->id,
+                    'status' => $inscription->status,
+                ]);
+
+                return false;
+            }
+
+            // Prazo venceu sem a pessoa ter sido avisada (envio original falhou):
+            // reinicia para que o e-mail reenviado carregue um prazo real
+            if (! $inscription->payment_deadline_at || $inscription->payment_deadline_at->isPast()) {
+                $inscription->startPaymentDeadline();
+                $inscription->save();
+            }
+        }
+
         $viewMap = [
             'inscription_received' => 'emails.inscription-received',
             'inscription_approved' => 'emails.inscription-approved',

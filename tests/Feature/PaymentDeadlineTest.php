@@ -279,4 +279,42 @@ class PaymentDeadlineTest extends TestCase
 
         $this->assertSame('aprovado', $inscription->fresh()->status);
     }
+
+    public function test_reenvio_de_aprovacao_reinicia_prazo_vencido(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+        $notification = Notification::create([
+            'type' => 'email',
+            'channel' => 'inscription_approved',
+            'recipient' => $inscription->email,
+            'subject' => 'Aprovado',
+            'message' => 'Aprovado',
+            'status' => 'failed',
+            'metadata' => ['inscription_id' => $inscription->id],
+        ]);
+
+        $result = app(\App\Services\NotificationResendService::class)->resend($notification);
+
+        $this->assertTrue($result);
+        $this->assertTrue($inscription->fresh()->payment_deadline_at->isFuture());
+    }
+
+    public function test_reenvio_de_aprovacao_e_ignorado_para_quem_nao_aguarda_pagamento(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), ['status' => 'fila_de_espera']);
+        $notification = Notification::create([
+            'type' => 'email',
+            'channel' => 'inscription_approved',
+            'recipient' => $inscription->email,
+            'subject' => 'Aprovado',
+            'message' => 'Aprovado',
+            'status' => 'failed',
+            'metadata' => ['inscription_id' => $inscription->id],
+        ]);
+
+        $result = app(\App\Services\NotificationResendService::class)->resend($notification);
+
+        $this->assertFalse($result);
+        $this->assertTrue($inscription->fresh()->payment_deadline_at->isPast());
+    }
 }

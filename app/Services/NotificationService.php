@@ -160,7 +160,8 @@ class NotificationService
         $wa = "Olá {$inscription->full_name}! Sua participação no encontro *De Casa em Casa* em *{$event->city}* ({$event->date->format('d/m/Y')}) foi *aprovada*!\n\n";
 
         $deadlineTime = $inscription->payment_deadline_at?->format('H\hi');
-        $wa .= "⏳ *Atenção:* sua vaga fica reservada por *{$inscription->payment_deadline_label}*".($deadlineTime ? " (até às {$deadlineTime})" : '').". Se não recebermos seu comprovante nesse prazo, sua inscrição volta automaticamente para a fila de espera e seu lugar é liberado para a próxima pessoa.\n\n";
+        $deadlineDate = $inscription->payment_deadline_at?->format('d/m');
+        $wa .= "⏳ *Atenção:* sua vaga fica reservada por *{$inscription->payment_deadline_label}*".($deadlineTime ? " (até às {$deadlineTime} de {$deadlineDate})" : '').". Se não recebermos seu comprovante nesse prazo, sua inscrição volta automaticamente para a fila de espera e seu lugar é liberado para a próxima pessoa.\n\n";
 
         $pixKey = config('services.pix.key');
         if ($pixKey) {
