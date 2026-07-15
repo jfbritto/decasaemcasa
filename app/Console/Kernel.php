@@ -12,6 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        $schedule->command('inscriptions:expire-unpaid')->everyMinute()->withoutOverlapping();
         $schedule->command('queue:work database --max-time=55 --sleep=1 --tries=3')->everyMinute()->withoutOverlapping();
     }
 

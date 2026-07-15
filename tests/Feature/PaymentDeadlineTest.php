@@ -143,4 +143,91 @@ class PaymentDeadlineTest extends TestCase
 
         $this->assertNull($inscription->payment_deadline_at);
     }
+
+    public function test_comando_expira_aprovado_sem_comprovante_com_prazo_vencido(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $inscription->refresh();
+        $this->assertSame('fila_de_espera', $inscription->status);
+        $this->assertNotNull($inscription->payment_expired_at);
+        $this->assertTrue(
+            Notification::where('channel', 'inscription_expired')
+                ->where('metadata->inscription_id', $inscription->id)
+                ->exists()
+        );
+    }
+
+    public function test_comando_nao_expira_quem_enviou_comprovante(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_proof' => 'payment_proofs/teste.jpg',
+        ]);
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_comando_nao_expira_antes_do_prazo(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_deadline_at' => now()->addMinutes(30),
+        ]);
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_comando_nao_expira_inscricao_legada_sem_prazo(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_deadline_at' => null,
+        ]);
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_comando_nao_expira_com_solicitacao_social_pendente(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'social_request_status' => 'pendente',
+            'social_request_reason' => 'Situação financeira difícil no momento.',
+            'social_request_amount' => 30.00,
+        ]);
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_comando_nao_expira_quem_nao_recebeu_notificacao_de_aprovacao(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+        // nenhuma Notification 'sent' registrada (ex.: falha de rate limit do Resend)
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_dry_run_nao_altera_nada(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid --dry-run')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
 }
