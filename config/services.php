@@ -24,4 +24,9 @@ return [
         'holder' => env('PIX_HOLDER', 'Marcos Almeida'),
     ],
 
+    'support' => [
+        'whatsapp_number' => env('SUPPORT_WHATSAPP_NUMBER', '+55 27 99820-1544'),
+        'whatsapp_link' => env('SUPPORT_WHATSAPP_LINK', 'https://wa.me/5527998201544'),
+    ],
+
 ];
