@@ -186,13 +186,17 @@ class Inscription extends Model
 
     /**
      * Expira a inscrição para a fila de espera de forma atômica.
-     * Retorna false se o comprovante chegou (ou o status mudou) entre a busca e o update.
+     * Retorna false se o comprovante chegou, o status mudou ou o prazo foi
+     * reiniciado (ex.: reenvio de aprovação) entre a busca e o update.
      */
     public function expireToWaitlist(): bool
     {
         $updated = static::whereKey($this->id)
             ->where('status', 'aprovado')
             ->whereNull('payment_proof')
+            // Re-checa o prazo: um reenvio pode tê-lo reiniciado entre a
+            // busca de candidatos do cron e este update
+            ->where('payment_deadline_at', '<=', now())
             ->where(function ($query) {
                 // Pausa da solicitação social também no UPDATE: fecha a janela entre a
                 // busca de candidatos do cron e este update

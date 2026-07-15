@@ -129,6 +129,18 @@ class PaymentDeadlineTest extends TestCase
         $this->assertFalse($inscription->expireToWaitlist());
     }
 
+    public function test_expire_to_waitlist_nao_expira_com_prazo_reiniciado(): void
+    {
+        // Simula reenvio de aprovação reiniciando o prazo entre a busca do cron e o update
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_deadline_at' => now()->addMinutes(30),
+        ]);
+
+        $this->assertFalse($inscription->expireToWaitlist());
+        $this->assertSame('aprovado', $inscription->fresh()->status);
+        $this->assertNull($inscription->fresh()->payment_expired_at);
+    }
+
     public function test_decisao_social_nao_define_prazo_para_nao_aprovado(): void
     {
         $inscription = $this->makeInscription($this->makeEvent(), [
