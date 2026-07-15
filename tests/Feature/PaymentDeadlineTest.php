@@ -353,6 +353,8 @@ class PaymentDeadlineTest extends TestCase
 
     public function test_upload_dentro_do_prazo_e_aceito(): void
     {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
         $inscription = $this->makeInscription($this->makeEvent(), [
             'payment_deadline_at' => now()->addMinutes(30),
         ]);
@@ -364,5 +366,39 @@ class PaymentDeadlineTest extends TestCase
         $response->assertRedirect(route('inscricao.upload-sucesso', $inscription->token));
         $this->assertNotNull($inscription->fresh()->payment_proof);
         $this->assertSame('aprovado', $inscription->fresh()->status);
+    }
+
+    public function test_upload_que_perde_a_corrida_para_o_cron_e_rejeitado(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent(), [
+            'payment_deadline_at' => now()->addMinutes(5),
+        ]);
+
+        $fakePath = 'payment_proofs/corrida.pdf';
+
+        $disk = \Mockery::mock(\Illuminate\Contracts\Filesystem\Filesystem::class);
+        $disk->shouldReceive('putFileAs')
+            ->once()
+            ->andReturnUsing(function () use ($inscription, $fakePath) {
+                // Simula o cron expirando entre o store() e o UPDATE condicional
+                Inscription::whereKey($inscription->id)->update([
+                    'status' => 'fila_de_espera',
+                    'payment_expired_at' => now(),
+                ]);
+
+                return $fakePath;
+            });
+        $disk->shouldReceive('delete')->once()->with($fakePath)->andReturn(true);
+
+        \Illuminate\Support\Facades\Storage::shouldReceive('disk')->with('public')->andReturn($disk);
+
+        $response = $this->post(route('inscricao.upload-comprovante', $inscription->token), [
+            'payment_proof' => \Illuminate\Http\UploadedFile::fake()->create('comprovante.pdf', 100, 'application/pdf'),
+        ]);
+
+        $response->assertRedirect(route('inscricao.status', $inscription->token));
+        $response->assertSessionHas('error', 'O prazo para envio do comprovante terminou e sua inscrição voltou para a fila de espera.');
+        $this->assertNull($inscription->fresh()->payment_proof);
+        $this->assertSame('fila_de_espera', $inscription->fresh()->status);
     }
 }

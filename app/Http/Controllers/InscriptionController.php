@@ -178,7 +178,15 @@ class InscriptionController extends Controller
             'payment_proof.max' => 'O arquivo deve ter no máximo 5MB.',
         ]);
 
+        $previousProof = $inscription->payment_proof;
+
         $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+
+        if ($path === false) {
+            return redirect()
+                ->route('inscricao.status', $token)
+                ->with('error', 'Não foi possível salvar o comprovante. Tente novamente.');
+        }
 
         // Update condicional: aceita o comprovante apenas enquanto o status ainda é
         // "aprovado" (evita corrida com o cron de expiração)
@@ -192,6 +200,11 @@ class InscriptionController extends Controller
             return redirect()
                 ->route('inscricao.status', $token)
                 ->with('error', 'O prazo para envio do comprovante terminou e sua inscrição voltou para a fila de espera.');
+        }
+
+        // Higiene: remove o comprovante anterior substituído (evita arquivo órfão)
+        if ($previousProof && $previousProof !== $path) {
+            Storage::disk('public')->delete($previousProof);
         }
 
         return redirect()->route('inscricao.upload-sucesso', $token);
