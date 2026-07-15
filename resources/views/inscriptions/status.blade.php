@@ -142,7 +142,7 @@
                     </p>
                 @elseif($inscription->isWaitlisted() && $inscription->payment_expired_at)
                     <p class="text-gray-700 leading-relaxed">
-                        Não recebemos seu comprovante dentro do prazo e sua inscrição voltou para a <strong>fila de espera</strong> — seu lugar na sala foi liberado para a próxima pessoa.
+                        Não recebemos seu comprovante dentro do prazo e sua inscrição voltou para a <strong>fila de espera</strong>. Seu lugar na sala foi liberado para a próxima pessoa.
                     </p>
                     <p class="text-gray-700 leading-relaxed mt-3">
                         Se um lugar se abrir, sua participação poderá ser aprovada novamente e você receberá um novo aviso por e-mail e WhatsApp, com um novo prazo.
@@ -324,7 +324,7 @@
                                     </p>
                                 @endif
                                 <p class="text-sm text-gray-600">
-                                    Não conseguimos aprovar sua solicitação desta vez. Se ainda quiser participar, contribua com o valor que conseguir dentro da referência de R$ 100,00 e envie o comprovante acima — ou envie uma nova solicitação abaixo.
+                                    Não conseguimos aprovar sua solicitação desta vez. Se ainda quiser participar, contribua com o valor que conseguir dentro da referência de R$ 100,00 e envie o comprovante acima, ou envie uma nova solicitação abaixo.
                                 </p>
                             </div>
                         @endif
@@ -530,7 +530,7 @@
                 Atendimento: <strong>{{ config('services.support.whatsapp_number') }}</strong>
             </p>
             <p class="text-xs text-gray-400 mt-3">
-                Os e-mails que você recebe são automáticos — não respondemos por lá.
+                Os e-mails que você recebe são automáticos e não respondemos por lá.
             </p>
         </div>
         @endif

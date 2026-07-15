@@ -16,7 +16,7 @@
     Não identificamos o envio do seu comprovante dentro do prazo de <strong>{{ $inscription->payment_deadline_label }}</strong> e, conforme avisamos no e-mail de aprovação, sua vaga foi liberada para a próxima pessoa da fila.
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
-    Sua inscrição <strong>não foi cancelada</strong>: ela voltou para a nossa <strong>fila de espera</strong>. Se um lugar na sala se abrir, sua participação poderá ser aprovada novamente — você receberá um novo aviso, com um novo prazo.
+    Sua inscrição <strong>não foi cancelada</strong>: ela voltou para a nossa <strong>fila de espera</strong>. Se um lugar na sala se abrir, sua participação poderá ser aprovada novamente e você receberá um novo aviso, com um novo prazo.
 </p>
 <p style="margin:0 0 16px; color:#4a4639; font-size:15px; line-height:1.7;">
     Já fez o Pix e não conseguiu anexar o comprovante a tempo? Fique tranquilo(a): nossa equipe pode reativar sua aprovação. Acompanhe sua inscrição pelo link abaixo.

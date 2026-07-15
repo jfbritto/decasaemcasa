@@ -244,7 +244,7 @@ class NotificationService
 
         // WhatsApp
         $wa = "Olá {$inscription->full_name}! O prazo de {$inscription->payment_deadline_label} para envio do comprovante do encontro *De Casa em Casa* em *{$event->city}* terminou e sua vaga foi liberada para a próxima pessoa da fila. ";
-        $wa .= "Sua inscrição voltou para a *fila de espera* — se um lugar na sala se abrir, sua participação poderá ser aprovada novamente.\n\n";
+        $wa .= "Sua inscrição voltou para a *fila de espera*. Se um lugar na sala se abrir, sua participação poderá ser aprovada novamente.\n\n";
         $wa .= "Já fez o Pix e não conseguiu enviar o comprovante a tempo? Nossa equipe pode reativar sua aprovação. Acompanhe aqui: {$statusUrl}";
 
         $this->sendWhatsApp(

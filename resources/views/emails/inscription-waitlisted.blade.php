@@ -16,7 +16,7 @@
     Recebemos sua história e ficamos muito felizes! No momento, os lugares para este encontro já foram preenchidos.
 </p>
 <p style="margin:0; color:#4a4639; font-size:15px; line-height:1.7;">
-    Vamos manter seu contato em nossa <strong style="color:#e88a2d;">Fila de Espera</strong> — caso haja alguma desistência ou uma nova data por perto, avisaremos você.
+    Vamos manter seu contato em nossa <strong style="color:#e88a2d;">Fila de Espera</strong>. Caso haja alguma desistência ou uma nova data por perto, avisaremos você.
 </p>
 @endsection
 
