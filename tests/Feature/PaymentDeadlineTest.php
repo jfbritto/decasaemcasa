@@ -229,5 +229,54 @@ class PaymentDeadlineTest extends TestCase
         $this->artisan('inscriptions:expire-unpaid --dry-run')->assertSuccessful();
 
         $this->assertSame('aprovado', $inscription->fresh()->status);
+        $this->assertFalse(
+            Notification::where('channel', 'inscription_expired')->exists()
+        );
+        $this->assertNull($inscription->fresh()->payment_expired_at);
+    }
+
+    public function test_comando_expira_sem_notificar_quando_evento_lotado(): void
+    {
+        $event = $this->makeEvent(['capacity' => 10, 'confirmed_count' => 10]);
+        $inscription = $this->makeInscription($event);
+        $this->logApprovalNotificationSent($inscription);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('fila_de_espera', $inscription->fresh()->status);
+        $this->assertFalse(
+            Notification::where('channel', 'inscription_expired')
+                ->where('metadata->inscription_id', $inscription->id)
+                ->exists()
+        );
+    }
+
+    public function test_comando_expira_sem_notificar_quando_evento_excluido(): void
+    {
+        $event = $this->makeEvent();
+        $inscription = $this->makeInscription($event);
+        $this->logApprovalNotificationSent($inscription);
+        $event->delete(); // soft delete
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('fila_de_espera', $inscription->fresh()->status);
+        $this->assertFalse(
+            Notification::where('channel', 'inscription_expired')
+                ->where('metadata->inscription_id', $inscription->id)
+                ->exists()
+        );
+    }
+
+    public function test_comando_nao_expira_com_notificacao_anterior_a_reaprovacao(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+        $this->logApprovalNotificationSent($inscription);
+        // Notificação ficou mais antiga que a (re)aprovação: guard deve exigir aviso novo
+        Notification::query()->update(['created_at' => $inscription->approved_at->copy()->subHour()]);
+
+        $this->artisan('inscriptions:expire-unpaid')->assertSuccessful();
+
+        $this->assertSame('aprovado', $inscription->fresh()->status);
     }
 }

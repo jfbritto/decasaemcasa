@@ -12,7 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('inscriptions:expire-unpaid')->everyMinute()->withoutOverlapping();
+        // TTL de 5 min no lock: processo morto no meio não trava as expirações
+        // por 24h (default do withoutOverlapping) em shared hosting
+        $schedule->command('inscriptions:expire-unpaid')->everyMinute()->withoutOverlapping(5);
         $schedule->command('queue:work database --max-time=55 --sleep=1 --tries=3')->everyMinute()->withoutOverlapping();
     }
 

@@ -17,7 +17,7 @@ class ExpireUnpaidInscriptions extends Command
 
     public function handle(NotificationService $notificationService): int
     {
-        $candidates = Inscription::with(['event' => fn ($query) => $query->withTrashed()])
+        $query = Inscription::with(['event' => fn ($query) => $query->withTrashed()])
             ->where('status', 'aprovado')
             ->whereNull('payment_proof')
             ->whereNotNull('payment_deadline_at')
@@ -26,13 +26,22 @@ class ExpireUnpaidInscriptions extends Command
                 // Prazo pausado enquanto a solicitação de contribuição social está em análise
                 $query->whereNull('social_request_status')
                     ->orWhere('social_request_status', '!=', 'pendente');
-            })
-            ->get();
+            });
+
+        $total = (clone $query)->count();
+
+        // Notificações são síncronas: limita o lote para caber na janela de 1 minuto
+        // do scheduler e respeitar o rate limit do Resend; o restante sai no próximo minuto
+        $candidates = $query->orderBy('payment_deadline_at')->limit(25)->get();
 
         if ($candidates->isEmpty()) {
             $this->info('Nenhuma inscrição com prazo de pagamento vencido.');
 
             return self::SUCCESS;
+        }
+
+        if ($total > $candidates->count()) {
+            $this->info("Processando {$candidates->count()} de {$total} candidatos; o restante será processado nas próximas execuções.");
         }
 
         $expired = 0;
@@ -71,7 +80,11 @@ class ExpireUnpaidInscriptions extends Command
             }
 
             // Evento lotado: a pessoa não tinha como enviar comprovante (formulário oculto),
-            // então o aviso de "prazo vencido" seria incoerente — expira em silêncio
+            // então o aviso de "prazo vencido" seria incoerente — expira em silêncio.
+            // Evento soft-deletado: o refresh() dentro de expireToWaitlist() recarrega a
+            // relação `event` SEM withTrashed, então aqui `$inscription->event` fica null
+            // e a notificação é pulada de propósito (evento excluído → aviso de "vaga
+            // liberada" não faz sentido)
             if ($inscription->event && ! $inscription->event->isFull()) {
                 try {
                     $notificationService->notifyInscriptionExpired($inscription);
