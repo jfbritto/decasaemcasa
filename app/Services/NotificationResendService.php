@@ -39,6 +39,7 @@ class NotificationResendService
             'inscription_received' => 'emails.inscription-received',
             'inscription_approved' => 'emails.inscription-approved',
             'inscription_waitlisted' => 'emails.inscription-waitlisted',
+            'inscription_expired' => 'emails.inscription-expired',
             'inscription_confirmed' => 'emails.inscription-confirmed',
             'inscription_rejected' => 'emails.inscription-rejected',
             'inscription_cancelled' => 'emails.inscription-cancelled',

@@ -29,7 +29,7 @@ Route::post('/inscricao/{token}/cancelar', [InscriptionController::class, 'cance
 // Preview de Emails (apenas em ambiente local)
 if (app()->environment('local')) {
     Route::get('/email-preview/{template}', function (string $template) {
-        $allowed = ['inscription-received', 'inscription-approved', 'inscription-waitlisted', 'inscription-confirmed', 'inscription-rejected', 'inscription-cancelled', 'payment-reminder', 'social-request-submitted', 'social-request-approved', 'social-request-rejected'];
+        $allowed = ['inscription-received', 'inscription-approved', 'inscription-waitlisted', 'inscription-expired', 'inscription-confirmed', 'inscription-rejected', 'inscription-cancelled', 'payment-reminder', 'social-request-submitted', 'social-request-approved', 'social-request-rejected'];
         if (! in_array($template, $allowed)) {
             abort(404, 'Template não encontrado. Disponíveis: '.implode(', ', $allowed));
         }
@@ -49,6 +49,10 @@ if (app()->environment('local')) {
                 'token' => 'preview-token',
             ]);
             $inscription->setRelation('event', $event);
+        }
+
+        if (in_array($template, ['inscription-approved', 'inscription-expired']) && ! $inscription->payment_deadline_at) {
+            $inscription->payment_deadline_at = $template === 'inscription-approved' ? now()->addHour() : now()->subMinutes(5);
         }
 
         $statusUrl = route('inscricao.status', $inscription->token ?? 'preview-token');

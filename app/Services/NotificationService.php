@@ -216,6 +216,43 @@ class NotificationService
     }
 
     /**
+     * Prazo de pagamento vencido (aprovado -> fila_de_espera)
+     */
+    public function notifyInscriptionExpired(Inscription $inscription): void
+    {
+        $event = $inscription->event;
+        $statusUrl = route('inscricao.status', $inscription->token);
+
+        // Email
+        $subject = 'Sua inscrição voltou para a fila de espera - De Casa em Casa';
+        $message = "Prazo de pagamento vencido para {$inscription->full_name} - {$event->city}";
+
+        $this->sendEmail(
+            $inscription->email,
+            $subject,
+            $message,
+            null,
+            'inscription_expired',
+            ['inscription_id' => $inscription->id],
+            'emails.inscription-expired',
+            ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
+        );
+
+        // WhatsApp
+        $wa = "Olá {$inscription->full_name}! O prazo de {$inscription->payment_deadline_label} para envio do comprovante do encontro *De Casa em Casa* em *{$event->city}* terminou e sua vaga foi liberada para a próxima pessoa da fila. ";
+        $wa .= "Sua inscrição voltou para a *fila de espera* — se um lugar na sala se abrir, sua participação poderá ser aprovada novamente.\n\n";
+        $wa .= "Já fez o Pix e não conseguiu enviar o comprovante a tempo? Nossa equipe pode reativar sua aprovação. Acompanhe aqui: {$statusUrl}";
+
+        $this->sendWhatsApp(
+            $inscription->whatsapp,
+            $wa,
+            null,
+            'inscription_expired',
+            ['inscription_id' => $inscription->id]
+        );
+    }
+
+    /**
      * Rejeição (status: rejeitado)
      */
     public function notifyInscriptionRejected(Inscription $inscription): void
