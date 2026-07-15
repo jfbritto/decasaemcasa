@@ -200,15 +200,22 @@
             {{-- Upload de Comprovante (só se aprovado e evento não esgotado) --}}
             @if($inscription->isApproved() && !($inscription->event && $inscription->event->isFull()))
                 <div class="border-2 border-dashed border-blue-300 rounded-xl p-6 mb-6">
-                    @if($inscription->payment_deadline_at && !$inscription->payment_proof)
+                    @if($inscription->payment_deadline_at && !$inscription->payment_proof && !$inscription->isSocialRequestPending())
                     <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4"
                          x-data="{
                             deadline: {{ $inscription->payment_deadline_at->getTimestamp() * 1000 }},
                             remaining: 1,
                             display: '',
+                            reloadScheduled: false,
                             tick() {
                                 this.remaining = this.deadline - Date.now();
-                                if (this.remaining <= 0) return;
+                                if (this.remaining <= 0) {
+                                    if (!this.reloadScheduled) {
+                                        this.reloadScheduled = true;
+                                        setTimeout(() => window.location.reload(), 75000);
+                                    }
+                                    return;
+                                }
                                 const totalSec = Math.floor(this.remaining / 1000);
                                 const m = Math.floor(totalSec / 60);
                                 const s = totalSec % 60;
@@ -227,6 +234,15 @@
                         </p>
                         <p class="text-xs text-amber-700 mt-2">
                             Após o prazo, sua inscrição volta automaticamente para a fila de espera e seu lugar na sala é liberado para a próxima pessoa.
+                        </p>
+                    </div>
+                    @elseif($inscription->payment_deadline_at && !$inscription->payment_proof && $inscription->isSocialRequestPending())
+                    <div class="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
+                        <p class="text-sm font-bold text-amber-900">
+                            ⏸ Prazo pausado
+                        </p>
+                        <p class="text-sm text-amber-800 mt-1">
+                            Enquanto sua solicitação de contribuição social estiver em análise, o prazo para envio do comprovante fica suspenso. Quando a equipe responder, ele será reiniciado e avisaremos você.
                         </p>
                     </div>
                     @endif
