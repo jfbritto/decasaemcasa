@@ -217,9 +217,10 @@
                                     return;
                                 }
                                 const totalSec = Math.floor(this.remaining / 1000);
-                                const m = Math.floor(totalSec / 60);
+                                const h = Math.floor(totalSec / 3600);
+                                const m = Math.floor((totalSec % 3600) / 60);
                                 const s = totalSec % 60;
-                                this.display = m + 'min ' + String(s).padStart(2, '0') + 's';
+                                this.display = (h > 0 ? h + 'h ' : '') + m + 'min ' + String(s).padStart(2, '0') + 's';
                             }
                          }"
                          x-init="tick(); setInterval(() => tick(), 1000)">

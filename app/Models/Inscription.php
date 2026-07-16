@@ -44,6 +44,7 @@ class Inscription extends Model
         'terms_accepted' => 'boolean',
         'approved_at' => 'datetime',
         'payment_deadline_at' => 'datetime',
+        'payment_deadline_minutes' => 'integer',
         'payment_expired_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'contribution_amount' => 'decimal:2',
@@ -119,11 +120,29 @@ class Inscription extends Model
 
     public function startPaymentDeadline(): void
     {
-        $this->payment_deadline_at = now()->addMinutes(
-            (int) config('inscriptions.payment_deadline_minutes', 60)
-        );
+        $minutes = $this->paymentDeadlineWindowMinutes();
+
+        $this->payment_deadline_at = now()->addMinutes($minutes);
+        $this->payment_deadline_minutes = $minutes;
         // Prazo novo invalida qualquer expiração anterior
         $this->payment_expired_at = null;
+    }
+
+    /**
+     * Janela de pagamento conforme a proximidade do evento: a mais de
+     * "threshold_hours" do evento vale o prazo estendido; a 48h ou menos
+     * (ou sem evento) vale o prazo base.
+     */
+    public function paymentDeadlineWindowMinutes(): int
+    {
+        $thresholdHours = (int) config('inscriptions.payment_deadline_threshold_hours', 48);
+        $eventDate = $this->event?->date;
+
+        if ($eventDate && $eventDate->greaterThan(now()->addHours($thresholdHours))) {
+            return (int) config('inscriptions.payment_deadline_extended_minutes', 360);
+        }
+
+        return (int) config('inscriptions.payment_deadline_minutes', 60);
     }
 
     public function waitlist(): void
@@ -298,7 +317,9 @@ class Inscription extends Model
 
     public function getPaymentDeadlineLabelAttribute(): string
     {
-        $minutes = (int) config('inscriptions.payment_deadline_minutes', 60);
+        // Janela gravada quando o prazo foi iniciado; prazos legados caem no default
+        $minutes = (int) ($this->payment_deadline_minutes
+            ?? config('inscriptions.payment_deadline_minutes', 60));
 
         if ($minutes % 60 === 0) {
             $hours = intdiv($minutes, 60);
