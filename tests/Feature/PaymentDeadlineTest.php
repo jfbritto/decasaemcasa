@@ -72,9 +72,71 @@ class PaymentDeadlineTest extends TestCase
 
         $this->assertNotNull($inscription->payment_deadline_at);
         $this->assertTrue(
-            $inscription->payment_deadline_at->between(now()->addMinutes(59), now()->addMinutes(61))
+            $inscription->payment_deadline_at->between(now()->addMinutes(359), now()->addMinutes(361))
         );
         $this->assertNull($inscription->payment_expired_at);
+    }
+
+    public function test_aprovar_evento_proximo_define_prazo_base_de_1h(): void
+    {
+        $event = $this->makeEvent(['date' => now()->addDay()]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertTrue(
+            $inscription->payment_deadline_at->between(now()->addMinutes(59), now()->addMinutes(61))
+        );
+        $this->assertSame(60, $inscription->payment_deadline_minutes);
+        $this->assertSame('1 hora', $inscription->payment_deadline_label);
+    }
+
+    public function test_aprovar_evento_distante_define_prazo_estendido_de_6h(): void
+    {
+        $event = $this->makeEvent(['date' => now()->addDays(10)]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertTrue(
+            $inscription->payment_deadline_at->between(now()->addMinutes(359), now()->addMinutes(361))
+        );
+        $this->assertSame(360, $inscription->payment_deadline_minutes);
+        $this->assertSame('6 horas', $inscription->payment_deadline_label);
+    }
+
+    public function test_evento_a_exatamente_48h_usa_prazo_base(): void
+    {
+        // "48h ou menos até o evento" fica no regime base; só MAIS que 48h estende.
+        // Relógio congelado para fixar a comparação estrita no limite exato
+        \Illuminate\Support\Carbon::setTestNow(now());
+
+        $event = $this->makeEvent(['date' => now()->addHours(48)]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertSame(60, $inscription->payment_deadline_minutes);
+    }
+
+    public function test_prazo_legado_sem_janela_gravada_usa_label_padrao(): void
+    {
+        $inscription = $this->makeInscription($this->makeEvent());
+
+        $this->assertNull($inscription->payment_deadline_minutes);
+        $this->assertSame('1 hora', $inscription->payment_deadline_label);
     }
 
     public function test_decisao_da_solicitacao_social_reinicia_prazo(): void
@@ -88,6 +150,24 @@ class PaymentDeadlineTest extends TestCase
         $inscription->approveSocialRequest(30.00, 'Combinado!', null);
 
         $this->assertTrue($inscription->payment_deadline_at->isFuture());
+    }
+
+    public function test_decisao_social_recalcula_janela_pela_proximidade_do_evento(): void
+    {
+        // Evento próximo no momento da decisão: reinício usa a janela base de 1h
+        $event = $this->makeEvent(['date' => now()->addDay()]);
+        $inscription = $this->makeInscription($event, [
+            'social_request_status' => 'pendente',
+            'social_request_reason' => 'Situação financeira difícil no momento.',
+            'social_request_amount' => 30.00,
+        ]);
+
+        $inscription->approveSocialRequest(30.00, 'Combinado!', null);
+
+        $this->assertSame(60, $inscription->payment_deadline_minutes);
+        $this->assertTrue(
+            $inscription->payment_deadline_at->between(now()->addMinutes(59), now()->addMinutes(61))
+        );
     }
 
     public function test_expire_to_waitlist_expira_inscricao_elegivel(): void
