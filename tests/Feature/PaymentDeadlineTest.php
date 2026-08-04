@@ -166,7 +166,7 @@ class PaymentDeadlineTest extends TestCase
 
     public function test_faixas_malformadas_caem_no_prazo_base(): void
     {
-        config(['inscriptions.payment_deadline_tiers' => 'abc,:,72']);
+        config(['inscriptions.payment_deadline_tiers' => 'abc,:,72,1:99999']);
 
         $event = $this->makeEvent(['date' => now()->addDays(10)]);
         $inscription = $this->makeInscription($event, [

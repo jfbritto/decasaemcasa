@@ -150,6 +150,14 @@ test.describe.serial('Prazo de pagamento pós-aprovação', () => {
   let insc4; // inscrição prazo pausado
 
   test.beforeAll(() => {
+    // A suíte apaga dados (eventos e2e-prazo-%, inscrições, e-mails do MailHog):
+    // só roda contra ambiente local
+    const envOut = tinkerRaw(`echo 'ENV='.app()->environment().'=FIM';`);
+    const env = (envOut.match(/ENV=(.+?)=FIM/) || [])[1];
+    if (env !== 'local') {
+      throw new Error(`Recusando rodar o E2E: APP_ENV é "${env}", esperado "local".`);
+    }
+
     cleanupTestData();
 
     const events = tinkerJson(`

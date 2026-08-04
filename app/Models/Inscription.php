@@ -149,7 +149,9 @@ class Inscription extends Model
 
                 return count($parts) === 2 ? $parts : null;
             })
-            ->filter(fn ($pair) => $pair !== null && $pair[0] > 0 && $pair[1] > 0)
+            // Teto de 65535: a janela é persistida em smallint unsigned; valores
+            // acima (ex.: typo de minutos como segundos) estourariam o insert
+            ->filter(fn ($pair) => $pair !== null && $pair[0] > 0 && $pair[1] > 0 && $pair[1] <= 65535)
             ->sortByDesc(fn ($pair) => $pair[0]);
 
         foreach ($tiers as [$hours, $minutes]) {
