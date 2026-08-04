@@ -129,20 +129,38 @@ class Inscription extends Model
     }
 
     /**
-     * Janela de pagamento conforme a proximidade do evento: a mais de
-     * "threshold_hours" do evento vale o prazo estendido; a 48h ou menos
-     * (ou sem evento) vale o prazo base.
+     * Janela de pagamento conforme a proximidade do evento, em faixas
+     * "horasAteEvento:janelaEmMinutos" (config payment_deadline_tiers).
+     * Uma faixa vale quando falta MAIS que o número de horas indicado;
+     * sem faixa aplicável (ou sem evento), vale o prazo base.
      */
     public function paymentDeadlineWindowMinutes(): int
     {
-        $thresholdHours = (int) config('inscriptions.payment_deadline_threshold_hours', 48);
+        $base = (int) config('inscriptions.payment_deadline_minutes', 60);
         $eventDate = $this->event?->date;
 
-        if ($eventDate && $eventDate->greaterThan(now()->addHours($thresholdHours))) {
-            return (int) config('inscriptions.payment_deadline_extended_minutes', 360);
+        if (! $eventDate) {
+            return $base;
         }
 
-        return (int) config('inscriptions.payment_deadline_minutes', 60);
+        $tiers = collect(explode(',', (string) config('inscriptions.payment_deadline_tiers', '')))
+            ->map(function ($tier) {
+                $parts = array_map('intval', explode(':', trim($tier)));
+
+                return count($parts) === 2 ? $parts : null;
+            })
+            // Teto de 65535: a janela é persistida em smallint unsigned; valores
+            // acima (ex.: typo de minutos como segundos) estourariam o insert
+            ->filter(fn ($pair) => $pair !== null && $pair[0] > 0 && $pair[1] > 0 && $pair[1] <= 65535)
+            ->sortByDesc(fn ($pair) => $pair[0]);
+
+        foreach ($tiers as [$hours, $minutes]) {
+            if ($eventDate->greaterThan(now()->addHours($hours))) {
+                return $minutes;
+            }
+        }
+
+        return $base;
     }
 
     public function waitlist(): void

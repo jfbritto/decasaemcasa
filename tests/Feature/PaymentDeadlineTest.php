@@ -72,7 +72,7 @@ class PaymentDeadlineTest extends TestCase
 
         $this->assertNotNull($inscription->payment_deadline_at);
         $this->assertTrue(
-            $inscription->payment_deadline_at->between(now()->addMinutes(359), now()->addMinutes(361))
+            $inscription->payment_deadline_at->between(now()->addMinutes(1439), now()->addMinutes(1441))
         );
         $this->assertNull($inscription->payment_expired_at);
     }
@@ -95,9 +95,27 @@ class PaymentDeadlineTest extends TestCase
         $this->assertSame('1 hora', $inscription->payment_deadline_label);
     }
 
-    public function test_aprovar_evento_distante_define_prazo_estendido_de_6h(): void
+    public function test_aprovar_evento_alem_de_72h_define_prazo_de_24h(): void
     {
         $event = $this->makeEvent(['date' => now()->addDays(10)]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertTrue(
+            $inscription->payment_deadline_at->between(now()->addMinutes(1439), now()->addMinutes(1441))
+        );
+        $this->assertSame(1440, $inscription->payment_deadline_minutes);
+        $this->assertSame('24 horas', $inscription->payment_deadline_label);
+    }
+
+    public function test_aprovar_evento_entre_48h_e_72h_define_prazo_de_6h(): void
+    {
+        $event = $this->makeEvent(['date' => now()->addHours(60)]);
         $inscription = $this->makeInscription($event, [
             'status' => 'pendente',
             'approved_at' => null,
@@ -111,6 +129,55 @@ class PaymentDeadlineTest extends TestCase
         );
         $this->assertSame(360, $inscription->payment_deadline_minutes);
         $this->assertSame('6 horas', $inscription->payment_deadline_label);
+    }
+
+    public function test_evento_a_exatamente_72h_usa_faixa_de_6h(): void
+    {
+        // Limite exato não estende: só MAIS que 72h ganha 24h
+        \Illuminate\Support\Carbon::setTestNow(now());
+
+        $event = $this->makeEvent(['date' => now()->addHours(72)]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertSame(360, $inscription->payment_deadline_minutes);
+    }
+
+    public function test_faixas_customizadas_via_config(): void
+    {
+        config(['inscriptions.payment_deadline_tiers' => '10:120']);
+
+        $event = $this->makeEvent(['date' => now()->addHours(11)]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertSame(120, $inscription->payment_deadline_minutes);
+    }
+
+    public function test_faixas_malformadas_caem_no_prazo_base(): void
+    {
+        config(['inscriptions.payment_deadline_tiers' => 'abc,:,72,1:99999']);
+
+        $event = $this->makeEvent(['date' => now()->addDays(10)]);
+        $inscription = $this->makeInscription($event, [
+            'status' => 'pendente',
+            'approved_at' => null,
+            'payment_deadline_at' => null,
+        ]);
+
+        $inscription->approve();
+
+        $this->assertSame(60, $inscription->payment_deadline_minutes);
     }
 
     public function test_evento_a_exatamente_48h_usa_prazo_base(): void
