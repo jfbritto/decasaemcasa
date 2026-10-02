@@ -297,7 +297,7 @@
                             </li>
                             <li class="flex items-start">
                                 <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                <span><strong>Contribuição:</strong> Estou ciente de que, após a fase de curadoria, os aprovados serão convidados a enviar uma contribuição (via Pix) que ajuda a viabilizar esse encontro único. O valor é definido por cada participante.</span>
+                                <span><strong>Contribuição:</strong> Estou ciente de que, após a fase de curadoria, os aprovados serão convidados a enviar uma contribuição (via Pix) que ajuda a viabilizar esse encontro único. O valor mínimo é de R$ 100,00 por participante.</span>
                             </li>
                             <li class="flex items-start">
                                 <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
