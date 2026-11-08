@@ -26,11 +26,23 @@ class Participant extends Model
     ];
 
     /**
+     * Só caracteres ASCII visíveis. O login do app recusa e-mail com acento
+     * ou caractere de outro alfabeto: "maria@gmáil.com" (um domínio que
+     * qualquer um registra) não pode virar a conta de "maria@gmail.com".
+     */
+    public const ASCII_EMAIL = '/^[\x21-\x7E]+$/';
+
+    /**
      * O e-mail como chave: aparado e minúsculo, sempre.
      */
     public static function normalizeEmail(string $email): string
     {
         return mb_strtolower(trim($email));
+    }
+
+    public static function isAsciiEmail(string $email): bool
+    {
+        return preg_match(self::ASCII_EMAIL, trim($email)) === 1;
     }
 
     public function setEmailAttribute(string $value): void

@@ -75,6 +75,17 @@ class PushNotificationTest extends TestCase
         Queue::assertNothingPushed();
     }
 
+    public function test_push_de_inscricao_com_email_acentuado_nao_vai_para_a_conta_sem_acento(): void
+    {
+        Queue::fake();
+        $this->makeParticipant('maria@example.com')->pushTokens()->create(['token' => 'ExponentPushToken[m]', 'platform' => 'ios']);
+        $inscription = $this->makeInscription($this->makeEvent(), ['status' => 'confirmado', 'email' => 'marïa@example.com']);
+
+        $this->notifications()->notifyInscriptionConfirmed($inscription);
+
+        Queue::assertNothingPushed();
+    }
+
     public function test_push_vai_pela_fila(): void
     {
         Queue::fake();

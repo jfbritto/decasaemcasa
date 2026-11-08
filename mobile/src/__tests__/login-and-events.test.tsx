@@ -107,6 +107,40 @@ describe('Entrar com código no e-mail', () => {
     expect(screen.getByText('Você ainda não tem inscrições')).toBeOnTheScreen();
   });
 
+  it('digitando número a número não envia sozinho; o código longo da revisão vai inteiro pelo "Entrar"', async () => {
+    auth.requestLoginCode.mockResolvedValue();
+    auth.verifyLoginCode.mockResolvedValue({ token: 'tok-revisao', participant: participantFixture });
+    await renderApp('/login');
+
+    await fireEvent.changeText(screen.getByTestId('login-email'), 'revisao@velunora.example');
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await settle(400);
+
+    let typed = '';
+    for (const digit of '246813579024') {
+      typed += digit;
+      await fireEvent.changeText(screen.getByTestId('login-code'), typed);
+    }
+    await settle();
+    expect(auth.verifyLoginCode).not.toHaveBeenCalled();
+    expect(screen.getByTestId('login-code').props.value).toBe('246813579024');
+
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await settle();
+    expect(auth.verifyLoginCode).toHaveBeenCalledWith('revisao@velunora.example', '246813579024');
+  });
+
+  it('e-mail com acento é avisado antes de ir para a API', async () => {
+    await renderApp('/login');
+
+    await fireEvent.changeText(screen.getByTestId('login-email'), 'maria@gmáil.com');
+    await fireEvent.press(screen.getByTestId('login-submit'));
+    await settle();
+
+    expect(screen.getByText('Digite o e-mail sem acentos nem espaços.')).toBeOnTheScreen();
+    expect(auth.requestLoginCode).not.toHaveBeenCalled();
+  });
+
   it('código errado mostra a mensagem da API e fica na tela', async () => {
     auth.requestLoginCode.mockResolvedValue();
     auth.verifyLoginCode.mockRejectedValue(

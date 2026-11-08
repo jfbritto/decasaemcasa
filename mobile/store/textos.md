@@ -112,7 +112,7 @@ and, once confirmed, see the secret address.
 Login has no password: the user types an e-mail and receives a 6-digit code.
 For review, use:
   E-mail: <APP_REVIEW_EMAIL>
-  Code:   <APP_REVIEW_CODE>
+  Code:   <APP_REVIEW_CODE>   (12+ digits: type all of them, then tap "Entrar")
 (the code above always works for this e-mail; no e-mail is sent)
 
 How to test:

@@ -175,7 +175,7 @@ class AuthApiTest extends TestCase
     {
         config([
             'participant_app.review_email' => 'revisao@example.com',
-            'participant_app.review_code' => '246810',
+            'participant_app.review_code' => '246813579024',
         ]);
 
         $this->postJson('/api/v1/auth/code', ['email' => 'Revisao@example.com'])->assertStatus(202);
@@ -183,7 +183,7 @@ class AuthApiTest extends TestCase
         $this->assertSame(0, ParticipantLoginCode::count());
 
         $this->postJson('/api/v1/auth/verify', ['email' => 'revisao@example.com', 'code' => '000000'])->assertStatus(422);
-        $this->postJson('/api/v1/auth/verify', ['email' => 'revisao@example.com', 'code' => '246810'])->assertOk();
+        $this->postJson('/api/v1/auth/verify', ['email' => 'revisao@example.com', 'code' => '246813579024'])->assertOk();
     }
 
     public function test_sem_as_duas_variaveis_nao_existe_conta_de_revisao(): void
@@ -192,6 +192,67 @@ class AuthApiTest extends TestCase
 
         $this->postJson('/api/v1/auth/verify', ['email' => 'revisao@example.com', 'code' => ''])->assertStatus(422);
         $this->requestCode('revisao@example.com');
+    }
+
+    public function test_codigo_de_revisao_curto_deixa_a_conta_desligada(): void
+    {
+        // O código fixo não tem contador nem validade: curto, seria adivinhável.
+        config(['participant_app.review_email' => 'revisao@example.com', 'participant_app.review_code' => '246810']);
+
+        $this->postJson('/api/v1/auth/verify', ['email' => 'revisao@example.com', 'code' => '246810'])->assertStatus(422);
+        $this->requestCode('revisao@example.com');
+    }
+
+    public function test_conferir_tem_limite_por_email_mesmo_de_ips_diferentes(): void
+    {
+        for ($i = 0; $i < 10; $i++) {
+            $this->withServerVariables(['REMOTE_ADDR' => "10.0.0.{$i}"])
+                ->postJson('/api/v1/auth/verify', ['email' => 'maria@example.com', 'code' => '000000'])
+                ->assertStatus(422);
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '10.0.1.1'])
+            ->postJson('/api/v1/auth/verify', ['email' => 'maria@example.com', 'code' => '000000'])
+            ->assertStatus(429);
+    }
+
+    public function test_email_com_acento_e_recusado(): void
+    {
+        foreach (['maria@gmáil.com', 'marïa@gmail.com', 'maria@gmаil.com'] as $email) {
+            $this->postJson('/api/v1/auth/code', ['email' => $email])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.email.0', 'Digite o e-mail sem acentos nem espaços.');
+        }
+
+        Mail::assertNothingSent();
+        $this->assertSame(0, ParticipantLoginCode::count());
+    }
+
+    public function test_dominio_parecido_com_acento_nunca_entra_na_conta_de_outra_pessoa(): void
+    {
+        // A vítima já tem conta e inscrição; a collation unicode_ci do MySQL
+        // trataria "gmáil" como "gmail".
+        $victim = $this->makeParticipant('maria@gmail.com');
+        $this->makeInscription($this->makeEvent(), ['email' => 'maria@gmail.com']);
+        $victim->createToken('app');
+
+        // Mesmo com um código gravado para a variante (como se a validação
+        // falhasse), o verify recusa e nenhuma conta é devolvida.
+        ParticipantLoginCode::create([
+            'email' => 'maria@gmáil.com',
+            'code_hash' => hash_hmac('sha256', '123456', (string) config('app.key')),
+            'expires_at' => now()->addMinutes(5),
+        ]);
+
+        $this->postJson('/api/v1/auth/verify', ['email' => 'maria@gmáil.com', 'code' => '123456'])->assertStatus(422);
+        $this->assertFalse(app(\App\Participants\LoginCodes::class)->verify('maria@gmáil.com', '123456'));
+        $this->assertSame(1, $victim->tokens()->count());
+    }
+
+    public function test_email_em_formato_de_lista_nao_derruba_o_servidor(): void
+    {
+        $this->postJson('/api/v1/auth/code', ['email' => ['a@example.com']])->assertStatus(422);
+        $this->postJson('/api/v1/auth/verify', ['email' => ['a@example.com'], 'code' => '123456'])->assertStatus(422);
     }
 
     public function test_pedir_codigo_tem_limite_por_email(): void

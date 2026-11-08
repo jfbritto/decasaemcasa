@@ -30,7 +30,8 @@ final class LoginCodes
     {
         $email = Participant::normalizeEmail($email);
 
-        if ($this->isReviewAccount($email)) {
+        // Defesa em profundidade: o controller já recusa e-mail com acento.
+        if (! Participant::isAsciiEmail($email) || $this->isReviewAccount($email)) {
             return;
         }
 
@@ -59,6 +60,10 @@ final class LoginCodes
     {
         $email = Participant::normalizeEmail($email);
         $code = trim($code);
+
+        if (! Participant::isAsciiEmail($email)) {
+            return false;
+        }
 
         if ($this->isReviewAccount($email)) {
             return hash_equals((string) config('participant_app.review_code'), $code);
@@ -93,12 +98,21 @@ final class LoginCodes
         return $claimed === 1;
     }
 
+    /**
+     * O código fixo não tem contador de tentativas nem validade: a conta de
+     * revisão só existe com um código de pelo menos REVIEW_CODE_MIN_LENGTH
+     * caracteres (curto, ela fica desligada) e com o limite por e-mail do
+     * verify (RouteServiceProvider).
+     */
+    public const REVIEW_CODE_MIN_LENGTH = 12;
+
     public function isReviewAccount(string $email): bool
     {
         $reviewEmail = config('participant_app.review_email');
         $reviewCode = config('participant_app.review_code');
 
-        if (! is_string($reviewEmail) || trim($reviewEmail) === '' || ! is_string($reviewCode) || trim($reviewCode) === '') {
+        if (! is_string($reviewEmail) || trim($reviewEmail) === '' || ! is_string($reviewCode)
+            || mb_strlen(trim($reviewCode)) < self::REVIEW_CODE_MIN_LENGTH) {
             return false;
         }
 

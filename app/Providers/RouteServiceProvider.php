@@ -35,17 +35,24 @@ class RouteServiceProvider extends ServiceProvider
         // Login do app (spec 2026-11-08-app-mobile-design, AM5): pedir código,
         // 5 por minuto por IP e 3 a cada 10 minutos por e-mail; conferir, 10
         // por minuto por IP (o código também morre na 5ª tentativa errada).
-        RateLimiter::for('app-auth-code', function (Request $request) {
-            $email = mb_strtolower(trim((string) $request->input('email')));
+        // O e-mail da chave: aparado e minúsculo; um array (email[]) vira
+        // vazio em vez de quebrar com 500.
+        $emailKey = fn (Request $request) => sha1(is_string($request->input('email')) ? mb_strtolower(trim($request->input('email'))) : '');
 
+        RateLimiter::for('app-auth-code', function (Request $request) use ($emailKey) {
             return [
                 Limit::perMinute(5)->by('app-code-ip:'.$request->ip()),
-                Limit::perMinutes(10, 3)->by('app-code-email:'.sha1($email)),
+                Limit::perMinutes(10, 3)->by('app-code-email:'.$emailKey($request)),
             ];
         });
 
-        RateLimiter::for('app-auth-verify', function (Request $request) {
-            return Limit::perMinute(10)->by('app-verify-ip:'.$request->ip());
+        // Também por e-mail: tentativas espalhadas por vários IPs contra a
+        // mesma conta (inclusive a de revisão, que tem código fixo) param aqui.
+        RateLimiter::for('app-auth-verify', function (Request $request) use ($emailKey) {
+            return [
+                Limit::perMinute(10)->by('app-verify-ip:'.$request->ip()),
+                Limit::perMinutes(10, 10)->by('app-verify-email:'.$emailKey($request)),
+            ];
         });
 
         $this->routes(function () {

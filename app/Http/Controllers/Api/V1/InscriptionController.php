@@ -22,6 +22,8 @@ use Illuminate\Http\Request;
  */
 class InscriptionController extends Controller
 {
+    public const DUPLICATE_OF_OTHER_EMAIL = 'Já existe uma inscrição com este CPF para este encontro. Se ela é sua, entre no app com o e-mail usado nela.';
+
     public const CONFIRMED_CANNOT_CANCEL = 'Sua participação já está confirmada. Se não puder ir, fale com a equipe pelo WhatsApp para liberar seu lugar na sala.';
 
     /**
@@ -67,10 +69,19 @@ class InscriptionController extends Controller
         [$result, $inscription] = $register->handle($event, [...$data, 'email' => $participant->email]);
 
         if ($result === RegisterInscription::DUPLICATE) {
+            // A duplicada pode ser de outra pessoa (o mesmo CPF digitado por
+            // alguém): o id só sai quando a inscrição é da conta.
+            if (Inscription::ownedBy($participant)->whereKey($inscription->id)->exists()) {
+                return response()->json([
+                    'message' => 'Você já tem uma inscrição para este encontro.',
+                    'code' => 'already_registered',
+                    'inscription_id' => $inscription->id,
+                ], 409);
+            }
+
             return response()->json([
-                'message' => 'Você já tem uma inscrição para este encontro.',
-                'code' => 'already_registered',
-                'inscription_id' => $inscription->id,
+                'message' => self::DUPLICATE_OF_OTHER_EMAIL,
+                'code' => 'already_registered_other_email',
             ], 409);
         }
 

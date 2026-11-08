@@ -16,6 +16,8 @@ import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 const RESEND_AFTER_SECONDS = 60;
+/** O código do e-mail tem 6; o da conta de revisão das lojas, 12 ou mais (a API aceita até 32). */
+const CODE_MAX_DIGITS = 32;
 
 /** Só caminhos do próprio app, nunca um endereço de fora. */
 function safeNext(value: string | undefined): string | null {
@@ -72,6 +74,11 @@ export default function LoginScreen() {
 
   const sendCode = async () => {
     setError(null);
+    if (!/^[\x21-\x7E]+$/.test(email.trim())) {
+      // A API recusa acento (Participant::ASCII_EMAIL): avisa antes.
+      setError('Digite o e-mail sem acentos nem espaços.');
+      return;
+    }
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
       setError('Informe um e-mail válido.');
       return;
@@ -161,14 +168,18 @@ export default function LoginScreen() {
             placeholder="000000"
             value={code}
             onChangeText={(value) => {
-              const digits = value.replace(/\D/g, '').slice(0, 6);
+              const digits = value.replace(/\D/g, '').slice(0, CODE_MAX_DIGITS);
+              // Chegou de uma vez (colado, ou o iOS preencheu do e-mail): envia
+              // sozinho. Digitando, a pessoa toca em "Entrar" (o código da
+              // conta de revisão das lojas tem mais de 6 números).
+              const arrivedAtOnce = digits.length - code.length >= 2;
               setCode(digits);
-              if (digits.length === 6 && !busy) void verify(digits);
+              if (digits.length === 6 && arrivedAtOnce && !busy) void verify(digits);
             }}
             keyboardType="number-pad"
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
-            maxLength={6}
+            maxLength={CODE_MAX_DIGITS}
             style={styles.codeInput}
           />
           <View style={styles.links}>

@@ -19,9 +19,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // O e-mail é comparado em binário (utf8mb4_bin): na collation padrão
+        // (utf8mb4_unicode_ci) "maria@gmáil.com" seria igual a
+        // "maria@gmail.com", e quem tivesse o código do domínio parecido
+        // entraria na conta de outra pessoa. O e-mail chega aqui sempre
+        // aparado e minúsculo (Participant::normalizeEmail).
         Schema::create('participants', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->unique();
+            $table->string('email')->collation('utf8mb4_bin')->unique();
             $table->string('name')->nullable();
             $table->timestamp('last_login_at')->nullable();
             $table->timestamps();
@@ -29,7 +34,7 @@ return new class extends Migration
 
         Schema::create('participant_login_codes', function (Blueprint $table) {
             $table->id();
-            $table->string('email')->index();
+            $table->string('email')->collation('utf8mb4_bin')->index();
             $table->string('code_hash');
             $table->unsignedTinyInteger('attempts')->default(0);
             $table->timestamp('expires_at');

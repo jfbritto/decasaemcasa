@@ -105,8 +105,11 @@ time).
 
 Os revisores precisam entrar, e o login é por código no e-mail, que eles não recebem.
 
-1. Escolher um e-mail fictício só para isso (ex.: `revisao.app@decasaemcasa.example`) e
-   um código de 6 a 12 dígitos que não seja óbvio.
+1. Escolher um e-mail fictício só para isso (ex.: `revisao.app@decasaemcasa.example`),
+   sem nenhuma inscrição real, e um código aleatório de **pelo menos 12 números** (só
+   números: o campo do app é numérico). Com menos, a conta de revisão fica desligada de
+   propósito: o código fixo não tem contador de tentativas nem validade, e o limite por
+   e-mail do login é a proteção dele.
 2. Pôr os dois no `.env` de produção: `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`. Para esse
    e-mail nenhum e-mail sai e o código fixo vale.
 3. Informar o e-mail e o código como "usuário" e "senha" nos campos de conta de revisão

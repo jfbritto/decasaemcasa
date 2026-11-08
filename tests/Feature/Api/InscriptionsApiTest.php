@@ -64,6 +64,32 @@ class InscriptionsApiTest extends TestCase
         $this->assertSame([true, true, false], array_column($response->json('data'), 'upcoming'));
     }
 
+    public function test_inscricao_com_email_acentuado_nao_e_da_conta(): void
+    {
+        // unicode_ci compara sem acento: "marïa@" seria "maria@" sem o
+        // COLLATE utf8mb4_bin do ownedBy.
+        $accented = $this->makeInscription($this->makeEvent(), ['email' => 'marïa@example.com', 'status' => 'pendente']);
+        $mine = $this->makeInscription($this->makeEvent(), ['email' => ' Maria@Example.com ', 'status' => 'pendente']);
+
+        $ids = array_column($this->api()->getJson('/api/v1/inscriptions')->json('data'), 'id');
+
+        $this->assertSame([$mine->id], $ids);
+        $this->api()->getJson("/api/v1/inscriptions/{$accented->id}")->assertNotFound();
+    }
+
+    public function test_cpf_de_outra_pessoa_no_mesmo_encontro_nao_revela_a_inscricao_dela(): void
+    {
+        $event = $this->makeEvent();
+        $this->makeInscription($event, ['email' => 'outra@example.com', 'status' => 'pendente', 'cpf' => '529.982.247-25']);
+
+        $response = $this->api()->postJson('/api/v1/inscriptions', $this->payload($event->id));
+
+        $response->assertStatus(409)
+            ->assertJsonPath('code', 'already_registered_other_email')
+            ->assertJsonMissingPath('inscription_id');
+        $this->assertStringNotContainsString('outra@example.com', $response->getContent());
+    }
+
     public function test_inscricao_de_outro_email_da_404_em_todas_as_rotas(): void
     {
         Storage::fake('public');

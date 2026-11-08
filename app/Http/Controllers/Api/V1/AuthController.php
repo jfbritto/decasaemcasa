@@ -21,6 +21,15 @@ class AuthController extends Controller
 {
     public const INVALID_CODE = 'Código inválido ou expirado. Confira os números ou peça um novo código.';
 
+    public const EMAIL_MESSAGES = [
+        'email.required' => 'Informe seu e-mail.',
+        'email.string' => 'Informe um e-mail válido.',
+        'email.email' => 'Informe um e-mail válido.',
+        // Só ASCII: um e-mail com acento poderia se passar por outro
+        // ("maria@gmáil.com" por "maria@gmail.com").
+        'email.regex' => 'Digite o e-mail sem acentos nem espaços.',
+    ];
+
     /**
      * POST /api/v1/auth/code: envia o código. A resposta é sempre a mesma,
      * exista ou não conta ou inscrição com o e-mail (AM3).
@@ -30,7 +39,7 @@ class AuthController extends Controller
         $this->trimEmail($request);
 
         $data = $request->validate([
-            'email' => ['required', 'email', 'max:255', function ($attribute, $value, $fail) use ($codes, $domains) {
+            'email' => ['bail', 'required', 'string', 'regex:'.Participant::ASCII_EMAIL, 'email', 'max:255', function ($attribute, $value, $fail) use ($codes, $domains) {
                 if ($codes->isReviewAccount((string) $value)) {
                     return;
                 }
@@ -44,10 +53,7 @@ class AuthController extends Controller
                     $fail('O domínio deste e-mail não recebe mensagens. Verifique se digitou corretamente.');
                 }
             }],
-        ], [
-            'email.required' => 'Informe seu e-mail.',
-            'email.email' => 'Informe um e-mail válido.',
-        ]);
+        ], self::EMAIL_MESSAGES);
 
         $codes->issue($data['email']);
 
@@ -65,11 +71,11 @@ class AuthController extends Controller
         $this->trimEmail($request);
 
         $data = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
+            'email' => ['bail', 'required', 'string', 'regex:'.Participant::ASCII_EMAIL, 'email', 'max:255'],
             'code' => ['required', 'string', 'max:32'],
             'device_name' => ['nullable', 'string', 'max:120'],
         ], [
-            'email.required' => 'Informe seu e-mail.',
+            ...self::EMAIL_MESSAGES,
             'code.required' => 'Informe o código que chegou no seu e-mail.',
         ]);
 
