@@ -22,8 +22,14 @@ os e-mails continuam iguais.
   `name` (o da inscrição mais recente, opcional), `last_login_at`. Usa o
   `HasApiTokens` do Sanctum.
 - **AM2. A chave é o e-mail.** As inscrições do participante são as que têm
-  o mesmo e-mail (`Inscription::ownedBy($participant)`; a collation do MySQL
-  já compara sem caixa). Assim, quem se inscreveu pela web antes de baixar o
+  o mesmo e-mail (`Inscription::ownedBy($participant)`), sem caixa e sem
+  espaços, mas **com acento**: a comparação é binária
+  (`LOWER(TRIM(email)) COLLATE utf8mb4_bin`), e `participants.email` e
+  `participant_login_codes.email` são `utf8mb4_bin`. A collation padrão
+  (`utf8mb4_unicode_ci`) ignora acentos e deixaria "maria@gmáil.com", um
+  domínio que qualquer um registra, entrar na conta de "maria@gmail.com"
+  (achado da revisão de segurança, corrigido antes do merge). O login só
+  aceita e-mail ASCII. Assim, quem se inscreveu pela web antes de baixar o
   app encontra tudo ao entrar. CPF não serve de chave: qualquer um pode
   digitar o CPF de outra pessoa num formulário, mas só o dono recebe o código
   no e-mail.
@@ -42,7 +48,9 @@ os e-mails continuam iguais.
   o id de um participante não dividir cota com o mesmo id da equipe).
 - **AM6. Conta de revisão das lojas:** `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`
   no `.env`. Para esse e-mail nenhum e-mail sai e o código fixo vale. Sem as
-  duas variáveis, não existe conta de revisão.
+  duas variáveis, ou com código de menos de 12 caracteres (ele não tem
+  contador nem validade), não existe conta de revisão. O campo do app é
+  numérico e aceita até 32 números: o código de revisão é só de números.
 - **AM7. Só o participante usa a API do app.** Middleware `participant` nas
   rotas autenticadas: um token de outro tipo dá 403.
 - **AM8. Sair** revoga o token do aparelho e apaga o token de push que o app
@@ -84,8 +92,9 @@ os e-mails continuam iguais.
   formulário do app; o resto (nome, CPF, nascimento, bairro e cidade,
   WhatsApp, Instagram, história, termos) segue as mesmas regras da web.
   Duplicada (mesmo CPF ou e-mail no mesmo encontro) responde 409
-  `already_registered` com o `inscription_id` existente; o app abre a
-  inscrição que já existe.
+  `already_registered` com o `inscription_id` existente quando ela é da
+  conta (o app a abre); quando é de outro e-mail (o CPF de outra pessoa),
+  409 `already_registered_other_email`, sem o id.
 - **AM17. Uma regra, um lugar:** as regras que web e API dividem saem do
   `InscriptionController` para `app/Inscriptions/`:
   - `InscriptionRules` (validação dos dados, mensagens, CPF, e-mail);
