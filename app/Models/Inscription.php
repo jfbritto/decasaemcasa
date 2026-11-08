@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -62,6 +63,18 @@ class Inscription extends Model
                 $inscription->token = Str::random(64);
             }
         });
+    }
+
+    // Scopes
+
+    /**
+     * As inscrições de um participante do app: as do mesmo e-mail (spec
+     * 2026-11-08-app-mobile-design, AM2). A collation do MySQL compara sem
+     * caixa; o e-mail do participante já é aparado e minúsculo.
+     */
+    public function scopeOwnedBy(Builder $query, Participant $participant): Builder
+    {
+        return $query->where('email', $participant->email);
     }
 
     // Relationships

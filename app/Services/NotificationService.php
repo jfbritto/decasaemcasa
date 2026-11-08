@@ -6,13 +6,16 @@ use App\Models\Event;
 use App\Models\Inscription;
 use App\Models\Notification;
 use App\Models\User;
+use App\Notifications\Push\ParticipantPush;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
     public function __construct(
-        private readonly WhatsAppService $whatsAppService
+        private readonly WhatsAppService $whatsAppService,
+        // Push do app ao lado do e-mail (spec 2026-11-08-app-mobile-design, AM21 e AM22)
+        private readonly ParticipantPush $push,
     ) {}
 
     public function sendEmail(string $to, string $subject, string $message, ?User $user = null, ?string $channel = null, array $metadata = [], ?string $view = null, array $viewData = []): bool
@@ -138,6 +141,8 @@ class NotificationService
      */
     public function notifyInscriptionApproved(Inscription $inscription): void
     {
+        $this->push->approved($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -187,6 +192,8 @@ class NotificationService
      */
     public function notifyInscriptionWaitlisted(Inscription $inscription): void
     {
+        $this->push->waitlisted($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -224,6 +231,8 @@ class NotificationService
      */
     public function notifyInscriptionExpired(Inscription $inscription): void
     {
+        $this->push->expired($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -261,6 +270,8 @@ class NotificationService
      */
     public function notifyInscriptionRejected(Inscription $inscription): void
     {
+        $this->push->rejected($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -298,6 +309,8 @@ class NotificationService
      */
     public function notifyInscriptionCancelledByAdmin(Inscription $inscription): void
     {
+        $this->push->cancelledByAdmin($inscription);
+
         $event = $inscription->event;
 
         $subject = 'Inscrição cancelada - De Casa em Casa';
@@ -363,6 +376,8 @@ class NotificationService
      */
     public function notifyInscriptionConfirmed(Inscription $inscription): void
     {
+        $this->push->confirmed($inscription);
+
         $inscription->load('event');
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
@@ -445,6 +460,8 @@ class NotificationService
      */
     public function notifySocialRequestApproved(Inscription $inscription): void
     {
+        $this->push->socialApproved($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
         $amountFormatted = 'R$ '.number_format((float) $inscription->social_request_amount, 2, ',', '.');
@@ -492,6 +509,8 @@ class NotificationService
      */
     public function notifySocialRequestRejected(Inscription $inscription): void
     {
+        $this->push->socialRejected($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -532,6 +551,8 @@ class NotificationService
      */
     public function notifyInscriptionMigrated(Inscription $inscription, Event $destinationEvent, string $originEventName): void
     {
+        $this->push->migrated($inscription, $destinationEvent);
+
         $statusUrl = route('inscricao.status', $inscription->token);
 
         $subject = 'Sua inscrição foi transferida - De Casa em Casa';
@@ -554,6 +575,8 @@ class NotificationService
      */
     public function notifyEventFull(Inscription $inscription): void
     {
+        $this->push->eventFull($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -589,6 +612,8 @@ class NotificationService
      */
     public function notifyCustomMessage(Inscription $inscription, string $subject, string $body): void
     {
+        $this->push->customMessage($inscription, $subject, $body);
+
         $event = $inscription->event;
 
         $this->sendEmail(
