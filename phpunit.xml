@@ -28,6 +28,11 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <!-- Teste nunca fala com o Twilio nem com a conta de revisão do .env local -->
+        <env name="WHATSAPP_ENABLED" value="false" force="true"/>
+        <env name="APP_REVIEW_EMAIL" value="" force="true"/>
+        <env name="APP_REVIEW_CODE" value="" force="true"/>
+        <env name="EXPO_ACCESS_TOKEN" value="" force="true"/>
     </php>
 </phpunit>
 
