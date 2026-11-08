@@ -87,6 +87,12 @@ decasaemcasa/
 - Curadoria de inscrições (ler motivação, aprovar/fila de espera)
 - Confirmar pagamentos (visualizar comprovantes)
 
+### App do participante (iOS e Android)
+- Em `mobile/` (Expo SDK 57), consumindo a API em `/api/v1` (Sanctum)
+- Login por código no e-mail; as inscrições da conta são as do mesmo e-mail (inclusive as feitas pelo site)
+- Inscrição, acompanhamento, comprovante, contribuição social, endereço para confirmados e push a cada mudança feita pela equipe
+- Spec: `docs/superpowers/specs/2026-11-08-app-mobile-design.md`; como rodar: `mobile/README.md`; lojas: `docs/infra/publicacao-lojas.md`
+
 ## Licença
 
 Este projeto é de código aberto e está disponível sob a licença MIT.

@@ -37,8 +37,9 @@ os e-mails continuam iguais.
   cria o participante se ainda não existe e devolve `{token, participant}`.
   Código usado não vale de novo.
 - **AM5. Limites:** pedir código, 5 por minuto por IP e 3 a cada 10 minutos
-  por e-mail; conferir, 10 por minuto por IP. Demais rotas autenticadas, 120
-  por minuto por participante.
+  por e-mail; conferir, 10 por minuto por IP. Demais rotas, o `throttle:api`
+  do grupo (60 por minuto por participante ou IP; a chave leva o tipo, para
+  o id de um participante não dividir cota com o mesmo id da equipe).
 - **AM6. Conta de revisão das lojas:** `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`
   no `.env`. Para esse e-mail nenhum e-mail sai e o código fixo vale. Sem as
   duas variáveis, não existe conta de revisão.
@@ -170,9 +171,11 @@ os e-mails continuam iguais.
 
 ## Produção (hospedagem compartilhada)
 
-- **AM38. Migrations novas:** `personal_access_tokens`, `participants`,
-  `participant_login_codes`, `participant_push_tokens`. Nenhuma tabela
-  existente muda.
+- **AM38. Migrations novas:** `participants`, `participant_login_codes`,
+  `participant_push_tokens`. A `personal_access_tokens` vem da migration do
+  próprio Sanctum 3 (carregada pelo pacote). Nenhuma tabela existente muda.
+  O `bootstrap/app.php` passa a ligar o `App\Exceptions\Handler` (o do
+  framework estava ligado), para a API responder JSON no 401 e no 404.
 - **AM39. `.env` novo (todos opcionais):** `APP_REVIEW_EMAIL`,
   `APP_REVIEW_CODE`, `EXPO_ACCESS_TOKEN`. Push depende do cron
   `schedule:run` (já existe).
