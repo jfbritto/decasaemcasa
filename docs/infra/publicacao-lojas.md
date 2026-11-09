@@ -18,8 +18,12 @@ que você já tem.
 - `eas.json` com os perfis `preview` (APK interno) e `production` (lojas), os dois
   apontando para `https://decasaemcasa.omarcosalmeida.com.br`; submit Android para a
   faixa interna como rascunho; iOS em pt-BR.
-- Ícone, ícone adaptativo (com monocromático), splash, ícone 512 e gráfico de recursos
-  1024 x 500 da Play em `mobile/assets/images/` e `mobile/store/`.
+- Ícone, ícone adaptativo (com monocromático), splash e ícone 512 em
+  `mobile/assets/images/` e `mobile/store/`.
+- Imagens das lojas prontas, no padrão do HelpCheck e do TreinaEdu (fundo da marca, uma
+  frase e a tela real do app): 7 capturas para a App Store (1320 x 2868 e 1206 x 2622), o
+  cabeçalho da página do produto, 7 capturas para o Google Play (1080 x 1920) e o recurso
+  gráfico 1024 x 500. Onde vai cada uma: `mobile/store/textos.md`, seção 3.
 - Política de privacidade em `/privacidade` e página de exclusão de conta em
   `/app/excluir-conta` (vão para o ar com o deploy do servidor).
 - Textos das lojas, respostas de privacidade e notas para o revisor em
@@ -164,5 +168,5 @@ Cada build recebe update só do seu canal e da sua `runtimeVersion` (= `version`
 2. Autorização da marca (seção 7).
 3. Firebase e a chave FCM V1 (seção 2.1).
 4. `eas build` e `eas submit` (seções 3 a 5).
-5. Capturas de tela (roteiro em `mobile/store/textos.md`) no seu iPhone e no Android.
+5. Subir as imagens prontas de `mobile/store/` (tabela na seção 3 do `textos.md`).
 6. Ficha, privacidade e conta de revisão nas duas lojas.

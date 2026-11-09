@@ -51,22 +51,55 @@ pelo site com o mesmo e-mail aparecem no app.
 
 A inscrição é individual: cada pessoa faz a sua, inclusive crianças e acompanhantes.
 
-## 3. Capturas de tela (roteiro)
+## 3. Imagens das lojas (prontas)
 
-iPhone 6,9 pol. (1320 x 2868 ou 1290 x 2796) e Android 9:16 (1080 x 1920). Use um
-encontro de teste e uma conta sua, nunca dados de participantes reais.
+Mesmo padrão do HelpCheck e do TreinaEdu: a tela REAL do app sobre o terracota da marca,
+com uma frase curta em cima. As telas foram gravadas contra o banco fictício "Velunora"
+(Maria Velunora, e-mails `.example`, endereço fictício): nada de participante real.
 
-1. **Encontros:** a lista com a capa terracota e as vagas.
-2. **O encontro:** a cidade, a data e "Como funciona".
-3. **Inscrição:** a etapa do manifesto, com a citação.
-4. **Minha inscrição aprovada:** o prazo com a contagem e o Pix com "Copiar".
-5. **Comprovante enviado:** o "Deu tudo certo!".
-6. **Confirmado:** o endereço com o aviso de segredo (use um endereço fictício).
-7. **Minhas inscrições:** próximos e anteriores.
+| Arquivo | Onde vai |
+|---|---|
+| `store/app-store/capturas-1206x2622/` | App Store Connect, "iPhone com Dynamic Island (tela média)", o quadro que ele pede primeiro |
+| `store/app-store/capturas-6.9/` (1320 x 2868) | App Store Connect, iPhone 6,9" |
+| `store/app-store/cabecalho-5244x2950.png` | App Store Connect, "Cabeçalho e resultados de busca" (16:9) |
+| `store/app-store/icone-1024.png` | Só se pedirem: o ícone da App Store vem do build |
+| `store/google-play/capturas/` (1080 x 1920) | Play Console, Capturas de tela do telefone |
+| `store/google-play/grafico-recursos-1024x500.png` | Play Console, Recurso gráfico |
+| `store/google-play/icone-512.png` | Play Console, Ícone do app |
 
-Legendas sugeridas (uma por captura): "Os encontros da turnê", "Escolha sua cidade",
-"Conte sua história", "Contribua dentro do prazo", "Comprovante em segundos", "Seu lugar
-na sala garantido", "Tudo num lugar só".
+As 7 telas, na mesma ordem nas duas lojas, e a frase de cada uma:
+
+1. **Encontros** (`01-encontros`): "Os encontros da turnê no seu celular".
+2. **O encontro** (`02-encontro`): "Saiba como funciona cada encontro".
+3. **Inscrição, manifesto** (`03-inscricao`): "Conte sua história na inscrição".
+4. **Aprovada, prazo e Pix** (`04-aprovada`): "O prazo e o Pix na mesma tela".
+5. **Confirmada, endereço** (`05-confirmada`): "Seu lugar na sala, com endereço e horário".
+6. **Avisos** (`06-avisos`): "Os avisos da equipe chegam na hora".
+7. **Minhas inscrições** (`07-inscricoes`): "O status de cada inscrição à mão".
+
+Na App Store as capturas ficam presas à versão: trocar exige uma versão nova em revisão.
+No Google Play dá para trocar a qualquer hora.
+
+### Capturas novas
+
+As telas cruas ficam em `store/originais/ios` (simulador do iPhone 17 Pro Max, 1320 x 2868)
+e `store/originais/android` (emulador, 1080 x 2340). A App Store usa as do iPhone e o
+Google Play, as do Android: a Apple recusa imagem com interface de outra plataforma.
+
+1. Um banco só com dados fictícios e a API local apontada para ele (servir de dentro de
+   `public/` com `php -S`, porque o `artisan serve` não repassa o `APP_ENV`).
+2. O app no Expo Go (`npx expo start --lan`) com o "Tools button" desligado no menu do
+   Expo Go (no iOS, a chave só vira arrastando, não com toque).
+3. Barra de status limpa:
+   - iOS: `xcrun simctl status_bar booted override --time 9:41 --batteryState discharging --batteryLevel 100 --wifiBars 3 --cellularBars 4 --dataNetwork wifi`
+     (com `charged` a bateria aparece verde, carregando).
+   - Android: modo de demonstração (`sysui_demo_allowed` e o broadcast
+     `com.android.systemui.demo` com relógio 0941, bateria 100, wifi cheio e sem
+     notificações).
+4. Gravar cada tela com o nome da lista acima: `xcrun simctl io booted screenshot` no iOS
+   e `adb exec-out screencap -p` no Android. Espere a barra de rolagem sumir antes.
+5. Da pasta `mobile/`: `python3 scripts/compor-capturas.py` (precisa do Pillow; as frases
+   estão no script) e conferir todas antes de subir.
 
 ## 4. Privacidade
 

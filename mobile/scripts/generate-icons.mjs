@@ -20,8 +20,9 @@
  *   assets/images/splash-icon.png             o violão creme sobre transparente (o fundo vem do app.json)
  *   assets/images/favicon.png                 48
  *   store/google-play/icone-512.png           512
- *   store/google-play/grafico-recursos-1024x500.png
  *   store/app-store/icone-1024.png            1024 (o mesmo icon.png)
+ *
+ * As capturas e o recurso gráfico das lojas saem do scripts/compor-capturas.py.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -112,16 +113,5 @@ await png(path.join(OUT, 'favicon.png'), iconSvg, { opaque: true, resize: 48 });
 
 await png(path.join(STORE, 'app-store/icone-1024.png'), iconSvg, { opaque: true });
 await png(path.join(STORE, 'google-play/icone-512.png'), iconSvg, { opaque: true, resize: 512 });
-await png(
-  path.join(STORE, 'google-play/grafico-recursos-1024x500.png'),
-  svg(
-    1024,
-    500,
-    `${gradient}<rect width="1024" height="500" fill="url(#bg)"/>
-     ${placed(guitar(LIGHT), 210, 255, 360)}
-     <text x="380" y="232" font-family="Georgia, 'Times New Roman', serif" font-size="62" font-weight="700" fill="#FDF5EC">De Casa em Casa</text>
-     <text x="383" y="292" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#FBE9D7">Encontros dentro de casas reais.</text>
-     <text x="383" y="334" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="#FBE9D7">Música e conexão de verdade.</text>`,
-  ),
-  { opaque: true },
-);
+// O recurso gráfico do Google Play (1024 x 500) sai do scripts/compor-capturas.py,
+// junto com as capturas: leva o ícone e uma tela real do app.
