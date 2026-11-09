@@ -167,7 +167,7 @@ class EventController extends Controller
         $newEvent->title = $event->title.' (Cópia)';
         $newEvent->confirmed_count = 0;
         $newEvent->status = 'draft';
-        $newEvent->date = now()->addMonth();
+        $newEvent->date = $event->date;
         $newEvent->save();
 
         return redirect()->route('admin.events.edit', $newEvent)

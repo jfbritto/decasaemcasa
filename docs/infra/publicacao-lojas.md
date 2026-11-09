@@ -36,20 +36,40 @@ ninguém entra.** A hospedagem é a compartilhada da HostGator (sem CI):
 
 1. Backup do banco pelo cPanel/phpMyAdmin.
 2. Subir o código da `main` (depois do merge do PR) do jeito habitual.
-3. `php artisan migrate` cria `participants`, `participant_login_codes`,
+3. `php artisan migrate --force` (em produção, sem o `--force` o Laravel pede
+   confirmação) cria `participants`, `participant_login_codes`,
    `participant_push_tokens` e `participant_notifications` (a aba Avisos). Não há pacote
    novo no Composer nem CSS novo para compilar. A `personal_access_tokens` é do próprio Sanctum: se o
    `migrate` já rodou antes com ele instalado, ela já existe; senão, entra agora.
-   Nenhuma tabela existente muda.
-4. No `.env` de produção (nenhuma é obrigatória para o site seguir igual):
-   - `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`: a conta de revisão das lojas (seção 6);
+   Nenhuma tabela existente muda. Se o `migrate` atrasar, o site não quebra (o aviso do
+   app que falha só vai para o log), mas o app só funciona com as tabelas.
+4. **`.htaccess`: a regra do cabeçalho `Authorization`.** O app manda o login nesse
+   cabeçalho, e o Apache da hospedagem compartilhada pode descartá-lo antes do PHP: aí o
+   login funciona, mas toda chamada seguinte volta 401. O `.htaccess` está no
+   `.gitignore` e só existe no servidor, então o deploy não o traz. Pelo Gerenciador de
+   Arquivos do cPanel, confira no `.htaccess` que atende o site (o de `public/`, ou o da
+   raiz, se o domínio aponta para a raiz do projeto) as duas linhas do `.htaccess` padrão
+   do Laravel, logo depois de `RewriteEngine On`:
+
+   ```apache
+   RewriteCond %{HTTP:Authorization} .
+   RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+   ```
+
+5. No `.env` de produção (nenhuma é obrigatória para o site seguir igual):
+   - `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`: a conta de revisão das lojas (seção 6). De
+     preferência um e-mail seu de verdade, sem nenhuma inscrição: o sistema manda e-mail
+     a cada etapa da inscrição, e para um domínio fictício esses envios falham (sem erro
+     para o revisor, mas como falha no log de notificações e devolução no Resend);
    - `EXPO_ACCESS_TOKEN`: só se ligar a "enhanced push security" no Expo.
-5. `php artisan config:clear` e `php artisan view:clear` (ou `config:cache`, se for o
+6. `php artisan config:clear` e `php artisan view:clear` (ou `config:cache`, se for o
    costume).
-6. Conferir no cPanel o cron `schedule:run` a cada minuto: é ele que roda a fila, e o
+7. Conferir no cPanel o cron `schedule:run` a cada minuto: é ele que roda a fila, e o
    push vai pela fila.
-7. Conferir no navegador: `/api/v1/events` responde JSON, `/privacidade` e
-   `/app/excluir-conta` abrem, e o formulário `/inscricao` segue igual.
+8. Do seu computador, na raiz do projeto: `scripts/conferir-api-producao.sh`. Ele abre o
+   formulário da web, as rotas públicas do app e as duas páginas das lojas, entra com a
+   conta de revisão (pede o código sem mostrar na tela), confere as chamadas com login
+   (é aqui que aparece o problema do item 4) e sai da conta no fim.
 
 ## 2. Push
 
