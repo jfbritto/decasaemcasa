@@ -17,6 +17,28 @@ describe('apiRequest', () => {
     expect(calls[0].headers).toMatchObject({ Accept: 'application/json', Authorization: 'Bearer tok-123', 'Content-Type': 'application/json' });
   });
 
+  it('POST sem dados vai com corpo {}; GET e DELETE, sem corpo', async () => {
+    // O firewall da hospedagem (HostGator) recusa com 406 o POST sem
+    // Content-Length, e o fetch do Expo no iOS não manda esse cabeçalho
+    // quando o corpo é vazio. Com corpo de texto, as duas plataformas mandam.
+    setCurrentToken('tok-123');
+    const { calls } = mockFetch({
+      'POST /auth/logout': { status: 204 },
+      'GET /me': { status: 200, body: { id: 1 } },
+      'DELETE /push-tokens/abc': { status: 204 },
+    });
+
+    await apiRequest('/auth/logout', { method: 'POST' });
+    await apiRequest('/me');
+    await apiRequest('/push-tokens/abc', { method: 'DELETE' });
+
+    expect(calls.map((call) => [call.method, call.body])).toEqual([
+      ['POST', {}],
+      ['GET', undefined],
+      ['DELETE', undefined],
+    ]);
+  });
+
   it('rota anônima não leva o token', async () => {
     setCurrentToken('tok-123');
     const { calls } = mockFetch({ 'GET /config': { status: 200, body: {} } });
