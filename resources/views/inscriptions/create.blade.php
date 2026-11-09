@@ -127,7 +127,7 @@
 
                     <blockquote class="border-l-4 border-amber-400 pl-6 py-4 bg-amber-50 rounded-r-xl">
                         <p class="text-lg text-gray-700 italic leading-relaxed">
-                            "Esse encontro é sobre valorizar cada pessoa individualmente. Só é possível fazer uma inscrição de cada vez. Caso você queira levar mais alguém, uma nova inscrição será necessária. É bem rapidinho. Bora!"
+                            "{{ config('inscriptions.manifesto') }}"
                         </p>
                     </blockquote>
 
@@ -283,26 +283,12 @@
                     <div class="bg-gray-50 rounded-xl p-6 mb-6">
                         <h3 class="font-semibold text-gray-900 mb-3">Termos e Consentimento "De Casa em Casa":</h3>
                         <ul class="space-y-4 text-gray-700 text-sm leading-relaxed">
+                            @foreach(config('inscriptions.terms') as $term)
                             <li class="flex items-start">
                                 <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                <span><strong>Conduta:</strong> Declaro que as informações são verdadeiras e estou ciente de que o evento ocorre em ambiente familiar, comprometendo-me a respeitar os valores e regras da casa.</span>
+                                <span><strong>{{ $term['title'] }}:</strong> {{ $term['text'] }}</span>
                             </li>
-                            <li class="flex items-start">
-                                <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                <span><strong>Imagem e Som:</strong> Autorizo o uso gratuito de minha imagem e voz captadas no evento para conteúdos da Turnê e do App.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                <span><strong>Privacidade (LGPD):</strong> Autorizo o tratamento dos meus dados para logística, segurança e comunicações da turnê.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                <span><strong>Contribuição:</strong> Estou ciente de que, após a fase de curadoria, os aprovados serão convidados a enviar uma contribuição (via Pix) que ajuda a viabilizar esse encontro único. O valor mínimo é de R$ 100,00 por participante.</span>
-                            </li>
-                            <li class="flex items-start">
-                                <span class="inline-block w-2 h-2 bg-amber-400 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                <span><strong>Inscrição individual:</strong> Cada pessoa deve fazer sua própria inscrição, incluindo crianças e acompanhantes. Caso alguém queira te acompanhar, essa pessoa deve preencher a própria inscrição. Esse encontro é sobre valorizar cada pessoa individualmente!</span>
-                            </li>
+                            @endforeach
                         </ul>
                     </div>
 
@@ -311,7 +297,7 @@
                         <input type="checkbox" name="terms_accepted" value="1" x-model="formData.terms_accepted"
                                class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mt-0.5">
                         <span class="ml-3 text-sm text-gray-700 leading-relaxed">
-                            Declaro que as informações são verdadeiras. Estou ciente de que o evento ocorre em ambiente familiar, comprometendo-me a respeitar os valores e regras da casa. Autorizo o uso de minha imagem/voz e o tratamento de dados conforme a LGPD.
+                            {{ config('inscriptions.terms_acceptance') }}
                         </span>
                     </label>
 

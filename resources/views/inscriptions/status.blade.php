@@ -260,7 +260,7 @@
                                 Copiar chave Pix
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">Meu sonho era fazer uma bilheteria que subvertesse a lógica do entretenimento e nos colocasse no campo da arte, no fluxo da dádiva. Assim, essa é uma oportunidade para você deixar fluir a generosidade! Esse encontro tem valor inestimável e o preço é sugerido: R$ 100,00 (cem reais). Contribua conforme mandar seu coração, segundo as suas condições e recursos.</p>
+                        <p class="text-xs text-gray-500 mt-2">{{ config('inscriptions.contribution_note') }}</p>
                     </div>
                     @endif
 

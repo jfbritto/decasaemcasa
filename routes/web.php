@@ -26,6 +26,10 @@ Route::get('/inscricao/{token}/comprovante-enviado', [InscriptionController::cla
 Route::post('/inscricao/{token}/solicitacao-social', [InscriptionController::class, 'submitSocialRequest'])->name('inscricao.solicitacao-social');
 Route::post('/inscricao/{token}/cancelar', [InscriptionController::class, 'cancel'])->name('inscricao.cancel');
 
+// Páginas que as lojas pedem para o app (spec 2026-11-08-app-mobile-design, AM36 e AM37)
+Route::view('/privacidade', 'pages.privacy')->name('privacidade');
+Route::view('/app/excluir-conta', 'pages.account-deletion')->name('app.excluir-conta');
+
 // Preview de Emails (apenas em ambiente local)
 if (app()->environment('local')) {
     Route::get('/email-preview/{template}', function (string $template) {

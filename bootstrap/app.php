@@ -36,9 +36,12 @@ $app->singleton(
     App\Console\Kernel::class
 );
 
+// O Handler do app (o do framework com o JSON da API do app, spec
+// 2026-11-08-app-mobile-design, AM9 e AM12). Para a web nada muda: os
+// $dontFlash dele são os mesmos do framework.
 $app->singleton(
     Illuminate\Contracts\Debug\ExceptionHandler::class,
-    Illuminate\Foundation\Exceptions\Handler::class
+    App\Exceptions\Handler::class
 );
 
 /*

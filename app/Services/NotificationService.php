@@ -6,13 +6,16 @@ use App\Models\Event;
 use App\Models\Inscription;
 use App\Models\Notification;
 use App\Models\User;
+use App\Notifications\Push\ParticipantPush;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
     public function __construct(
-        private readonly WhatsAppService $whatsAppService
+        private readonly WhatsAppService $whatsAppService,
+        // Push do app ao lado do e-mail (spec 2026-11-08-app-mobile-design, AM21 e AM22)
+        private readonly ParticipantPush $push,
     ) {}
 
     public function sendEmail(string $to, string $subject, string $message, ?User $user = null, ?string $channel = null, array $metadata = [], ?string $view = null, array $viewData = []): bool
@@ -100,6 +103,8 @@ class NotificationService
      */
     public function notifyInscriptionReceived(Inscription $inscription): void
     {
+        $this->push->received($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -138,6 +143,8 @@ class NotificationService
      */
     public function notifyInscriptionApproved(Inscription $inscription): void
     {
+        $this->push->approved($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -187,6 +194,8 @@ class NotificationService
      */
     public function notifyInscriptionWaitlisted(Inscription $inscription): void
     {
+        $this->push->waitlisted($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -224,6 +233,8 @@ class NotificationService
      */
     public function notifyInscriptionExpired(Inscription $inscription): void
     {
+        $this->push->expired($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -261,6 +272,8 @@ class NotificationService
      */
     public function notifyInscriptionRejected(Inscription $inscription): void
     {
+        $this->push->rejected($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -298,6 +311,8 @@ class NotificationService
      */
     public function notifyInscriptionCancelledByAdmin(Inscription $inscription): void
     {
+        $this->push->cancelledByAdmin($inscription);
+
         $event = $inscription->event;
 
         $subject = 'Inscrição cancelada - De Casa em Casa';
@@ -328,6 +343,8 @@ class NotificationService
 
     public function notifyInscriptionCancelled(Inscription $inscription): void
     {
+        $this->push->cancelledByParticipant($inscription);
+
         $event = $inscription->event;
 
         // Email
@@ -363,6 +380,8 @@ class NotificationService
      */
     public function notifyInscriptionConfirmed(Inscription $inscription): void
     {
+        $this->push->confirmed($inscription);
+
         $inscription->load('event');
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
@@ -410,6 +429,8 @@ class NotificationService
      */
     public function notifySocialRequestSubmitted(Inscription $inscription): void
     {
+        $this->push->socialSubmitted($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -445,6 +466,8 @@ class NotificationService
      */
     public function notifySocialRequestApproved(Inscription $inscription): void
     {
+        $this->push->socialApproved($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
         $amountFormatted = 'R$ '.number_format((float) $inscription->social_request_amount, 2, ',', '.');
@@ -492,6 +515,8 @@ class NotificationService
      */
     public function notifySocialRequestRejected(Inscription $inscription): void
     {
+        $this->push->socialRejected($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -532,6 +557,8 @@ class NotificationService
      */
     public function notifyInscriptionMigrated(Inscription $inscription, Event $destinationEvent, string $originEventName): void
     {
+        $this->push->migrated($inscription, $destinationEvent);
+
         $statusUrl = route('inscricao.status', $inscription->token);
 
         $subject = 'Sua inscrição foi transferida - De Casa em Casa';
@@ -554,6 +581,8 @@ class NotificationService
      */
     public function notifyEventFull(Inscription $inscription): void
     {
+        $this->push->eventFull($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -589,6 +618,8 @@ class NotificationService
      */
     public function notifyCustomMessage(Inscription $inscription, string $subject, string $body): void
     {
+        $this->push->customMessage($inscription, $subject, $body);
+
         $event = $inscription->event;
 
         $this->sendEmail(
@@ -601,6 +632,15 @@ class NotificationService
             'emails.inscription-custom-message',
             ['inscription' => $inscription, 'event' => $event, 'body' => $body, 'subject' => $subject]
         );
+    }
+
+    /**
+     * O aviso do app do lembrete de comprovante, que o painel e o comando
+     * inscriptions:send-payment-reminders mandam por e-mail direto (AM45).
+     */
+    public function pushPaymentReminder(Inscription $inscription): void
+    {
+        $this->push->paymentReminder($inscription);
     }
 
     private function logNotification(string $type, string $channel, string $recipient, ?string $subject, string $message, ?User $user, array $metadata, string $status, ?string $errorMessage = null): void

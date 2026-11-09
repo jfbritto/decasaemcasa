@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -62,6 +63,22 @@ class Inscription extends Model
                 $inscription->token = Str::random(64);
             }
         });
+    }
+
+    // Scopes
+
+    /**
+     * As inscrições de um participante do app: as do mesmo e-mail (spec
+     * 2026-11-08-app-mobile-design, AM2), sem caixa e sem espaços, mas com
+     * acento: a coluna é utf8mb4_unicode_ci, que também ignora acentos, então
+     * a comparação é binária ("marïa@" nunca é "maria@"). Sem o índice do
+     * e-mail de propósito: o formulário da web não apara a entrada, e um
+     * espaço no começo não casaria pelo índice. A tabela é de centenas de
+     * linhas.
+     */
+    public function scopeOwnedBy(Builder $query, Participant $participant): Builder
+    {
+        return $query->whereRaw('LOWER(TRIM(email)) COLLATE utf8mb4_bin = ?', [$participant->email]);
     }
 
     // Relationships

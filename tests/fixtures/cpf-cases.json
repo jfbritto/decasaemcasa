@@ -1,0 +1,20 @@
+{
+  "_about": "Validação do CPF: a única regra que o app também aplica (spec 2026-11-08-app-mobile-design, AM30). Lida pelo PHPUnit (tests/Unit/CpfCasesTest.php, App\\Inscriptions\\InscriptionRules::validCpf) e pelo Jest (mobile/src/domain/__tests__/cpf.test.ts). CPFs fictícios, gerados só para teste.",
+  "cases": [
+    { "input": "529.982.247-25", "valid": true, "note": "com máscara" },
+    { "input": "52998224725", "valid": true, "note": "só dígitos" },
+    { "input": "111.444.777-35", "valid": true },
+    { "input": " 529 982 247 25 ", "valid": true, "note": "espaços são ignorados" },
+    { "input": "123.456.789-09", "valid": true },
+    { "input": "000.000.001-91", "valid": true, "note": "primeiro dígito verificador com resto menor que 2" },
+    { "input": "529.982.247-24", "valid": false, "note": "segundo dígito errado" },
+    { "input": "529.982.247-15", "valid": false, "note": "primeiro dígito errado" },
+    { "input": "123.456.789-00", "valid": false },
+    { "input": "111.111.111-11", "valid": false, "note": "todos iguais" },
+    { "input": "000.000.000-00", "valid": false, "note": "todos iguais" },
+    { "input": "5299822472", "valid": false, "note": "10 dígitos" },
+    { "input": "529982247255", "valid": false, "note": "12 dígitos" },
+    { "input": "", "valid": false },
+    { "input": "abc.def.ghi-jk", "valid": false }
+  ]
+}
