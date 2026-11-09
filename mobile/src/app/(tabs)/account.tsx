@@ -114,13 +114,27 @@ export default function AccountScreen() {
         <AppText variant="caption" center>
           {`De Casa em Casa ${Constants.expoConfig?.version ?? ''}`.trim()}
         </AppText>
-        <AppText variant="caption" center color={colors.textFaint}>
-          Feito com carinho pela HelpFlux
+        <AppText variant="caption" center>
+          {'Desenvolvido em casa por '}
+          <AppText
+            variant="caption"
+            color={brand[700]}
+            style={styles.creditLink}
+            accessibilityRole="link"
+            accessibilityHint="Abre o site da HelpFlux"
+            onPress={() => void Linking.openURL(CREDIT_URL)}
+            testID="credit-link"
+          >
+            HelpFlux
+          </AppText>
         </AppText>
       </View>
     </Screen>
   );
 }
+
+/** O crédito do rodapé: o site da HelpFlux. */
+const CREDIT_URL = 'https://helpflux.com.br/';
 
 function MenuRow({ icon, label, onPress }: { icon: ComponentProps<typeof Ionicons>['name']; label: string; onPress: () => void }) {
   return (
@@ -135,6 +149,9 @@ function MenuRow({ icon, label, onPress }: { icon: ComponentProps<typeof Ionicon
 }
 
 const styles = StyleSheet.create({
+  creditLink: {
+    textDecorationLine: 'underline',
+  },
   identity: {
     flexDirection: 'row',
     alignItems: 'center',

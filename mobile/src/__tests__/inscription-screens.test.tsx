@@ -2,7 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { act, fireEvent, screen } from 'expo-router/testing-library';
-import { Alert } from 'react-native';
+import { Alert, Linking } from 'react-native';
 
 import { ApiError } from '@/services/api';
 import * as authService from '@/services/auth';
@@ -388,5 +388,16 @@ describe('Perfil', () => {
     expect(screen.getByText('Política de privacidade')).toBeOnTheScreen();
     expect(screen.getByText('Falar com a equipe')).toBeOnTheScreen();
     expect(screen.queryByTestId('delete-account')).not.toBeOnTheScreen();
+  });
+
+  it('o crédito "Desenvolvido em casa por HelpFlux" abre o site da HelpFlux', async () => {
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    await renderApp('/account');
+
+    expect(screen.getByText(/^Desenvolvido em casa por HelpFlux$/)).toBeOnTheScreen();
+    await fireEvent.press(screen.getByTestId('credit-link'));
+
+    expect(openURL).toHaveBeenCalledWith('https://helpflux.com.br/');
+    openURL.mockRestore();
   });
 });
