@@ -35,7 +35,7 @@ npx expo lint
 ## Estrutura
 
 ```text
-src/app/          rotas (Expo Router): (tabs) Encontros, Minhas inscrições e Perfil;
+src/app/          rotas (Expo Router): (tabs) Encontros, Inscrições, Avisos e Perfil;
                   events/[id], events/[id]/register, inscriptions/[id], inscriptions/[id]/social, login
 src/components/   telas em pedaços (cartões, prazo, Pix, endereço) e ui/ (texto, botão, campo)
 src/domain/       regras puras: CPF, máscaras, formulário, textos de cada estado

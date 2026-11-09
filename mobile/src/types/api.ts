@@ -81,6 +81,22 @@ export type Inscription = {
   status_url: string;
 };
 
+/** Um aviso da aba "Avisos" (o par de um e-mail recebido; AM41 a AM43). */
+export type AppNotification = {
+  id: number;
+  kind: string;
+  title: string;
+  body: string;
+  inscription_id: number | null;
+  read: boolean;
+  created_at: string | null;
+};
+
+export type NotificationList = {
+  data: AppNotification[];
+  unread_count: number;
+};
+
 export type AppConfig = {
   manifesto: string;
   terms: { title: string; text: string }[];

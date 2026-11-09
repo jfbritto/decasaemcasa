@@ -4,6 +4,7 @@ import {
   formatDeadline,
   formatLongDate,
   formatMoney,
+  formatRelative,
   formatRemaining,
   formatShortDate,
   saoPauloParts,
@@ -64,5 +65,25 @@ describe('formatMoney e vagas', () => {
   it('singular e plural', () => {
     expect(spotsLabel(1)).toBe('1 vaga restante');
     expect(spotsLabel(4)).toBe('4 vagas restantes');
+  });
+});
+
+describe('formatRelative', () => {
+  const now = new Date('2026-11-09T15:00:00Z'); // 12h00 em Brasília
+
+  it.each([
+    ['2026-11-09T14:59:30Z', 'agora'],
+    ['2026-11-09T14:55:00Z', 'há 5 min'],
+    ['2026-11-09T12:00:00Z', 'há 3 h'],
+    ['2026-11-09T03:30:00Z', 'há 11 h'],
+    ['2026-11-09T02:30:00Z', 'ontem às 23h30'],
+    ['2026-11-08T12:05:00Z', 'ontem às 09h05'],
+    ['2026-11-01T22:10:00Z', '01/11 às 19h10'],
+  ])('%s', (iso, expected) => {
+    expect(formatRelative(iso, now)).toBe(expected);
+  });
+
+  it('sem data, nada', () => {
+    expect(formatRelative(null, now)).toBe('');
   });
 });

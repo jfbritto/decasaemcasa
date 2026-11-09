@@ -16,6 +16,11 @@ jest.mock('@/services/auth', () => ({
   deleteAccount: jest.fn(),
   deviceName: () => 'Celular de teste',
 }));
+jest.mock('@/services/notifications', () => ({
+  fetchNotifications: jest.fn(async () => ({ data: [], unread_count: 0 })),
+  markNotificationRead: jest.fn(async () => undefined),
+  markAllNotificationsRead: jest.fn(async () => undefined),
+}));
 jest.mock('@/services/events', () => ({ fetchEvents: jest.fn(), fetchEvent: jest.fn(), fetchConfig: jest.fn() }));
 jest.mock('@/services/inscriptions', () => ({ fetchInscriptions: jest.fn(), fetchInscription: jest.fn() }));
 

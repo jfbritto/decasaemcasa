@@ -103,6 +103,8 @@ class NotificationService
      */
     public function notifyInscriptionReceived(Inscription $inscription): void
     {
+        $this->push->received($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -341,6 +343,8 @@ class NotificationService
 
     public function notifyInscriptionCancelled(Inscription $inscription): void
     {
+        $this->push->cancelledByParticipant($inscription);
+
         $event = $inscription->event;
 
         // Email
@@ -425,6 +429,8 @@ class NotificationService
      */
     public function notifySocialRequestSubmitted(Inscription $inscription): void
     {
+        $this->push->socialSubmitted($inscription);
+
         $event = $inscription->event;
         $statusUrl = route('inscricao.status', $inscription->token);
 
@@ -626,6 +632,15 @@ class NotificationService
             'emails.inscription-custom-message',
             ['inscription' => $inscription, 'event' => $event, 'body' => $body, 'subject' => $subject]
         );
+    }
+
+    /**
+     * O aviso do app do lembrete de comprovante, que o painel e o comando
+     * inscriptions:send-payment-reminders mandam por e-mail direto (AM45).
+     */
+    public function pushPaymentReminder(Inscription $inscription): void
+    {
+        $this->push->paymentReminder($inscription);
     }
 
     private function logNotification(string $type, string $channel, string $recipient, ?string $subject, string $message, ?User $user, array $metadata, string $status, ?string $errorMessage = null): void

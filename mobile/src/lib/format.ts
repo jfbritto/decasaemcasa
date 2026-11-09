@@ -73,6 +73,27 @@ export function formatRemaining(ms: number): string | null {
   return `${h > 0 ? `${h}h ` : ''}${h > 0 ? pad(m) : m}min ${pad(s)}s`;
 }
 
+/**
+ * Quando um aviso chegou, como a pessoa lê: "agora", "há 5 min", "há 3 h",
+ * "ontem às 19h05" ou "14/11 às 09h30" (dias no horário de Brasília).
+ */
+export function formatRelative(iso: string | null | undefined, now: Date = new Date()): string {
+  const p = saoPauloParts(iso);
+  if (!p || !iso) return '';
+  const diff = now.getTime() - Date.parse(iso);
+  if (diff < 60_000) return 'agora';
+  if (diff < 60 * 60_000) return `há ${Math.floor(diff / 60_000)} min`;
+
+  const today = saoPauloParts(now.toISOString())!;
+  const dayNumber = (x: { year: number; month: number; day: number }) => Date.UTC(x.year, x.month, x.day) / 86_400_000;
+  const daysAgo = dayNumber(today) - dayNumber(p);
+  const time = `${pad(p.hour)}h${pad(p.minute)}`;
+
+  if (daysAgo === 0) return `há ${Math.floor(diff / (60 * 60_000))} h`;
+  if (daysAgo === 1) return `ontem às ${time}`;
+  return `${pad(p.day)}/${pad(p.month + 1)} às ${time}`;
+}
+
 /** "R$ 35,50" a partir de "35.50" ou 35.5. */
 export function formatMoney(value: string | number | null | undefined): string {
   const amount = typeof value === 'string' ? Number(value) : value;

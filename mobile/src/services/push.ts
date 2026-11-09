@@ -152,25 +152,41 @@ export async function forgetPushToken(): Promise<void> {
   }
 }
 
-/** O id da inscrição que um push leva (AM24), ou null. */
-export function inscriptionIdOf(data: unknown): number | null {
+function positiveIdOf(data: unknown, key: string): number | null {
   if (typeof data !== 'object' || data === null) return null;
-  const raw = (data as Record<string, unknown>).inscription_id;
+  const raw = (data as Record<string, unknown>)[key];
   const id = typeof raw === 'string' ? Number(raw) : raw;
   return typeof id === 'number' && Number.isInteger(id) && id > 0 ? id : null;
 }
 
+/** O id da inscrição que um push leva (AM24), ou null. */
+export function inscriptionIdOf(data: unknown): number | null {
+  return positiveIdOf(data, 'inscription_id');
+}
+
+/** O id do aviso da aba "Avisos" que um push leva (AM44), ou null. */
+export function notificationIdOf(data: unknown): number | null {
+  return positiveIdOf(data, 'notification_id');
+}
+
+export type PushListeners = {
+  /** O toque num push (o que abriu o app e os seguintes). */
+  onTap: (data: unknown) => void;
+  /** Um push que chegou com o app aberto. */
+  onReceived: () => void;
+};
+
 /**
- * Mostra o push com o app aberto e entrega o toque (o que abriu o app e os
- * seguintes) a `onTap`. Devolve a função que para tudo. Nunca lança.
+ * Mostra o push com o app aberto e entrega o toque e a chegada aos ouvintes.
+ * Devolve a função que para tudo. Nunca lança.
  */
-export function listenToPush(onTap: (data: unknown) => void): () => void {
+export function listenToPush(listeners: PushListeners): () => void {
   const module = availableModule();
   if (!module) return () => undefined;
   const subscriptions: { remove: () => void }[] = [];
   const take = (response: import('expo-notifications').NotificationResponse | null) => {
     if (!response || response.actionIdentifier !== module.DEFAULT_ACTION_IDENTIFIER) return;
-    onTap(response.notification.request.content.data);
+    listeners.onTap(response.notification.request.content.data);
   };
   try {
     module.setNotificationHandler({
@@ -184,6 +200,7 @@ export function listenToPush(onTap: (data: unknown) => void): () => void {
     take(module.getLastNotificationResponse());
     module.clearLastNotificationResponse();
     subscriptions.push(module.addNotificationResponseReceivedListener(take));
+    subscriptions.push(module.addNotificationReceivedListener(() => listeners.onReceived()));
   } catch (error) {
     if (__DEV__) console.warn('[push] não foi possível ouvir os avisos', error);
   }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\ConfigController;
 use App\Http\Controllers\Api\V1\EventController;
 use App\Http\Controllers\Api\V1\InscriptionController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PushTokenController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('inscriptions/{id}/payment-proof', [InscriptionController::class, 'uploadPaymentProof'])->name('inscriptions.payment-proof');
         Route::post('inscriptions/{id}/social-request', [InscriptionController::class, 'submitSocialRequest'])->name('inscriptions.social-request');
         Route::post('inscriptions/{id}/cancel', [InscriptionController::class, 'cancel'])->name('inscriptions.cancel');
+
+        // A aba "Avisos" (AM41 a AM43)
+        Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::post('notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
         Route::post('push-tokens', [PushTokenController::class, 'store'])->name('push-tokens.store');
         Route::delete('push-tokens/{token}', [PushTokenController::class, 'destroy'])

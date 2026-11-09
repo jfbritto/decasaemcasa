@@ -70,12 +70,14 @@ class Participant extends Model
 
     /**
      * Exclui a conta do app (AM8): o participante, os tokens de acesso, os de
-     * push (cascade) e os códigos de login. As inscrições ficam com a equipe.
+     * push (cascade), os códigos de login e os avisos da aba "Avisos". As
+     * inscrições ficam com a equipe.
      */
     public function deleteAccount(): void
     {
         $this->tokens()->delete();
         ParticipantLoginCode::where('email', $this->email)->delete();
+        ParticipantNotification::where('email', $this->email)->delete();
         $this->delete();
     }
 }

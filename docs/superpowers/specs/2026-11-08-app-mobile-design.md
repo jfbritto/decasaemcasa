@@ -119,18 +119,40 @@ os e-mails continuam iguais.
 - **AM21. O push nasce no `NotificationService`**, ao lado do e-mail, e vai
   pela fila (job `SendParticipantPush`): na produção, o `queue:work` do cron
   de cada minuto. Push é conveniência: falha de push nunca impede o e-mail.
-- **AM22. Recebem push** as mudanças feitas pela equipe: aprovação, fila de
-  espera, prazo vencido, não aprovação, cancelamento pela equipe,
-  confirmação, contribuição social aprovada ou não, transferência de
-  encontro, vagas esgotadas e mensagem personalizada. O que o próprio
-  participante fez (inscrição recebida, pedido social, cancelamento) não
-  gera push.
+- **AM22. Todo e-mail ao participante vira aviso do app** (09/11/2026, pedido
+  do João: "quando ela receber o e-mail também recebe a push"): inscrição
+  recebida, aprovação, lembrete de comprovante (botão do painel e comando),
+  fila de espera, prazo vencido, não aprovação, cancelamento pela equipe e
+  pela própria pessoa, confirmação, pedido de contribuição social recebido,
+  aprovado ou não, transferência, vagas esgotadas e mensagem personalizada.
+  O reenvio de um e-mail que falhou (painel) não duplica o aviso.
 - **AM23. Cliente do Expo** copiado do HelpCheck (`ExpoPushClient`: lotes de
   100, `EXPO_ACCESS_TOKEN` opcional, nunca chama a rede em teste). Ticket com
   `DeviceNotRegistered` apaga o token na hora.
 - **AM24. O push leva `{inscription_id, kind}`**; o toque abre a inscrição.
 - **AM25. Textos de push sem travessão, com "seu lugar na sala"** e sem
   prometer nada por WhatsApp (memória de copy do projeto).
+
+## Aba "Avisos" (09/11/2026)
+
+- **AM41. Um aviso por e-mail**, em `participant_notifications` (e-mail em
+  binário, como AM2; tipo, título, texto curto, inscrição, lido em). Gravado
+  mesmo para quem ainda não tem o app: ao entrar, a pessoa encontra o
+  histórico das inscrições do e-mail dela.
+- **AM42. `GET /api/v1/notifications`**: os 50 mais recentes e quantos não
+  foram lidos (`unread_count`, o número da aba).
+  `POST /notifications/{id}/read` e `POST /notifications/read-all`. Aviso de
+  outro e-mail dá 404.
+- **AM43. No app, a aba "Avisos"** (entre "Inscrições" e "Perfil") com o
+  número de não lidos; o toque marca como lido na hora e abre a inscrição;
+  "Marcar todos como lidos"; o cartão "Ativar avisos" no topo para quem ainda
+  não ligou o push.
+- **AM44. O push leva `notification_id`** além de `inscription_id` e `kind`;
+  o toque marca o aviso como lido. Push que chega com o app aberto atualiza
+  a aba e as inscrições na hora.
+- **AM45. O push só sai para quem instalou o app e ativou os avisos**
+  (token registrado); o aviso da aba existe sempre.
+- **AM46. Excluir a conta apaga também os avisos.**
 
 ## App (`mobile/`)
 

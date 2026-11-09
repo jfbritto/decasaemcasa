@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Inscription;
+use App\Models\ParticipantNotification;
 use App\Models\ParticipantPushToken;
 use App\Notifications\Push\ExpoPushClient;
 use Illuminate\Bus\Queueable;
@@ -12,8 +12,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * O push de uma mudança na inscrição, para os aparelhos do participante dono
- * dela (spec 2026-11-08-app-mobile-design, AM21 a AM24). Vai pela fila: na
+ * O push de um aviso do app, para os aparelhos do dono do e-mail (spec
+ * 2026-11-08-app-mobile-design, AM21 a AM24 e AM44). Vai pela fila: na
  * produção, o queue:work do cron de cada minuto.
  *
  * Uma tentativa só: o cliente do Expo já tenta de novo o que é passageiro, e
@@ -26,22 +26,19 @@ class SendParticipantPush implements ShouldQueue
     public int $tries = 1;
 
     public function __construct(
-        public readonly int $inscriptionId,
-        public readonly string $kind,
-        public readonly string $title,
-        public readonly string $body,
+        public readonly int $notificationId,
     ) {}
 
     public function handle(ExpoPushClient $client): void
     {
-        $inscription = Inscription::find($this->inscriptionId);
+        $notification = ParticipantNotification::find($this->notificationId);
 
-        if (! $inscription) {
+        if (! $notification) {
             return;
         }
 
         $tokens = ParticipantPushToken::query()
-            ->whereHas('participant', fn ($query) => $query->where('email', mb_strtolower(trim($inscription->email))))
+            ->whereHas('participant', fn ($query) => $query->where('email', $notification->email))
             ->get();
 
         if ($tokens->isEmpty()) {
@@ -50,13 +47,14 @@ class SendParticipantPush implements ShouldQueue
 
         $messages = $tokens->map(fn (ParticipantPushToken $token) => [
             'to' => $token->token,
-            'title' => $this->title,
-            'body' => $this->body,
+            'title' => $notification->title,
+            'body' => $notification->body,
             'sound' => 'default',
             'channelId' => 'default',
             'data' => [
-                'inscription_id' => $this->inscriptionId,
-                'kind' => $this->kind,
+                'notification_id' => $notification->id,
+                'inscription_id' => $notification->inscription_id,
+                'kind' => $notification->kind,
             ],
         ])->values()->all();
 

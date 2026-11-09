@@ -35,4 +35,5 @@ export const queryKeys = {
   event: (id: number) => ['events', id] as const,
   inscriptions: ['inscriptions'] as const,
   inscription: (id: number) => ['inscriptions', id] as const,
+  notifications: ['notifications'] as const,
 };

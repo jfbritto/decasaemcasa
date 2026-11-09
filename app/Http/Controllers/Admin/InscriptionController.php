@@ -341,6 +341,8 @@ class InscriptionController extends Controller
                 'emails.payment-reminder',
                 ['inscription' => $inscription, 'event' => $event, 'statusUrl' => $statusUrl]
             );
+            // O aviso do app (push e aba "Avisos") ao lado do e-mail
+            $this->notificationService->pushPaymentReminder($inscription);
 
             // WhatsApp
             $wa = "Olá {$inscription->full_name}! Lembramos que sua participação no encontro *De Casa em Casa* em *{$event->city}* foi aprovada. ";

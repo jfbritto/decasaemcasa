@@ -5,26 +5,40 @@ namespace App\Notifications\Push;
 use App\Jobs\SendParticipantPush;
 use App\Models\Event;
 use App\Models\Inscription;
+use App\Models\ParticipantNotification;
 use App\Models\ParticipantPushToken;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
- * Os textos e o disparo do push de cada mudança feita pela equipe (spec
- * 2026-11-08-app-mobile-design, AM22 e AM25). Chamado pelo
- * NotificationService ao lado do e-mail. Sem travessão, com "seu lugar na
- * sala" e sem prometer nada por WhatsApp.
+ * O aviso do app que acompanha cada e-mail ao participante (spec
+ * 2026-11-08-app-mobile-design, AM21, AM22, AM25 e AM41 a AM46): fica na aba
+ * "Avisos" e vira push nos aparelhos de quem ativou os avisos. Chamado pelo
+ * NotificationService ao lado do e-mail (e pelos lembretes de comprovante).
+ * Sem travessão, com "seu lugar na sala" e sem prometer nada por WhatsApp.
  *
- * Só põe o job na fila quando o dono da inscrição tem aparelho registrado:
- * a maioria das pessoas não tem o app, e a fila não precisa saber delas.
- * Nunca lança: push é conveniência e nunca impede o e-mail.
+ * O aviso é gravado mesmo sem aparelho (quem instalar depois encontra o
+ * histórico); o job do push só entra na fila quando o dono tem aparelho.
+ * Nunca lança: o aviso é conveniência e nunca impede o e-mail.
  */
 final class ParticipantPush
 {
+    public function received(Inscription $inscription): void
+    {
+        $this->send($inscription, 'received', 'Recebemos sua inscrição',
+            "Sua história para o encontro em {$this->city($inscription)} chegou. A equipe vai ler com carinho e avisamos assim que tiver novidade.");
+    }
+
     public function approved(Inscription $inscription): void
     {
         $this->send($inscription, 'approved', 'Sua participação foi aprovada!',
             "Envie o comprovante em até {$inscription->payment_deadline_label} para garantir seu lugar na sala em {$this->city($inscription)}.");
+    }
+
+    public function paymentReminder(Inscription $inscription): void
+    {
+        $this->send($inscription, 'payment_reminder', 'Falta o seu comprovante',
+            "Sua participação em {$this->city($inscription)} está aprovada. Envie o comprovante do Pix para garantir seu lugar na sala.");
     }
 
     public function waitlisted(Inscription $inscription): void
@@ -51,10 +65,22 @@ final class ParticipantPush
             "Sua inscrição no encontro em {$this->city($inscription)} foi cancelada pela equipe.");
     }
 
+    public function cancelledByParticipant(Inscription $inscription): void
+    {
+        $this->send($inscription, 'cancelled_by_participant', 'Inscrição cancelada',
+            "Sua inscrição no encontro em {$this->city($inscription)} foi cancelada, como você pediu. Esperamos te ver em outra casa!");
+    }
+
     public function confirmed(Inscription $inscription): void
     {
         $this->send($inscription, 'confirmed', 'Confirmado! Prepare o coração',
             "Seu lugar na sala em {$this->city($inscription)} está garantido. Veja o endereço e o horário no app.");
+    }
+
+    public function socialSubmitted(Inscription $inscription): void
+    {
+        $this->send($inscription, 'social_submitted', 'Recebemos seu pedido de contribuição social',
+            'A equipe vai analisar e logo responde. Enquanto isso, o prazo do comprovante fica pausado.');
     }
 
     public function socialApproved(Inscription $inscription): void
@@ -95,15 +121,25 @@ final class ParticipantPush
     private function send(Inscription $inscription, string $kind, string $title, string $body): void
     {
         try {
+            $email = mb_strtolower(trim((string) $inscription->email));
+
+            $notification = ParticipantNotification::create([
+                'email' => $email,
+                'inscription_id' => $inscription->id,
+                'kind' => $kind,
+                'title' => $title,
+                'body' => $body,
+            ]);
+
             $hasDevice = ParticipantPushToken::query()
-                ->whereHas('participant', fn ($query) => $query->where('email', mb_strtolower(trim($inscription->email))))
+                ->whereHas('participant', fn ($query) => $query->where('email', $email))
                 ->exists();
 
             if ($hasDevice) {
-                SendParticipantPush::dispatch($inscription->id, $kind, $title, $body);
+                SendParticipantPush::dispatch($notification->id);
             }
         } catch (\Throwable $e) {
-            Log::warning("Falha ao enfileirar o push ({$kind}): ".$e->getMessage());
+            Log::warning("Falha ao gravar ou enfileirar o aviso do app ({$kind}): ".$e->getMessage());
         }
     }
 

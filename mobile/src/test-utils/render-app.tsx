@@ -3,6 +3,7 @@ import { act, renderRouter } from 'expo-router/testing-library';
 import AccountScreen from '@/app/(tabs)/account';
 import EventsScreen from '@/app/(tabs)/index';
 import InscriptionsScreen from '@/app/(tabs)/inscriptions';
+import NotificationsScreen from '@/app/(tabs)/notifications';
 import TabsLayout from '@/app/(tabs)/_layout';
 import RootLayout from '@/app/_layout';
 import EventScreen from '@/app/events/[id]/index';
@@ -21,6 +22,7 @@ export const APP_ROUTES = {
   '(tabs)/_layout': TabsLayout,
   '(tabs)/index': EventsScreen,
   '(tabs)/inscriptions': InscriptionsScreen,
+  '(tabs)/notifications': NotificationsScreen,
   '(tabs)/account': AccountScreen,
   'events/[id]/index': EventScreen,
   'events/[id]/register': RegisterScreen,
