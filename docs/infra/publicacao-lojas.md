@@ -36,8 +36,9 @@ ninguém entra.** A hospedagem é a compartilhada da HostGator (sem CI):
 
 1. Backup do banco pelo cPanel/phpMyAdmin.
 2. Subir o código da `main` (depois do merge do PR) do jeito habitual.
-3. `php artisan migrate` cria `participants`, `participant_login_codes` e
-   `participant_push_tokens`. A `personal_access_tokens` é do próprio Sanctum: se o
+3. `php artisan migrate` cria `participants`, `participant_login_codes`,
+   `participant_push_tokens` e `participant_notifications` (a aba Avisos). Não há pacote
+   novo no Composer nem CSS novo para compilar. A `personal_access_tokens` é do próprio Sanctum: se o
    `migrate` já rodou antes com ele instalado, ela já existe; senão, entra agora.
    Nenhuma tabela existente muda.
 4. No `.env` de produção (nenhuma é obrigatória para o site seguir igual):
