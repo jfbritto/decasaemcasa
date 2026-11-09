@@ -73,13 +73,18 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+  // POST, PUT e PATCH sempre levam corpo, nem que seja {}: o firewall da
+  // hospedagem (HostGator) recusa com 406 o pedido sem Content-Length, e o
+  // fetch do Expo no iOS não manda esse cabeçalho quando o corpo é vazio.
+  const payload = body ?? (method === 'POST' || method === 'PUT' || method === 'PATCH' ? {} : undefined);
+
   let response: Response;
   let text = '';
   try {
     response = await fetch(apiUrl(path), {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: payload === undefined ? undefined : JSON.stringify(payload),
       signal: controller.signal,
     });
     if (response.status !== 204) text = await response.text();

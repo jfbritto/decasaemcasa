@@ -63,7 +63,9 @@ fi
 confere "minhas inscrições (/api/v1/inscriptions)" 200 "$(status -H "$AUTH" "$BASE/api/v1/inscriptions")"
 confere "avisos (/api/v1/notifications)" 200 "$(status -H "$AUTH" "$BASE/api/v1/notifications")"
 
-SAIDA=$(status -X POST -H "$AUTH" "$BASE/api/v1/auth/logout")
+# Com corpo, como o app: o firewall da HostGator recusa com 406 o POST sem
+# Content-Length (o curl -X POST sem --data sai assim).
+SAIDA=$(status -X POST -H "$AUTH" -H 'Content-Type: application/json' --data '{}' "$BASE/api/v1/auth/logout")
 case "$SAIDA" in
   200|204) echo "ok     saiu da conta (token apagado)" ;;
   *) echo "FALHA  sair da conta (veio $SAIDA)"; FALHAS=1 ;;

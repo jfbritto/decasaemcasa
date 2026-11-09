@@ -32,44 +32,65 @@ que você já tem.
 ## 1. Antes de tudo: o servidor em produção
 
 O app de loja fala com a API de produção. **Sem o deploy, o app abre sem encontros e
-ninguém entra.** A hospedagem é a compartilhada da HostGator (sem CI):
+ninguém entra.** Feito em 09/11/2026 (PRs #5 a #7); o roteiro abaixo vale para os
+próximos.
 
-1. Backup do banco pelo cPanel/phpMyAdmin.
-2. Subir o código da `main` (depois do merge do PR) do jeito habitual.
-3. `php artisan migrate --force` (em produção, sem o `--force` o Laravel pede
-   confirmação) cria `participants`, `participant_login_codes`,
-   `participant_push_tokens` e `participant_notifications` (a aba Avisos). Não há pacote
-   novo no Composer nem CSS novo para compilar. A `personal_access_tokens` é do próprio Sanctum: se o
-   `migrate` já rodou antes com ele instalado, ela já existe; senão, entra agora.
-   Nenhuma tabela existente muda. Se o `migrate` atrasar, o site não quebra (o aviso do
-   app que falha só vai para o log), mas o app só funciona com as tabelas.
-4. **`.htaccess`: a regra do cabeçalho `Authorization`.** O app manda o login nesse
-   cabeçalho, e o Apache da hospedagem compartilhada pode descartá-lo antes do PHP: aí o
-   login funciona, mas toda chamada seguinte volta 401. O `.htaccess` está no
-   `.gitignore` e só existe no servidor, então o deploy não o traz. Pelo Gerenciador de
-   Arquivos do cPanel, confira no `.htaccess` que atende o site (o de `public/`, ou o da
-   raiz, se o domínio aponta para a raiz do projeto) as duas linhas do `.htaccess` padrão
-   do Laravel, logo depois de `RewriteEngine On`:
+### Como a produção é de fato
 
-   ```apache
-   RewriteCond %{HTTP:Authorization} .
-   RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+Hospedagem compartilhada da HostGator (plano M, cPanel), sem CI. Visto por SSH em
+09/11/2026:
+
+- O projeto é um clone da `main` em `~/decasaemcasa.omarcosalmeida.com.br`, e a raiz do
+  domínio é a raiz do projeto: o `.htaccess` da raiz repassa para `public/`. Os dois
+  `.htaccess` ficam fora do git. O da raiz tem um bloco do cPanel ("do not edit") que
+  escolhe a versão do PHP.
+- **Configuração e rotas ficam em cache** (`bootstrap/cache/config.php` e
+  `routes-v7.php`). Depois de qualquer `git pull` ou mudança no `.env`, refaça os dois
+  na hora. No deploy do app, o pull com o cache antigo derrubou o `/inscricao` com 500
+  (os textos novos dos termos não estavam no cache).
+- `QUEUE_CONNECTION=sync`: e-mail e push saem na hora, dentro da própria requisição. O
+  cron roda o `schedule:run` a cada 21 minutos, então só a expiração de prazo vencido
+  depende dele (e atrasa até 21 minutos).
+- O servidor repassa o cabeçalho `Authorization` ao Laravel sem regra no `.htaccess`.
+- **Firewall (mod_security):** recusa com 406 o `POST` sem `Content-Length` e qualquer
+  corpo em pedaços (`Transfer-Encoding: chunked`). Por isso o app sempre manda `{}` nos
+  `POST` sem dados (`mobile/src/services/api.ts`), e o upload do comprovante usa o
+  `expo-file-system`, que informa o tamanho no iOS e no Android. `DELETE` passa.
+
+### Deploy
+
+1. Backup do banco, pelo SSH (não mostra a senha) ou pelo phpMyAdmin:
+
+   ```bash
+   E() { grep "^$1=" .env | cut -d= -f2- | sed 's/^"//;s/"$//'; }
+   MYSQL_PWD="$(E DB_PASSWORD)" mysqldump --no-tablespaces --single-transaction -h "$(E DB_HOST)" -u "$(E DB_USERNAME)" "$(E DB_DATABASE)" > ~/backup-decasaemcasa-$(date +%F-%H%M).sql && chmod 600 ~/backup-decasaemcasa-*.sql
    ```
 
-5. No `.env` de produção (nenhuma é obrigatória para o site seguir igual):
-   - `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`: a conta de revisão das lojas (seção 6). De
-     preferência um e-mail seu de verdade, sem nenhuma inscrição: o sistema manda e-mail
-     a cada etapa da inscrição, e para um domínio fictício esses envios falham (sem erro
-     para o revisor, mas como falha no log de notificações e devolução no Resend);
-   - `EXPO_ACCESS_TOKEN`: só se ligar a "enhanced push security" no Expo.
-6. `php artisan config:clear` e `php artisan view:clear` (ou `config:cache`, se for o
-   costume).
-7. Conferir no cPanel o cron `schedule:run` a cada minuto: é ele que roda a fila, e o
-   push vai pela fila.
-8. Do seu computador, na raiz do projeto: `scripts/conferir-api-producao.sh`. Ele abre o
+2. `git pull origin main` e, **logo em seguida**:
+
+   ```bash
+   php artisan migrate --force
+   php artisan config:cache && php artisan route:cache && php artisan view:clear
+   ```
+
+   Em produção, sem o `--force` o Laravel pede confirmação. O composer só precisa rodar
+   se o `composer.lock` mudou; o CSS vai pronto em `public/build`.
+3. Conta de revisão das lojas (seção 6), uma vez: `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`
+   no `.env`, depois `php artisan config:cache`. O e-mail é um seu de verdade e sem
+   nenhuma inscrição: o revisor vê as inscrições desse e-mail, e o sistema manda e-mail a
+   cada etapa. `EXPO_ACCESS_TOKEN` só se ligar a "enhanced push security" no Expo.
+4. Do seu computador, na raiz do projeto: `scripts/conferir-api-producao.sh`. Ele abre o
    formulário da web, as rotas públicas do app e as duas páginas das lojas, entra com a
-   conta de revisão (pede o código sem mostrar na tela), confere as chamadas com login
-   (é aqui que aparece o problema do item 4) e sai da conta no fim.
+   conta de revisão (pede o código sem mostrar na tela), confere as chamadas com login e
+   sai da conta no fim.
+
+Se um dia as chamadas com login voltarem 401 (troca de servidor), falta repassar o
+`Authorization`: no `.htaccess` de `public/`, logo depois de `RewriteEngine On`:
+
+```apache
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+```
 
 ## 2. Push
 
@@ -130,13 +151,17 @@ time).
 
 Os revisores precisam entrar, e o login é por código no e-mail, que eles não recebem.
 
-1. Escolher um e-mail fictício só para isso (ex.: `revisao.app@decasaemcasa.example`),
-   sem nenhuma inscrição real, e um código aleatório de **pelo menos 12 números** (só
+1. Escolher um e-mail de verdade, **sem nenhuma inscrição** (o revisor vê todas as
+   inscrições desse e-mail; se precisar, um apelido do Gmail como `nome+revisao@gmail.com`
+   é outro e-mail para o sistema), e um código aleatório de **pelo menos 12 números** (só
    números: o campo do app é numérico). Com menos, a conta de revisão fica desligada de
    propósito: o código fixo não tem contador de tentativas nem validade, e o limite por
-   e-mail do login é a proteção dele.
-2. Pôr os dois no `.env` de produção: `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`. Para esse
-   e-mail nenhum e-mail sai e o código fixo vale.
+   e-mail do login é a proteção dele. Gerar o código no próprio terminal, sem passar por
+   chat nem documento: `LC_ALL=C tr -dc 0-9 < /dev/urandom | head -c 16; echo`.
+2. Pôr os dois no `.env` de produção: `APP_REVIEW_EMAIL` e `APP_REVIEW_CODE`, e rodar
+   `php artisan config:cache`. Para esse e-mail o código de login não sai por e-mail e
+   o código fixo vale. Feito em 09/11/2026, com um e-mail do João; o código está no
+   gerenciador de senhas dele.
 3. Informar o e-mail e o código como "usuário" e "senha" nos campos de conta de revisão
    do App Store Connect e do Play Console, com as notas em inglês de
    `mobile/store/textos.md`.
@@ -184,9 +209,9 @@ Cada build recebe update só do seu canal e da sua `runtimeVersion` (= `version`
 
 ## 10. O que é seu
 
-1. Merge do PR e deploy do servidor (seção 1), com `APP_REVIEW_EMAIL` e
-   `APP_REVIEW_CODE`.
-2. Autorização da marca (seção 7).
+1. ~~Merge do PR e deploy do servidor (seção 1), com `APP_REVIEW_EMAIL` e
+   `APP_REVIEW_CODE`.~~ Feito em 09/11/2026.
+2. ~~Autorização da marca (seção 7).~~ Feita.
 3. Firebase e a chave FCM V1 (seção 2.1).
 4. `eas build` e `eas submit` (seções 3 a 5).
 5. Subir as imagens prontas de `mobile/store/` (tabela na seção 3 do `textos.md`).
