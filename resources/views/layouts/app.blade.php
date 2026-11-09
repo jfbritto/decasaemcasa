@@ -292,7 +292,7 @@
 
     <footer class="py-6">
         <p class="text-center text-gray-400 text-xs">
-            desenvolvido em casa por <a href="https://instagram.com/bianchijf" target="_blank" class="text-indigo-400 hover:text-indigo-600 transition-colors">@bianchijf</a>
+            desenvolvido em casa por <a href="https://helpflux.com.br/" target="_blank" rel="noopener" class="text-indigo-400 hover:text-indigo-600 transition-colors">HelpFlux</a>
         </p>
     </footer>
 
