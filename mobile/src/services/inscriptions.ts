@@ -1,4 +1,5 @@
-import { apiRequest, UPLOAD_TIMEOUT_MS } from '@/services/api';
+import { apiRequest } from '@/services/api';
+import { apiUpload } from '@/services/api-upload';
 import type { Inscription, InscriptionPayload } from '@/types/api';
 
 // As inscrições do participante (spec 2026-11-08-app-mobile-design, AM11 a
@@ -24,17 +25,12 @@ export type ProofFile = {
   mimeType: 'image/jpeg' | 'image/png' | 'application/pdf';
 };
 
-/**
- * O comprovante como multipart. No React Native, um arquivo do aparelho vai
- * no FormData como { uri, name, type }.
- */
+/** O comprovante como multipart, pelo upload nativo (services/api-upload). */
 export async function uploadPaymentProof(id: number, file: ProofFile): Promise<Inscription> {
-  const form = new FormData();
-  form.append('payment_proof', { uri: file.uri, name: file.name, type: file.mimeType } as unknown as Blob);
-  return apiRequest<Inscription>(`/inscriptions/${id}/payment-proof`, {
-    method: 'POST',
-    form,
-    timeoutMs: UPLOAD_TIMEOUT_MS,
+  return apiUpload<Inscription>(`/inscriptions/${id}/payment-proof`, {
+    uri: file.uri,
+    field: 'payment_proof',
+    mimeType: file.mimeType,
   });
 }
 

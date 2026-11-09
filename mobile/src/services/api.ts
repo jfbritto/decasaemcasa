@@ -14,8 +14,6 @@ export type ApiRequestOptions = {
   method?: HttpMethod;
   /** Vai como JSON. */
   body?: unknown;
-  /** Multipart (o comprovante), enviado como está no lugar de `body`. */
-  form?: FormData;
   /** Desiste depois disso e lança NetworkError. */
   timeoutMs?: number;
   /** Sem o token da sessão (as rotas públicas também aceitam com ele). */
@@ -64,11 +62,12 @@ export function apiUrl(path: string): string {
  * sessão (o token foi revogado, a conta excluída em outro aparelho).
  */
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, form, timeoutMs = DEFAULT_TIMEOUT_MS, anonymous = false } = options;
+  const { method = 'GET', body, timeoutMs = DEFAULT_TIMEOUT_MS, anonymous = false } = options;
   const token = anonymous ? null : currentToken();
 
-  const headers: Record<string, string> = { Accept: 'application/json' };
-  if (!form) headers['Content-Type'] = 'application/json';
+  // Arquivo nunca vai por aqui: o fetch do Expo não aceita o { uri } do
+  // React Native no FormData. Upload é o services/api-upload.
+  const headers: Record<string, string> = { Accept: 'application/json', 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const controller = new AbortController();
@@ -80,11 +79,14 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     response = await fetch(apiUrl(path), {
       method,
       headers,
-      body: form ?? (body === undefined ? undefined : JSON.stringify(body)),
+      body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });
     if (response.status !== 204) text = await response.text();
   } catch (error) {
+    // Em desenvolvimento, o motivo de verdade vai para o console do Metro
+    // (o NetworkError só diz "sem conexão" para a pessoa).
+    if (__DEV__ && process.env.NODE_ENV !== 'test') console.warn(`[api] ${method} ${path} sem resposta:`, error instanceof Error ? error.message : error);
     throw new NetworkError(undefined, { cause: error });
   } finally {
     clearTimeout(timer);

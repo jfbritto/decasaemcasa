@@ -19,6 +19,22 @@ jest.mock('expo-image', () => {
 });
 
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
+
+// O upload nativo do comprovante (services/api-upload): cada teste diz a
+// resposta em uploadMock.
+jest.mock('expo-file-system', () => {
+  const uploadMock = jest.fn(async () => ({ status: 200, body: '{}', headers: {} }));
+  class File {
+    uri: string;
+    constructor(uri: string) {
+      this.uri = uri;
+    }
+    upload(url: string, options: unknown) {
+      return uploadMock.call(this, url, options);
+    }
+  }
+  return { File, UploadType: { BINARY_CONTENT: 0, MULTIPART: 1 }, uploadMock };
+});
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(async () => ({ type: 'opened' })) }));
 
 jest.mock('expo-image-picker', () => ({

@@ -22,7 +22,10 @@ export function Screen({ children, onRefresh, refreshing = false, underHeader, f
   const insets = useSafeAreaInsets();
 
   return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    // No Android do SDK 57 o app é edge-to-edge: a janela não encolhe com o
+    // teclado, então o 'height' sobe o rodapé (visto no emulador: sem ele, o
+    // teclado cobria o botão "Receber código").
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         testID={testID}
         style={styles.root}
@@ -37,6 +40,9 @@ export function Screen({ children, onRefresh, refreshing = false, underHeader, f
       >
         {children}
       </ScrollView>
+      {/* Sem cabeçalho, o conteúdo rola por baixo da barra de status: um
+          fundo creme do tamanho dela deixa o relógio legível. */}
+      {underHeader ? null : <View pointerEvents="none" style={[styles.statusBar, { height: insets.top }]} />}
       {footer ? <View style={[styles.footer, { paddingBottom: insets.bottom + spacing.md }]}>{footer}</View> : null}
     </KeyboardAvoidingView>
   );
@@ -50,6 +56,13 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.lg,
     gap: spacing.lg,
+  },
+  statusBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: colors.bg,
   },
   footer: {
     paddingHorizontal: spacing.lg,

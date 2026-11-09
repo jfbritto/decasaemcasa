@@ -180,6 +180,9 @@ export default function LoginScreen() {
             autoComplete="one-time-code"
             textContentType="oneTimeCode"
             maxLength={CODE_MAX_DIGITS}
+            // O "✓" do teclado numérico envia (visto no emulador: não fazia nada).
+            returnKeyType="done"
+            onSubmitEditing={() => void verify()}
             style={styles.codeInput}
           />
           <View style={styles.links}>
