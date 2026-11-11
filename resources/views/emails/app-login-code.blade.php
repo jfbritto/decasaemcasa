@@ -2,6 +2,9 @@
 
 @section('subject', 'Seu código de acesso - De Casa em Casa')
 
+{{-- Quem pede o código já está no app: sem o bloco das lojas. --}}
+@section('hide_app_links', '1')
+
 @section('badge')
 <span style="display:inline-block; background-color:#fef3c7; color:#92400e; padding:6px 20px; border-radius:20px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
     Código de acesso

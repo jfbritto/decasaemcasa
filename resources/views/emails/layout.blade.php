@@ -88,6 +88,42 @@
                         </td>
                     </tr>
 
+                    <!-- App nas lojas (some no e-mail do código de login, que já é do app) -->
+                    @php
+                        $appStoreUrl = config('services.app_stores.app_store');
+                        $googlePlayUrl = config('services.app_stores.google_play');
+                    @endphp
+                    @sectionMissing('hide_app_links')
+                    @if ($appStoreUrl || $googlePlayUrl)
+                    <tr>
+                        <td style="padding:20px 40px 0;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a2e6e; border-radius:10px;">
+                                <tr>
+                                    <td style="padding:20px; text-align:center;">
+                                        <p style="margin:0 0 8px; color:#e88a2d; font-size:16px; font-weight:800;">
+                                            Acompanhe tudo pelo app
+                                        </p>
+                                        <p style="margin:0 0 14px; color:#dfe4f2; font-size:13px; line-height:1.6;">
+                                            Baixe o app De Casa em Casa e entre com este e-mail: você acompanha suas inscrições, vê cada etapa e recebe os avisos da equipe na hora.
+                                        </p>
+                                        @if ($appStoreUrl)
+                                        <a href="{{ $appStoreUrl }}" target="_blank" style="display:inline-block; margin:4px; background-color:#ffffff; color:#1a2e6e; text-decoration:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:700;">
+                                            Baixar na App Store
+                                        </a>
+                                        @endif
+                                        @if ($googlePlayUrl)
+                                        <a href="{{ $googlePlayUrl }}" target="_blank" style="display:inline-block; margin:4px; background-color:#ffffff; color:#1a2e6e; text-decoration:none; padding:10px 18px; border-radius:8px; font-size:14px; font-weight:700;">
+                                            Baixar no Google Play
+                                        </a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    @endif
+                    @endif
+
                     <!-- Suporte / Contato -->
                     <tr>
                         <td style="padding:20px 40px 0;">

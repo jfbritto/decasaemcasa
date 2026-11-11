@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Inscription;
+use App\Participants\AppPresence;
 use App\Services\AdminPeriodFilter;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function index(AdminPeriodFilter $periodFilter)
+    public function index(AdminPeriodFilter $periodFilter, AppPresence $appPresence)
     {
         // Cards de ação rápida (apenas eventos ativos: published ou draft + filtro de período)
         $activeEventScope = function ($query) use ($periodFilter) {
@@ -88,7 +89,11 @@ class DashboardController extends Controller
                 return $item;
             });
 
+        // Quem usa o app: total geral, sem o filtro de período (spec 2026-11-11-app-no-painel-design, AP8)
+        $app_totals = $appPresence->totals();
+
         return view('admin.dashboard', compact(
+            'app_totals',
             'stats',
             'next_event',
             'active_events',
