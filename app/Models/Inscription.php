@@ -81,6 +81,27 @@ class Inscription extends Model
         return $query->whereRaw('LOWER(TRIM(email)) COLLATE utf8mb4_bin = ?', [$participant->email]);
     }
 
+    /**
+     * Inscrições de quem já entrou no app (spec 2026-11-11-app-no-painel-design,
+     * AP3): a regra do ownedBy, vista do lado da inscrição.
+     */
+    public function scopeUsesApp(Builder $query): Builder
+    {
+        return $query->whereExists(self::participantWithSameEmail());
+    }
+
+    public function scopeDoesNotUseApp(Builder $query): Builder
+    {
+        return $query->whereNotExists(self::participantWithSameEmail());
+    }
+
+    private static function participantWithSameEmail(): \Closure
+    {
+        return fn ($sub) => $sub->selectRaw('1')
+            ->from('participants')
+            ->whereRaw('participants.email = LOWER(TRIM(inscriptions.email)) COLLATE utf8mb4_bin');
+    }
+
     // Relationships
 
     public function event()
