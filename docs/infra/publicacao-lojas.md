@@ -123,6 +123,12 @@ time).
    `cd mobile && npx eas-cli@latest build --platform android --profile preview` (APK).
 3. Lojas: `npx eas-cli@latest build --platform all --profile production`. O EAS cuida das
    credenciais e incrementa `buildNumber` e `versionCode` (`appVersionSource: remote`).
+4. O EAS envia a raiz do git, não só `mobile/`. O `.easignore` da raiz deixa passar só
+   `mobile/` (sem `.env`, `store/` e `node_modules`). Os builds 1.0.0 de 10/11/2026 saíram
+   antes dele e levaram junto a pasta `.claude/worktrees/`, com um `.env.demo`.
+   Para conferir o que sobe, sem gastar build:
+   `npx eas-cli@latest build:inspect --platform android --stage archive --output <pasta vazia> --profile production`.
+   O estágio `pre-build` baixa a keystore para a pasta de saída: apague a pasta depois.
 
 ## 4. iOS: App Store Connect
 

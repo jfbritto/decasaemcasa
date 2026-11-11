@@ -1,0 +1,42 @@
+# O que o EAS Build envia desta máquina (o projeto do app é mobile/).
+#
+# O EAS envia a raiz do git, não só mobile/. Sem este arquivo ele usa os
+# .gitignore, mas não lê os que ficam em pastas com ponto: em 10/11/2026 a
+# pasta .claude/worktrees/ subiu inteira, com um .env.demo dentro. Com este
+# arquivo os .gitignore deixam de valer para o EAS: por isso a lista abaixo
+# deixa passar só mobile/ e repete as regras do mobile/.gitignore.
+
+# Tudo da raiz fica: Laravel, .env, storage (comprovantes), vendor, .claude/.
+/*
+!/mobile
+
+# Dentro de mobile/, o mesmo que o mobile/.gitignore.
+/mobile/node_modules/
+/mobile/.expo/
+/mobile/dist/
+/mobile/web-build/
+/mobile/expo-env.d.ts
+/mobile/.kotlin/
+/mobile/ios/
+/mobile/android/
+/mobile/.env
+/mobile/.env.*
+!/mobile/.env.example
+/mobile/google-services.json
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.tsbuildinfo
+.DS_Store
+
+# Só servem às lojas e aos testes, não ao build.
+/mobile/store/
+/mobile/scripts/
