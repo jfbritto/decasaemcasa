@@ -22,8 +22,10 @@ O app em si não muda, e a API também não.
   com os botões "Baixar na App Store" e "Baixar no Google Play", feitos em
   Tailwind e nas cores da página.
   - O texto é adaptado para a web: "Baixe o app De Casa em Casa e entre com o
-    e-mail da inscrição (**{e-mail}**): você acompanha suas inscrições, vê cada
-    etapa e recebe os avisos da equipe na hora."
+    e-mail que você usou na inscrição: você acompanha suas inscrições, vê cada
+    etapa e recebe os avisos da equipe na hora." O e-mail em si não aparece:
+    a página abre só com o link e hoje não mostra o e-mail, e quem tiver o
+    link não precisa ganhar mais um dado pessoal.
   - Aparece em todos os status da inscrição.
   - Os links vêm de `config('services.app_stores')`, a mesma configuração dos
     e-mails. Um link vazio esconde o botão daquela loja; os dois vazios
