@@ -477,6 +477,28 @@
             @endif
         </div>
 
+        {{-- Acompanhe pelo app (spec 2026-11-11-app-no-painel-design, AP1) --}}
+        @php
+            $appStoreUrl = config('services.app_stores.app_store');
+            $googlePlayUrl = config('services.app_stores.google_play');
+        @endphp
+        @if($appStoreUrl || $googlePlayUrl)
+        <div class="rounded-2xl shadow-lg p-6 mb-6 text-center" style="background-color:#1a2e6e;">
+            <h3 class="text-lg font-bold mb-2" style="color:#e88a2d;">Acompanhe tudo pelo app</h3>
+            <p class="text-sm mb-4" style="color:#dfe4f2;">
+                Baixe o app De Casa em Casa e entre com o e-mail que você usou na inscrição: você acompanha suas inscrições, vê cada etapa e recebe os avisos da equipe na hora.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                @if($appStoreUrl)
+                <a href="{{ $appStoreUrl }}" target="_blank" rel="noopener" class="px-5 py-3 bg-white font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm" style="color:#1a2e6e;">Baixar na App Store</a>
+                @endif
+                @if($googlePlayUrl)
+                <a href="{{ $googlePlayUrl }}" target="_blank" rel="noopener" class="px-5 py-3 bg-white font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm" style="color:#1a2e6e;">Baixar no Google Play</a>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Botão de Cancelamento --}}
         @if(!$inscription->isCancelled() && !$inscription->isRejected() && !$inscription->isConfirmed())
         <div class="bg-white rounded-2xl shadow-lg p-6 mb-6" x-data="{ confirmCancel: false }">
@@ -531,7 +553,7 @@
                 Atendimento: <strong>{{ config('services.support.whatsapp_number') }}</strong>
             </p>
             <p class="text-xs text-gray-500 mt-2">
-                O WhatsApp é só para dúvidas: as atualizações da sua inscrição chegam por e-mail e nesta página.
+                O WhatsApp é só para dúvidas: as atualizações da sua inscrição chegam por e-mail, no app e nesta página.
             </p>
             <p class="text-xs text-gray-400 mt-3">
                 Os e-mails que você recebe são automáticos e não respondemos por lá.
