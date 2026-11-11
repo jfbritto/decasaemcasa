@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
 
         {{-- Linha 1: Cards de ação rápida --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4">
             <a href="{{ route('admin.inscricoes.index', ['status' => 'pendente']) }}" class="bg-yellow-50 border border-yellow-200 rounded-xl shadow p-4 sm:p-5 hover:shadow-md hover:border-yellow-300 transition-all group">
                 <div class="flex items-center justify-between mb-1">
                     <p class="text-sm text-yellow-600 font-medium">Pendentes</p>
@@ -41,6 +41,16 @@
                 <p class="text-3xl font-bold text-green-700">{{ $stats['confirmed'] }}</p>
                 <p class="text-xs text-green-500 mt-1">participações garantidas</p>
             </div>
+        </div>
+
+        {{-- No app (spec 2026-11-11-app-no-painel-design, AP8): total geral, sem o filtro de período --}}
+        <div data-app-totals
+             class="flex flex-wrap items-center justify-between gap-2 bg-white border border-gray-200 rounded-xl shadow px-4 py-3 sm:px-5 mb-8">
+            <p class="text-sm font-medium text-gray-700">No app</p>
+            <p class="text-sm text-gray-600">
+                <strong class="text-gray-900">{{ $app_totals['participants'] }}</strong> {{ $app_totals['participants'] === 1 ? 'pessoa' : 'pessoas' }},
+                <strong class="text-gray-900">{{ $app_totals['with_push'] }}</strong> com avisos ligados
+            </p>
         </div>
 
         {{-- Linha 2: Próximo encontro + Panorama --}}

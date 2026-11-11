@@ -369,6 +369,31 @@
                     @endif
                 </div>
 
+                {{-- App (spec 2026-11-11-app-no-painel-design, AP7) --}}
+                <div class="bg-white rounded-xl shadow p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">App</h2>
+                    @if($appPresenceEntry)
+                        <dl class="space-y-2 text-sm">
+                            <div class="flex justify-between gap-3">
+                                <dt class="text-gray-500">Última entrada</dt>
+                                <dd class="text-gray-900 text-right">{{ $appPresenceEntry->lastLoginAt?->format('d/m/Y H:i') ?? 'sem registro' }}</dd>
+                            </div>
+                            @if($appPresenceEntry->lastUsedAt)
+                            <div class="flex justify-between gap-3">
+                                <dt class="text-gray-500">Último uso</dt>
+                                <dd class="text-gray-900 text-right">{{ $appPresenceEntry->lastUsedAt->format('d/m/Y H:i') }}</dd>
+                            </div>
+                            @endif
+                            <div class="flex justify-between gap-3">
+                                <dt class="text-gray-500">Avisos no celular</dt>
+                                <dd class="text-gray-900 text-right">{{ $appPresenceEntry->pushEnabled() ? 'ligados ('.$appPresenceEntry->platformLabel().')' : 'desligados' }}</dd>
+                            </div>
+                        </dl>
+                    @else
+                        <p class="text-sm text-gray-500">Ainda não entrou no app.</p>
+                    @endif
+                </div>
+
                 {{-- Migrar de Evento --}}
                 @if($availableEvents->count() > 0)
                 <div class="bg-white rounded-xl shadow p-6" x-data="{ showMigrate: false }">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Event;
 use App\Models\Inscription;
+use App\Participants\AppPresence;
 use App\Services\AdminPeriodFilter;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class InscriptionController extends Controller
     /**
      * Lista de inscrições com filtros por encontro, cidade e status.
      */
-    public function index(Request $request, AdminPeriodFilter $periodFilter)
+    public function index(Request $request, AdminPeriodFilter $periodFilter, AppPresence $appPresence)
     {
         $eventStatus = $request->get('event_status', 'active');
         $needsTrashed = in_array($eventStatus, ['deleted', 'all']);
@@ -94,6 +95,13 @@ class InscriptionController extends Controller
             }
         }
 
+        // Filtro por uso do app (spec 2026-11-11-app-no-painel-design, AP6)
+        if ($request->input('app') === 'sim') {
+            $query->usesApp();
+        } elseif ($request->input('app') === 'nao') {
+            $query->doesNotUseApp();
+        }
+
         // Busca por nome
         if ($request->filled('search')) {
             $search = $request->search;
@@ -105,6 +113,7 @@ class InscriptionController extends Controller
         }
 
         $inscriptions = $query->paginate(20)->appends($request->query());
+        $appPresenceByEmail = $appPresence->forEmails($inscriptions->pluck('email'));
 
         $meses = [
             'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -177,13 +186,13 @@ class InscriptionController extends Controller
             'social_pendente' => (clone $countsQuery)->where('social_request_status', 'pendente')->count(),
         ];
 
-        return view('admin.inscriptions.index', compact('inscriptions', 'events', 'counts'));
+        return view('admin.inscriptions.index', compact('inscriptions', 'events', 'counts', 'appPresenceByEmail'));
     }
 
     /**
      * Detalhes de uma inscrição.
      */
-    public function show(Inscription $inscription)
+    public function show(Inscription $inscription, AppPresence $appPresence)
     {
         $inscription->load('event');
 
@@ -198,7 +207,9 @@ class InscriptionController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('admin.inscriptions.show', compact('inscription', 'activityLogs', 'availableEvents'));
+        $appPresenceEntry = $appPresence->forEmail($inscription->email);
+
+        return view('admin.inscriptions.show', compact('inscription', 'activityLogs', 'availableEvents', 'appPresenceEntry'));
     }
 
     /**

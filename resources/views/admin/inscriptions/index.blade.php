@@ -105,10 +105,17 @@
                         <option value="rejeitado" {{ request('social_request') === 'rejeitado' ? 'selected' : '' }}>Pedido social rejeitado</option>
                     </select>
                 </div>
+                <div class="sm:w-36">
+                    <select name="app" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                        <option value="">App: todos</option>
+                        <option value="sim" {{ request('app') === 'sim' ? 'selected' : '' }}>Usa o app</option>
+                        <option value="nao" {{ request('app') === 'nao' ? 'selected' : '' }}>Não usa o app</option>
+                    </select>
+                </div>
                 <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
                     Filtrar
                 </button>
-                @if(request()->hasAny(['search', 'status', 'event_id', 'event_status', 'social_request', 'comprovante']) && !(request()->only(['event_status']) == ['event_status' => 'active'] && !request()->hasAny(['search', 'status', 'event_id', 'social_request', 'comprovante'])))
+                @if(request()->hasAny(['search', 'status', 'event_id', 'event_status', 'social_request', 'comprovante', 'app']) && !(request()->only(['event_status']) == ['event_status' => 'active'] && !request()->hasAny(['search', 'status', 'event_id', 'social_request', 'comprovante', 'app'])))
                     <a href="{{ route('admin.inscricoes.index') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium text-center">
                         Limpar
                     </a>
@@ -312,6 +319,18 @@
                                                 @elseif($inscription->isSocialRequestApproved())
                                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600" title="Contribuição social aprovada">
                                                         Social ✓
+                                                    </span>
+                                                @endif
+                                                @php
+                                                    $presence = $appPresenceByEmail[\App\Models\Participant::normalizeEmail($inscription->email ?? '')] ?? null;
+                                                @endphp
+                                                @if($presence)
+                                                    <span data-app-badge class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-xs font-medium bg-sky-100 text-sky-700"
+                                                          title="{{ $presence->pushEnabled() ? 'Usa o app, avisos ligados ('.$presence->platformLabel().')' : 'Usa o app, avisos desligados' }}">
+                                                        App
+                                                        @if($presence->pushEnabled())
+                                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2a6 6 0 0 0-6 6v3.59l-1.7 1.7A1 1 0 0 0 3 15h14a1 1 0 0 0 .7-1.71L16 11.59V8a6 6 0 0 0-6-6Zm0 16a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 10 18Z"/></svg>
+                                                        @endif
                                                     </span>
                                                 @endif
                                             </div>
