@@ -19,6 +19,13 @@ class EmailAppLinksTest extends TestCase
 
     private const GOOGLE_PLAY = 'https://play.google.com/store/apps/details?id=br.com.helpflux.decasaemcasa';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Independe do .env da máquina.
+        config(['services.app_stores' => ['app_store' => self::APP_STORE, 'google_play' => self::GOOGLE_PLAY]]);
+    }
+
     private function renderReceived(): string
     {
         $event = $this->makeEvent();

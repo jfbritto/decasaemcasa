@@ -14,6 +14,16 @@ class StatusPageAppLinksTest extends TestCase
     use MakesInscriptions;
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Independe do .env da máquina.
+        config(['services.app_stores' => [
+            'app_store' => 'https://apps.apple.com/br/app/de-casa-em-casa/id6833039609',
+            'google_play' => 'https://play.google.com/store/apps/details?id=br.com.helpflux.decasaemcasa',
+        ]]);
+    }
+
     private function statusPage()
     {
         $inscription = $this->makeInscription($this->makeEvent(), ['status' => 'pendente']);
@@ -41,6 +51,8 @@ class StatusPageAppLinksTest extends TestCase
     {
         config(['services.app_stores.app_store' => '', 'services.app_stores.google_play' => '']);
 
-        $this->statusPage()->assertOk()->assertDontSee('Acompanhe tudo pelo app');
+        $this->statusPage()->assertOk()
+            ->assertDontSee('Acompanhe tudo pelo app')
+            ->assertSee('chegam por e-mail e nesta página');
     }
 }

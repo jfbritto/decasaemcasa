@@ -42,6 +42,7 @@ class AppPresenceAdminTest extends TestCase
         $response = $this->actingAs($this->admin())->get(route('admin.inscricoes.index'));
 
         $response->assertOk();
+        $response->assertSee('Ana Velunora');
         $response->assertSee('title="Usa o app, avisos ligados (Android)"', false);
         $response->assertSee('title="Usa o app, avisos desligados"', false);
         // Maria e João; a Ana, com o e-mail acentuado, não.

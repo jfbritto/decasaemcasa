@@ -553,7 +553,7 @@
                 Atendimento: <strong>{{ config('services.support.whatsapp_number') }}</strong>
             </p>
             <p class="text-xs text-gray-500 mt-2">
-                O WhatsApp é só para dúvidas: as atualizações da sua inscrição chegam por e-mail, no app e nesta página.
+                O WhatsApp é só para dúvidas: as atualizações da sua inscrição chegam por e-mail{{ ($appStoreUrl || $googlePlayUrl) ? ', no app' : '' }} e nesta página.
             </p>
             <p class="text-xs text-gray-400 mt-3">
                 Os e-mails que você recebe são automáticos e não respondemos por lá.
