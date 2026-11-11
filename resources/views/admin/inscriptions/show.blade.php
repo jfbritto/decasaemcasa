@@ -373,20 +373,20 @@
                 <div class="bg-white rounded-xl shadow p-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">App</h2>
                     @if($appPresenceEntry)
-                        <dl class="space-y-2 text-sm">
-                            <div class="flex justify-between gap-3">
+                        <dl class="space-y-3 text-sm">
+                            <div>
                                 <dt class="text-gray-500">Última entrada</dt>
-                                <dd class="text-gray-900 text-right">{{ $appPresenceEntry->lastLoginAt?->format('d/m/Y H:i') ?? 'sem registro' }}</dd>
+                                <dd class="text-gray-900">{{ $appPresenceEntry->lastLoginAt?->format('d/m/Y H:i') ?? 'sem registro' }}</dd>
                             </div>
                             @if($appPresenceEntry->lastUsedAt)
-                            <div class="flex justify-between gap-3">
+                            <div>
                                 <dt class="text-gray-500">Último uso</dt>
-                                <dd class="text-gray-900 text-right">{{ $appPresenceEntry->lastUsedAt->format('d/m/Y H:i') }}</dd>
+                                <dd class="text-gray-900">{{ $appPresenceEntry->lastUsedAt->format('d/m/Y H:i') }}</dd>
                             </div>
                             @endif
-                            <div class="flex justify-between gap-3">
+                            <div>
                                 <dt class="text-gray-500">Avisos no celular</dt>
-                                <dd class="text-gray-900 text-right">{{ $appPresenceEntry->pushEnabled() ? 'ligados ('.$appPresenceEntry->platformLabel().')' : 'desligados' }}</dd>
+                                <dd class="text-gray-900">{{ $appPresenceEntry->pushEnabled() ? 'ligados ('.$appPresenceEntry->platformLabel().')' : 'desligados' }}</dd>
                             </div>
                         </dl>
                     @else
