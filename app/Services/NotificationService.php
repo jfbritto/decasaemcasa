@@ -7,6 +7,7 @@ use App\Models\Inscription;
 use App\Models\Notification;
 use App\Models\User;
 use App\Notifications\Push\ParticipantPush;
+use App\Participants\AppAnnouncementAudience;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -631,6 +632,24 @@ class NotificationService
             ['inscription_id' => $inscription->id],
             'emails.inscription-custom-message',
             ['inscription' => $inscription, 'event' => $event, 'body' => $body, 'subject' => $subject]
+        );
+    }
+
+    /**
+     * O e-mail de divulgação do app (spec 2026-11-12-email-divulgacao-app-design,
+     * DA6 e DA7). Só e-mail: quem recebe ainda não tem o app.
+     */
+    public function notifyAppAnnouncement(string $email, ?string $name, array $metadata = []): bool
+    {
+        return $this->sendEmail(
+            $email,
+            'O De Casa em Casa agora tem app',
+            'Aviso do app para '.(filled($name) ? $name : $email),
+            null,
+            AppAnnouncementAudience::CHANNEL,
+            $metadata,
+            'emails.app-announcement',
+            ['name' => $name, 'email' => $email]
         );
     }
 
