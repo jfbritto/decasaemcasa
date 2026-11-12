@@ -2,7 +2,7 @@
 
 > Spec de 12/11/2026. O desenho foi aprovado pelo João na conversa. O app está
 > nas duas lojas desde 11/11/2026, e os e-mails da inscrição já trazem os links
-> desde o PR #10. Decisões numeradas DA1 a DA11. Base:
+> desde o PR #10. Decisões numeradas DA1 a DA11 (com DA4b). Base:
 > `2026-11-08-app-mobile-design.md` (AM) e `2026-11-11-app-no-painel-design.md` (AP).
 
 ## Objetivo
@@ -29,20 +29,34 @@ O app não muda, e a API também não.
   normalizado (`Participant::normalizeEmail`, ou seja, `mb_strtolower(trim())`),
   porque é assim que o app junta as inscrições de alguém (AM2). O e-mail vai
   para o endereço normalizado. O nome da saudação vem da inscrição mais recente
-  da pessoa (`created_at`) entre as que entraram.
+  da pessoa entre as que entraram (`created_at` decrescente e, no empate, `id`
+  decrescente).
 - **DA4. Quem já usa o app fica de fora.** Vale a mesma regra do selo do
   painel (AP3): existe `participants.email` igual ao e-mail normalizado, com
   comparação binária. A consulta é por `AppPresence::forEmails()`.
+- **DA4b. Quem não consegue entrar no app fica de fora.** O formulário aceita
+  e-mail com acento, mas o login do app só aceita ASCII
+  (`Participant::ASCII_EMAIL` em `Api\V1\AuthController::requestCode`). Essas
+  pessoas receberiam "use este mesmo e-mail" sem conseguir entrar. Por isso
+  ficam de fora quando `Participant::isAsciiEmail()` é falso, e são contadas à
+  parte.
 - **DA5. Quem já recebeu fica de fora.** Entra nessa conta quem tem, na tabela
   `notifications`, uma linha com `type = email`, `channel = app_announcement`
-  e `status = sent`, sem `metadata.sample`, para o mesmo e-mail normalizado. Por
-  isso a falha (`failed`) e o envio ignorado (`skipped`) voltam para a lista
-  na rodada seguinte, e o e-mail de exemplo (DA8) não conta.
+  e `status = sent`, sem `metadata.sample`, para o mesmo e-mail normalizado.
+  - A comparação é feita no PHP, depois de `Participant::normalizeEmail` no
+    `recipient`. A collation de `notifications.recipient` é `unicode_ci` e
+    ignora acento, por isso não serve.
+  - Os reenvios do painel gravam uma linha nova com `metadata.resent_from` e
+    o mesmo canal, então também contam.
+  - A falha (`failed`) e o envio ignorado (`skipped`) voltam para a lista na
+    rodada seguinte, e o e-mail de exemplo (DA8) não conta.
 
 A seleção fica numa classe própria, `App\Participants\AppAnnouncementAudience`,
 que só lê. Ela devolve os destinatários (e-mail, nome, id da inscrição mais
-recente e encontros) e duas contagens dos que ficaram de fora: os que já usam o
-app e os que já receberam. O comando só exibe e envia.
+recente e encontros) e três contagens dos que ficaram de fora: os que já usam o
+app, os que têm e-mail que o app não aceita e os que já receberam. A contagem
+é por pessoa, e cada pessoa entra numa só, nesta ordem. O comando só exibe e
+envia.
 
 ## O e-mail
 
@@ -74,7 +88,10 @@ app e os que já receberam. O comando só exibe e envia.
     `app_announcement` e `metadata = ['inscription_id' => <a mais recente>]`.
     Assim cada envio aparece em Notificações no painel, ligado à inscrição.
   - O método novo `NotificationService::notifyAppAnnouncement(string $email,
-    ?string $name, array $metadata): bool` monta o envio.
+    ?string $name, array $metadata): bool` monta o envio. Ele passa ao modelo
+    `['name' => ?string, 'email' => string]`. Em `notifications.message` grava
+    "Aviso do app para <nome ou e-mail>" (o texto puro só sairia se o modelo
+    faltasse).
 
 ## O comando
 
@@ -84,36 +101,56 @@ app e os que já receberam. O comando só exibe e envia.
     conta como recebido (DA5). Se o e-mail for inválido, o comando dá erro e não
     envia nada.
   - `--dry-run` não envia nada. Mostra uma tabela por encontro (cidade, data,
-    pessoas) e os totais: quantas pessoas recebem e quantas ficam de fora (já
-    usam o app, já receberam). Quem tem inscrição em dois encontros aparece nas
-    duas linhas da tabela e conta uma vez só no total.
+    pessoas que recebem) e os totais: quantas pessoas recebem e quantas ficam
+    de fora (já usam o app, e-mail que o app não aceita, já receberam). Quem
+    tem inscrição em dois encontros aparece nas duas linhas da tabela e conta
+    uma vez só no total.
+  - `--to` e `--dry-run` juntos dão erro ("use uma opção de cada vez") e não
+    enviam nada.
   - Sem opção: mostra os mesmos totais, pede confirmação (o padrão é "não") e
     manda um por um, com barra de progresso. No fim mostra quantos foram
     enviados e quantos falharam. Se houve falha, diz que basta rodar de novo,
     porque só quem não recebeu volta para a lista.
   - Se não houver ninguém para receber, diz isso e termina sem erro.
-- **DA9. Ritmo de envio.** O comando faz uma pausa de 1 segundo entre um
-  envio e outro, por `Illuminate\Support\Sleep` (`Sleep::fake()` nos testes),
-  para não bater no limite de envios por segundo do Resend.
+- **DA9. Ritmo de envio.** Antes de cada envio, menos o primeiro (e também
+  depois de uma falha), o comando espera 1 segundo, por
+  `Illuminate\Support\Sleep` (`Sleep::fake()` nos testes). São N-1 pausas para
+  N envios. O objetivo é não bater no limite de envios por segundo do provedor
+  de e-mail.
+  - Não sabemos qual provedor a produção usa hoje. O painel fala do Titan (200
+    por hora) e também de uma "migração Resend". Se o limite for por hora, a
+    DA10 segura o envio e a rodada seguinte continua de onde parou.
 - **DA10. Proteções.**
-  - O comando não envia nada quando falta o mailer (`config('mail.default')`
-    vazio) ou quando os dois links das lojas estão vazios. Nos dois casos dá
-    erro e explica o motivo. Sem os links, o e-mail sairia sem os botões, e sem
-    o mailer o `sendEmail` só registra `skipped`.
+  - No envio de verdade e no `--to`, o comando não envia nada quando falta o
+    mailer (`config('mail.default')` vazio) ou quando os dois links das lojas
+    estão vazios. Nos dois casos dá erro e explica o motivo. Sem os links, o
+    e-mail sairia sem os botões, e sem o mailer o `sendEmail` só registra
+    `skipped`. No `--dry-run`, os mesmos casos só geram um aviso.
   - O envio para depois de 3 falhas seguidas, que costumam vir da cota ou do
-    limite do provedor, e avisa para tentar mais tarde. As falhas ficam
-    registradas como `failed` e voltam na próxima rodada.
+    limite do provedor, e diz para rodar de novo mais tarde (depois de 1 hora,
+    se o limite for por hora). As falhas ficam registradas como `failed` e
+    voltam na próxima rodada.
 
 ## Painel
 
 - **DA11. Notificações reconhecem o canal novo.**
   - Em `admin/notifications/index.blade.php`, "Divulgação do app" entra no
     filtro "Tipo de email" e no mapa de rótulos.
-  - `NotificationResendService` reenvia `app_announcement` com o mesmo modelo,
-    e não como texto puro. Isso vale para o botão "Reenviar" e para o
-    "Reenviar pendentes". O nome sai da inscrição de `metadata.inscription_id`
-    e, se não houver inscrição, fica sem nome. O reenvio preserva o
-    `metadata.sample`.
+  - O botão "Reenviar" de uma linha `app_announcement` usa o mesmo modelo, e
+    não texto puro. Para isso, `NotificationResendService::resendEmail` ganha
+    um ramo próprio antes do `viewMap`, porque o `viewMap` exige inscrição e
+    encontro. O modelo recebe `['name' => <full_name da inscrição de
+    metadata.inscription_id, ou null>, 'email' => recipient]`.
+    - O ramo chama o `sendEmail` como hoje, então o `resent_from` e o
+      `template_used` continuam sendo juntados ao metadata, e o
+      `metadata.sample` é preservado.
+    - Como nos outros canais, o reenvio de uma linha é uma ação manual e
+      sempre reenvia.
+  - O "Reenviar pendentes" (`NotificationController::rateLimitPendingQuery`)
+    passa a ignorar `app_announcement`. Ele pega toda falha sem
+    `resent_from`, inclusive a de quem já recebeu numa rodada seguinte do
+    comando. Com isso mandaria de novo. Para este canal, rodar o comando de
+    novo já é o reenvio.
 
 ## Testes (PHPUnit, banco `testing`)
 
@@ -124,20 +161,28 @@ app e os que já receberam. O comando só exibe e envia.
   - e-mails que só diferem por espaço e caixa viram uma pessoa só, com o nome
     da inscrição mais recente;
   - quem já usa o app sai e é contado;
-  - quem já recebeu sai e é contado; uma falha ou um exemplo não contam.
+  - quem tem e-mail com acento sai e é contado à parte;
+  - quem já recebeu sai e é contado, inclusive por reenvio do painel e com o
+    `recipient` em outra caixa; uma falha ou um exemplo não contam.
 - **Comando:**
   - o `--dry-run` não envia nada e mostra os totais;
   - o envio confirmado registra uma notificação `app_announcement` por pessoa;
   - rodar de novo não envia nada;
   - responder "não" não envia nada;
   - o `--to` manda um só, marcado como exemplo, e não tira ninguém da lista;
-  - o `--to` com e-mail inválido não envia;
+  - o `--to` com e-mail inválido não envia, e `--to` com `--dry-run` dá erro;
   - sem os links das lojas ou sem mailer, não envia;
-  - para depois de 3 falhas seguidas;
-  - faz a pausa de 1 segundo entre os envios (`Sleep::assertSlept`).
+  - para depois de 3 falhas seguidas. A falha é simulada com
+    `config(['mail.default' => 'inexistente'])` e sem `Mail::fake()`: o
+    `Mail::mailer()` lança "Mailer [inexistente] is not defined", o
+    `sendEmail` registra `failed` e devolve `false`, e esse nome passa pela
+    proteção da DA10, que só barra o mailer vazio;
+  - faz N-1 pausas de 1 segundo para N envios (`Sleep::fake()` e
+    `Sleep::assertSleptTimes`).
 - **E-mail:** o texto, o nome, o e-mail, os links das lojas e nenhum
   travessão; o "Olá!" quando não há nome.
-- **Painel:** o reenvio de `app_announcement` usa o modelo.
+- **Painel:** o reenvio de `app_announcement` usa o modelo, e o "Reenviar
+  pendentes" ignora as falhas desse canal.
 
 ## Fora do escopo
 
