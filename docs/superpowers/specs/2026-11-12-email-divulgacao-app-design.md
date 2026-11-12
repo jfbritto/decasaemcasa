@@ -99,7 +99,8 @@ envia.
   - `--to=<e-mail>` manda um exemplo só para esse endereço, sem nome na
     saudação e com `metadata = ['sample' => true]`. Não consulta a lista e não
     conta como recebido (DA5). Se o e-mail for inválido, o comando dá erro e não
-    envia nada.
+    envia nada. O `--to` sem valor também conta como inválido, para nunca cair
+    no envio para todos.
   - `--dry-run` não envia nada. Mostra uma tabela por encontro (cidade, data,
     pessoas que recebem) e os totais: quantas pessoas recebem e quantas ficam
     de fora (já usam o app, e-mail que o app não aceita, já receberam). Quem
@@ -126,10 +127,15 @@ envia.
     estão vazios. Nos dois casos dá erro e explica o motivo. Sem os links, o
     e-mail sairia sem os botões, e sem o mailer o `sendEmail` só registra
     `skipped`. No `--dry-run`, os mesmos casos só geram um aviso.
+  - Em produção, o comando também recusa os mailers `log` e `array`, que não
+    entregam e-mail de verdade. Com eles, todo mundo ficaria registrado como
+    recebido sem ter recebido nada.
   - O envio para depois de 3 falhas seguidas, que costumam vir da cota ou do
     limite do provedor, e diz para rodar de novo mais tarde (depois de 1 hora,
     se o limite for por hora). As falhas ficam registradas como `failed` e
     voltam na próxima rodada.
+  - Quem já tem uma falha registrada vai para o fim da fila. Assim, três
+    endereços que falham sempre não travam todas as rodadas.
 
 ## Painel
 
@@ -163,15 +169,20 @@ envia.
   - quem já usa o app sai e é contado;
   - quem tem e-mail com acento sai e é contado à parte;
   - quem já recebeu sai e é contado, inclusive por reenvio do painel e com o
-    `recipient` em outra caixa; uma falha ou um exemplo não contam.
+    `recipient` em outra caixa; uma falha ou um exemplo não contam;
+  - quem já falhou vai para o fim da fila.
 - **Comando:**
   - o `--dry-run` não envia nada e mostra os totais;
   - o envio confirmado registra uma notificação `app_announcement` por pessoa;
   - rodar de novo não envia nada;
   - responder "não" não envia nada;
   - o `--to` manda um só, marcado como exemplo, e não tira ninguém da lista;
-  - o `--to` com e-mail inválido não envia, e `--to` com `--dry-run` dá erro;
-  - sem os links das lojas ou sem mailer, não envia;
+  - o `--to` com e-mail inválido ou sem valor não envia, e `--to` com
+    `--dry-run` dá erro;
+  - sem os links das lojas ou sem mailer, não envia, e em produção recusa os
+    mailers `log` e `array`;
+  - no `--dry-run`, quem está em dois encontros aparece nas duas linhas e
+    conta uma vez;
   - para depois de 3 falhas seguidas. A falha é simulada com
     `config(['mail.default' => 'inexistente'])` e sem `Mail::fake()`: o
     `Mail::mailer()` lança "Mailer [inexistente] is not defined", o

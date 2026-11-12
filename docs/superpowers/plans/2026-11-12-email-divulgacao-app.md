@@ -16,6 +16,21 @@
 
 **Regras de texto:** sem travessão; "seu lugar na sala", nunca "cadeira"; dados de teste fictícios (Velunora, example.com).
 
+> **Ajustes da revisão do plano, já aplicados no código.** Os blocos de código
+> abaixo são a primeira versão. O código no branch é a referência e tem
+> também:
+> - quem já tem falha registrada vai para o fim da fila
+>   (`announcementLog()` com `sent` e `failed`, mais `usort` estável), com o
+>   teste `test_quem_ja_falhou_vai_para_o_fim_da_fila`;
+> - o `--to` sem valor é tratado como e-mail inválido
+>   (`$this->input->hasParameterOption('--to')`);
+> - em produção, o comando recusa os mailers com transporte `log` ou `array`;
+> - no teste do `--dry-run`, Maria está em dois encontros (duas linhas na
+>   tabela);
+> - o teste do e-mail confere os `href` das lojas;
+> - a pausa é conferida com `Sleep::assertSequence([Sleep::for(1)->second()])`;
+> - `tearDown` com `Sleep::fake(false)`.
+
 ---
 
 ## Mapa de arquivos
