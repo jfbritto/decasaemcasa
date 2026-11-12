@@ -7,6 +7,7 @@ use App\Jobs\ResendFailedNotification;
 use App\Models\Event;
 use App\Models\Inscription;
 use App\Models\Notification;
+use App\Participants\AppAnnouncementAudience;
 use App\Services\AdminPeriodFilter;
 use App\Services\NotificationResendService;
 use App\Services\NotificationService;
@@ -279,6 +280,9 @@ class NotificationController extends Controller
         $inFlightCutoff = now()->subHours(2)->toIso8601String();
 
         $query = Notification::where('status', 'failed')
+            // Divulgação do app: rodar o comando de novo já é o reenvio, e só
+            // manda para quem não recebeu (spec 2026-11-12-email-divulgacao-app-design, DA11)
+            ->where('channel', '!=', AppAnnouncementAudience::CHANNEL)
             ->when(! empty($resentIds), fn ($q) => $q->whereNotIn('id', $resentIds))
             ->where(function ($q) use ($inFlightCutoff) {
                 $q->whereNull('metadata->resend_queued_at')

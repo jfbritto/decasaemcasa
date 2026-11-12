@@ -136,6 +136,7 @@
                             <option value="social_request_rejected" {{ request('channel') === 'social_request_rejected' ? 'selected' : '' }}>Solicitação Social Rejeitada</option>
                             <option value="payment_reminder" {{ request('channel') === 'payment_reminder' ? 'selected' : '' }}>Lembrete de Pagamento</option>
                             <option value="custom_message" {{ request('channel') === 'custom_message' ? 'selected' : '' }}>Mensagem Personalizada</option>
+                            <option value="app_announcement" {{ request('channel') === 'app_announcement' ? 'selected' : '' }}>Divulgação do app</option>
                         </select>
                     </div>
                 </div>
@@ -259,6 +260,7 @@
                                                 'social_request_rejected' => 'Solicitação Social Rejeitada',
                                                 'payment_reminder' => 'Lembrete de Pagamento',
                                                 'custom_message' => 'Mensagem Personalizada',
+                                                'app_announcement' => 'Divulgação do app',
                                                 'general' => 'Geral',
                                             ];
                                         @endphp
