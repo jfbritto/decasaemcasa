@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Inscription;
 use App\Models\Notification;
+use App\Participants\AppAnnouncementAudience;
 use Illuminate\Support\Facades\Log;
 
 class NotificationResendService
@@ -73,7 +74,11 @@ class NotificationResendService
         $view = null;
         $viewData = [];
 
-        if ($inscription && $inscription->event && isset($viewMap[$notification->channel])) {
+        if ($notification->channel === AppAnnouncementAudience::CHANNEL) {
+            // A divulgação do app não depende de encontro (spec 2026-11-12-email-divulgacao-app-design, DA11)
+            $view = 'emails.app-announcement';
+            $viewData = ['name' => $inscription?->full_name, 'email' => $notification->recipient];
+        } elseif ($inscription && $inscription->event && isset($viewMap[$notification->channel])) {
             $view = $viewMap[$notification->channel];
             $viewData = [
                 'inscription' => $inscription,
