@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Notification;
 use App\Models\Participant;
 use App\Participants\AppAnnouncementAudience;
 use App\Participants\AppAnnouncementRecipient;
 use App\Services\NotificationService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Sleep;
 
 /**
@@ -23,6 +25,8 @@ class AnnounceApp extends Command
     protected $description = 'Manda o e-mail de divulgação do app para quem tem inscrição viva num encontro que ainda vai acontecer';
 
     private const MAX_CONSECUTIVE_FAILURES = 3;
+
+    public const LOCK = 'inscriptions:announce-app';
 
     public function handle(AppAnnouncementAudience $audience, NotificationService $notifications): int
     {
@@ -73,13 +77,26 @@ class AnnounceApp extends Command
             return self::SUCCESS;
         }
 
-        return $this->sendAll($recipients, $notifications);
+        // Duas rodadas ao mesmo tempo (outra sessão SSH) mandariam em dobro
+        $lock = Cache::lock(self::LOCK, 3600);
+
+        if (! $lock->get()) {
+            $this->error('Já tem um envio do aviso do app em andamento. Espere ele terminar. Nada foi enviado.');
+
+            return self::FAILURE;
+        }
+
+        try {
+            return $this->sendAll($recipients, $notifications);
+        } finally {
+            $lock->release();
+        }
     }
 
     /**
      * Sem mailer o sendEmail só registra "skipped"; com "log" ou "array" em
-     * produção todos ficariam como recebidos sem receber nada; sem os links
-     * o e-mail sairia sem os botões (DA10).
+     * produção todos ficariam como recebidos sem receber nada; o texto fala
+     * das duas lojas, então os dois links precisam existir (DA10).
      */
     private function sendingProblem(): ?string
     {
@@ -94,8 +111,8 @@ class AnnounceApp extends Command
             return "O mailer \"{$mailer}\" não entrega e-mail de verdade (MAIL_MAILER).";
         }
 
-        if (blank(config('services.app_stores.app_store')) && blank(config('services.app_stores.google_play'))) {
-            return 'Os links das lojas estão vazios (APP_STORE_URL e GOOGLE_PLAY_URL).';
+        if (blank(config('services.app_stores.app_store')) || blank(config('services.app_stores.google_play'))) {
+            return 'O e-mail fala das duas lojas, e falta o link de pelo menos uma (APP_STORE_URL e GOOGLE_PLAY_URL).';
         }
 
         return null;
@@ -161,15 +178,24 @@ class AnnounceApp extends Command
     {
         $sent = 0;
         $failed = 0;
+        $receivedMeanwhile = 0;
         $consecutiveFailures = 0;
         $stopped = false;
 
         $bar = $this->output->createProgressBar(count($recipients));
         $bar->start();
 
-        foreach ($recipients as $index => $recipient) {
+        foreach ($recipients as $recipient) {
+            // Pode ter recebido depois da lista montada (reenvio no painel)
+            if ($this->alreadySent($recipient->email)) {
+                $receivedMeanwhile++;
+                $bar->advance();
+
+                continue;
+            }
+
             // Folga para o limite por segundo do provedor de e-mail (DA9)
-            if ($index > 0) {
+            if ($sent + $failed > 0) {
                 Sleep::for(1)->second();
             }
 
@@ -197,6 +223,10 @@ class AnnounceApp extends Command
 
         $this->info("Enviados: {$sent}. Falhas: {$failed}.");
 
+        if ($receivedMeanwhile > 0) {
+            $this->line("Pulados porque receberam durante a rodada: {$receivedMeanwhile}.");
+        }
+
         if ($stopped) {
             $this->warn('Parei depois de '.self::MAX_CONSECUTIVE_FAILURES.' falhas seguidas, o que costuma ser cota ou limite do provedor de e-mail. Rode de novo mais tarde (depois de 1 hora, se o limite for por hora): só quem não recebeu volta para a lista.');
         } elseif ($failed > 0) {
@@ -204,5 +234,20 @@ class AnnounceApp extends Command
         }
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * Conferência na hora do envio. Os destinatários são ASCII e já
+     * normalizados, então a collation de recipient não atrapalha aqui.
+     */
+    private function alreadySent(string $email): bool
+    {
+        return Notification::query()
+            ->where('type', 'email')
+            ->where('channel', AppAnnouncementAudience::CHANNEL)
+            ->where('status', 'sent')
+            ->where('recipient', $email)
+            ->get(['metadata'])
+            ->contains(fn (Notification $notification) => empty($notification->metadata['sample']));
     }
 }

@@ -123,10 +123,15 @@ envia.
     DA10 segura o envio e a rodada seguinte continua de onde parou.
 - **DA10. Proteções.**
   - No envio de verdade e no `--to`, o comando não envia nada quando falta o
-    mailer (`config('mail.default')` vazio) ou quando os dois links das lojas
-    estão vazios. Nos dois casos dá erro e explica o motivo. Sem os links, o
-    e-mail sairia sem os botões, e sem o mailer o `sendEmail` só registra
+    mailer (`config('mail.default')` vazio) ou quando falta o link de qualquer
+    uma das lojas, porque o texto fala de iPhone e Android. Nos dois casos dá
+    erro e explica o motivo. Sem o mailer, o `sendEmail` só registra
     `skipped`. No `--dry-run`, os mesmos casos só geram um aviso.
+  - Uma segunda rodada ao mesmo tempo (outra sessão SSH, por exemplo) é
+    recusada por um `Cache::lock` que dura até 1 hora.
+  - Antes de cada envio, o comando confere de novo se a pessoa já recebeu (um
+    reenvio do painel durante a rodada, por exemplo). Quem já recebeu é pulado
+    e contado à parte no resumo.
   - Em produção, o comando também recusa os mailers `log` e `array`, que não
     entregam e-mail de verdade. Com eles, todo mundo ficaria registrado como
     recebido sem ter recebido nada.

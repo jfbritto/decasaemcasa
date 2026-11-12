@@ -119,18 +119,19 @@ class AppAnnouncementAudienceTest extends TestCase
     public function test_quem_ja_recebeu_fica_de_fora_mas_falha_e_exemplo_nao_contam(): void
     {
         $event = $this->makeEvent();
-        foreach (['recebeu', 'reenvio', 'falhou', 'exemplo', 'outro'] as $nome) {
+        foreach (['recebeu', 'reenvio', 'falhou', 'pulou', 'exemplo', 'outro'] as $nome) {
             $this->makeInscription($event, ['email' => "{$nome}@example.com"]);
         }
         $this->logAnnouncement(' Recebeu@Example.com', 'sent', ['inscription_id' => 1]);
         $this->logAnnouncement('reenvio@example.com', 'sent', ['inscription_id' => 2, 'resent_from' => 99]);
         $this->logAnnouncement('falhou@example.com', 'failed');
+        $this->logAnnouncement('pulou@example.com', 'skipped');
         $this->logAnnouncement('exemplo@example.com', 'sent', ['sample' => true]);
         $this->logAnnouncement('outro@example.com', 'sent', [], 'custom_message');
 
         $result = $this->build();
 
-        $this->assertSame(['exemplo@example.com', 'falhou@example.com', 'outro@example.com'], $this->emails());
+        $this->assertSame(['exemplo@example.com', 'falhou@example.com', 'outro@example.com', 'pulou@example.com'], $this->emails());
         $this->assertSame(2, $result['excluded']['already_received']);
     }
 

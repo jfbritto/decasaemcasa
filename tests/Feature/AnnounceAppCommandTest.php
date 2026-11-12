@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\AnnounceApp;
 use App\Models\Inscription;
 use App\Models\Notification;
 use App\Participants\AppAnnouncementAudience;
+use App\Services\NotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Sleep;
 use Tests\Concerns\MakesInscriptions;
 use Tests\TestCase;
@@ -143,19 +146,27 @@ class AnnounceAppCommandTest extends TestCase
     public function test_sem_links_das_lojas_ou_sem_mailer_nao_envia(): void
     {
         $this->twoPeople();
-        config(['services.app_stores.app_store' => '', 'services.app_stores.google_play' => '']);
+        // O texto fala das duas lojas: faltar uma já impede o envio
+        config(['services.app_stores.google_play' => '']);
 
         $this->artisan('inscriptions:announce-app')
-            ->expectsOutputToContain('Os links das lojas estão vazios')
+            ->expectsOutputToContain('falta o link de pelo menos uma')
             ->assertFailed();
+
+        config(['services.app_stores.app_store' => '']);
+
         $this->artisan('inscriptions:announce-app --to=maria@example.com')
-            ->expectsOutputToContain('Os links das lojas estão vazios')
+            ->expectsOutputToContain('falta o link de pelo menos uma')
             ->assertFailed();
         $this->artisan('inscriptions:announce-app --dry-run')
-            ->expectsOutputToContain('Os links das lojas estão vazios')
+            ->expectsOutputToContain('falta o link de pelo menos uma')
             ->assertSuccessful();
 
-        config(['services.app_stores.app_store' => self::APP_STORE, 'mail.default' => null]);
+        config([
+            'services.app_stores.app_store' => self::APP_STORE,
+            'services.app_stores.google_play' => 'https://play.google.com/store/apps/details?id=br.com.helpflux.decasaemcasa',
+            'mail.default' => null,
+        ]);
 
         $this->artisan('inscriptions:announce-app')
             ->expectsOutputToContain('O envio de e-mail não está configurado')
@@ -178,6 +189,70 @@ class AnnounceAppCommandTest extends TestCase
             ->assertFailed();
 
         $this->assertSame(0, Notification::count());
+    }
+
+    public function test_outra_rodada_em_andamento_impede_o_envio(): void
+    {
+        $this->twoPeople();
+        $lock = Cache::lock(AnnounceApp::LOCK, 3600);
+        $this->assertTrue($lock->get());
+
+        $this->artisan('inscriptions:announce-app')
+            ->expectsConfirmation('Enviar o aviso do app para 2 pessoa(s)?', 'yes')
+            ->expectsOutputToContain('Já tem um envio do aviso do app em andamento')
+            ->assertFailed();
+
+        $this->assertSame(0, Notification::count());
+        $lock->release();
+    }
+
+    public function test_quem_recebeu_durante_a_rodada_e_pulado(): void
+    {
+        $this->twoPeople();
+        // O primeiro envio simula outra rodada (ou o painel) mandando para a outra pessoa
+        $this->mock(NotificationService::class, function ($mock) {
+            $mock->shouldReceive('notifyAppAnnouncement')->once()->andReturnUsing(function (string $email) {
+                Notification::create([
+                    'type' => 'email',
+                    'channel' => AppAnnouncementAudience::CHANNEL,
+                    'recipient' => $email === 'maria@example.com' ? 'joao@example.com' : 'maria@example.com',
+                    'subject' => 'O De Casa em Casa agora tem app',
+                    'message' => 'Aviso do app',
+                    'status' => 'sent',
+                    'metadata' => ['inscription_id' => 1],
+                ]);
+
+                return true;
+            });
+        });
+
+        $this->artisan('inscriptions:announce-app')
+            ->expectsConfirmation('Enviar o aviso do app para 2 pessoa(s)?', 'yes')
+            ->expectsOutputToContain('Enviados: 1. Falhas: 0.')
+            ->expectsOutputToContain('Pulados porque receberam durante a rodada: 1.')
+            ->assertSuccessful();
+
+        Sleep::assertNeverSlept();
+    }
+
+    public function test_um_sucesso_zera_as_falhas_seguidas_e_falha_da_erro(): void
+    {
+        $event = $this->makeEvent();
+        foreach (['a', 'b', 'c', 'd', 'e'] as $letra) {
+            $this->makeInscription($event, ['email' => "{$letra}@example.com"]);
+        }
+        $this->mock(NotificationService::class, function ($mock) {
+            $mock->shouldReceive('notifyAppAnnouncement')->times(5)->andReturn(false, true, false, false, true);
+        });
+
+        $this->artisan('inscriptions:announce-app')
+            ->expectsConfirmation('Enviar o aviso do app para 5 pessoa(s)?', 'yes')
+            ->expectsOutputToContain('Enviados: 2. Falhas: 3.')
+            ->expectsOutputToContain('Rode de novo para tentar quem falhou')
+            ->doesntExpectOutputToContain('Parei depois')
+            ->assertFailed();
+
+        Sleep::assertSleptTimes(4);
     }
 
     public function test_para_depois_de_tres_falhas_seguidas(): void
